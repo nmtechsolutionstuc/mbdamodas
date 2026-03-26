@@ -22,6 +22,7 @@ import { AdminCatalogPage } from './pages/admin/AdminCatalogPage'
 import { AdminUsersPage } from './pages/admin/AdminUsersPage'
 import { TermsPage } from './pages/public/TermsPage'
 import { AboutPage } from './pages/public/AboutPage'
+import { NotFoundPage } from './pages/public/NotFoundPage'
 
 function App() {
   return (
@@ -52,6 +53,9 @@ function App() {
           <Route path="/admin/catalogo" element={<AdminRoute><AdminCatalogPage /></AdminRoute>} />
           <Route path="/admin/usuarios" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
           <Route path="/admin/tiendas" element={<AdminRoute><AdminStoresPage /></AdminRoute>} />
+
+          {/* 404 */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
         </main>
         <Footer />

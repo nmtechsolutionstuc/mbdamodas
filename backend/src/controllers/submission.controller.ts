@@ -41,13 +41,15 @@ export async function createSubmissionHandler(req: Request, res: Response): Prom
     return
   }
 
-  const items = parsed.data.map((item, i) => {
-    const itemFiles = files?.[`items[${i}][photos]`] ?? []
-    return {
-      ...item,
-      photoUrls: getPhotoUrls(itemFiles),
-    }
-  })
+  const items = await Promise.all(
+    parsed.data.map(async (item, i) => {
+      const itemFiles = files?.[`items[${i}][photos]`] ?? []
+      return {
+        ...item,
+        photoUrls: await getPhotoUrls(itemFiles),
+      }
+    }),
+  )
 
   const submission = await createSubmission(
     req.user!.sub,
