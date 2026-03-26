@@ -1,0 +1,250 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SubmissionItemStatus {
+  PENDING    // Enviada, esperando revisión del admin
+  APPROVED   // Aprobada, genera un Item en catálogo
+  REJECTED   // Rechazada por el admin (con comentario)
+  IN_STORE   // Confirmada físicamente en tienda/vidriera
+  SOLD       // Vendida — se calcula comisión
+  RETURNED   // Devuelta al vendedor
+}
+
+enum ItemSize {
+  XS
+  S
+  M
+  L
+  XL
+  XXL
+  UNICA
+}
+
+enum ItemCategory {
+  MUJER
+  HOMBRE
+  NINO
+  NINA
+  CALZADO
+  ACCESORIOS
+  OTRO
+}
+
+enum ItemCondition {
+  NUEVA_CON_ETIQUETA  // Nueva, con etiqueta original
+  NUEVA_SIN_ETIQUETA  // Nueva, sin etiqueta (sin uso)
+  COMO_NUEVA          // Usada 1-2 veces
+  BUEN_ESTADO         // Signos mínimos de uso
+  USO_MODERADO        // Desgaste visible pero aceptable
+  USO_INTENSO         // Desgaste notable
+}
+
+// ─────────────────────────────────────────────────────────────
+// STORE — Entidad raíz. Todo pertenece a una tienda.
+// Diseñado para soportar múltiples tiendas desde el inicio.
+// ─────────────────────────────────────────────────────────────
+
+model Store {
+  id                String   @id @default(uuid())
+  name              String
+  address           String?
+  phone             String?  // WhatsApp de la tienda (para links de comprador)
+  email             String?
+  description       String?
+  logoUrl           String?
+  defaultCommission Decimal  @db.Decimal(5, 2) @default(30) // % comisión por defecto
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  users       User[]
+  submissions Submission[]
+  items       Item[]
+
+  @@map("stores")
+}
+
+// ─────────────────────────────────────────────────────────────
+// USER — Solo Google OAuth, sin contraseña
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id               String    @id @default(uuid())
+  googleId         String    @unique
+  email            String    @unique
+  firstName        String
+  lastName         String
+  phone            String?   // Número WhatsApp del vendedor
+  avatarUrl        String?
+  role             Role      @default(USER)
+  isActive         Boolean   @default(true)
+  termsAcceptedAt  DateTime? // Timestamp de aceptación de T&C (evidencia legal)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  storeId String?
+  store   Store?  @relation(fields: [storeId], references: [id])
+
+  refreshTokens RefreshToken[]
+  submissions   Submission[]
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────────────────────
+// REFRESH TOKEN — Permite revocación de sesiones
+// ─────────────────────────────────────────────────────────────
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ─────────────────────────────────────────────────────────────
+// SUBMISSION — Solicitud grupal. Agrupa N prendas de un vendedor.
+// ─────────────────────────────────────────────────────────────
+
+model Submission {
+  id         String   @id @default(uuid())
+  adminNote  String?  // Nota general del admin sobre la solicitud
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  sellerId String
+  seller   User   @relation(fields: [sellerId], references: [id])
+
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id])
+
+  items SubmissionItem[]
+
+  @@index([sellerId])
+  @@index([storeId])
+  @@map("submissions")
+}
+
+// ─────────────────────────────────────────────────────────────
+// SUBMISSION ITEM — Prenda individual dentro de una solicitud.
+// Cada prenda tiene su propio estado y ciclo de vida.
+// ─────────────────────────────────────────────────────────────
+
+model SubmissionItem {
+  id           String               @id @default(uuid())
+  title        String
+  description  String?
+  condition    ItemCondition
+  size         ItemSize
+  category     ItemCategory
+  quantity     Int                  @default(1)
+  desiredPrice Decimal              @db.Decimal(10, 2)
+  minimumPrice Decimal?             @db.Decimal(10, 2)
+  status       SubmissionItemStatus @default(PENDING)
+  adminComment String?              // Motivo de rechazo o nota del admin
+  reviewedAt   DateTime?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  photos SubmissionItemPhoto[]
+  item   Item?                 // Creado al aprobar (1:1)
+
+  @@index([submissionId])
+  @@index([status])
+  @@map("submission_items")
+}
+
+// ─────────────────────────────────────────────────────────────
+// SUBMISSION ITEM PHOTO — Fotos de una prenda en solicitud
+// ─────────────────────────────────────────────────────────────
+
+model SubmissionItemPhoto {
+  id        String   @id @default(uuid())
+  url       String
+  order     Int      @default(0) // 0 = foto principal
+  createdAt DateTime @default(now())
+
+  submissionItemId String
+  submissionItem   SubmissionItem @relation(fields: [submissionItemId], references: [id], onDelete: Cascade)
+
+  @@index([submissionItemId])
+  @@map("submission_item_photos")
+}
+
+// ─────────────────────────────────────────────────────────────
+// ITEM — Prenda aprobada, visible en catálogo público.
+// Se crea automáticamente al aprobar un SubmissionItem.
+// ─────────────────────────────────────────────────────────────
+
+model Item {
+  id           String       @id @default(uuid())
+  title        String
+  description  String?
+  condition    ItemCondition
+  size         ItemSize
+  category     ItemCategory
+  quantity     Int
+  price        Decimal      @db.Decimal(10, 2)
+  minimumPrice Decimal?     @db.Decimal(10, 2) // Visible solo para admin
+  commission   Decimal      @db.Decimal(5, 2)  // Copiado de Store.defaultCommission al aprobar
+  isActive     Boolean      @default(true)     // false = no aparece en catálogo
+  soldAt       DateTime?
+  returnedAt   DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  submissionItemId String         @unique
+  submissionItem   SubmissionItem @relation(fields: [submissionItemId], references: [id])
+
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id])
+
+  photos ItemPhoto[]
+
+  @@index([storeId])
+  @@index([category])
+  @@index([isActive])
+  @@map("items")
+}
+
+// ─────────────────────────────────────────────────────────────
+// ITEM PHOTO — Fotos del item en catálogo (copiadas al aprobar)
+// ─────────────────────────────────────────────────────────────
+
+model ItemPhoto {
+  id        String   @id @default(uuid())
+  url       String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId])
+  @@map("item_photos")
+}

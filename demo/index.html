@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MBDA Modas — Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    /* ── Paleta MBDA Modas ──────────────────────────────
+       Extraída del logo: fondo crema cálido + oscuro casi negro
+       ─────────────────────────────────────────────────── */
+    --primary: #1E1914;        /* marrón-negro del logo  */
+    --primary-light: #EDEAD4;  /* crema cálida suave     */
+    --primary-dark: #0D0B08;   /* casi negro profundo    */
+    --cream: #E8E3D5;          /* fondo crema del logo   */
+    --cream-light: #F4F1E8;    /* crema muy suave        */
+    --cream-dark: #D4CDBB;     /* crema más oscuro, bordes */
+
+    --text: #1E1914;
+    --text-muted: #7A7166;
+    --bg: #FAF8F3;             /* blanco cálido, no frío */
+    --bg-soft: #F0EDE3;        /* crema suave para secciones */
+    --border: #DDD9CE;
+
+    /* Estados — tonos cálidos que armonizan con la paleta */
+    --green: #4A7A5A;
+    --green-light: #E8F0E8;
+    --yellow: #8A6A1A;
+    --yellow-light: #F5EDD0;
+    --red: #8A3A2A;
+    --red-light: #F5E8E4;
+    --blue: #3A5A7A;
+    --blue-light: #E4ECF5;
+    --gray-light: #ECEAE3;
+    --orange: #8A5A1A;
+    --orange-light: #F5EAD8;
+
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 3px rgba(30,25,20,0.07), 0 4px 12px rgba(30,25,20,0.05);
+    --shadow-lg: 0 8px 30px rgba(30,25,20,0.13);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 16px; line-height: 1.5; }
+
+  /* ── DEMO NAV ── */
+  .demo-nav {
+    background: #1C1C1C;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    overflow-x: auto;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  .demo-nav span { color: #888; font-size: 12px; margin-right: 4px; flex-shrink: 0; }
+  .demo-btn {
+    background: #333;
+    border: none;
+    color: #ddd;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .demo-btn:hover { background: #444; color: white; }
+  .demo-btn.active { background: #5A4A3A; color: var(--cream-light); }
+
+  /* ── SCREENS ── */
+  .screen { display: none; min-height: calc(100vh - 42px); }
+  .screen.active { display: block; }
+
+  /* ── APP NAVBAR ── */
+  .navbar {
+    background: var(--cream);
+    border-bottom: 1px solid var(--cream-dark);
+    padding: 0 20px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 42px;
+    z-index: 100;
+  }
+  .navbar-brand { display: flex; align-items: center; gap: 10px; }
+  .navbar-logo { height: 38px; width: auto; }
+  .navbar-name { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 18px; letter-spacing: 0.5px; color: var(--primary); }
+  .navbar-name span { font-size: 10px; font-family: 'Inter', sans-serif; font-weight: 500; letter-spacing: 3px; text-transform: uppercase; display: block; color: var(--text-muted); margin-top: -3px; }
+  .navbar-actions { display: flex; align-items: center; gap: 10px; }
+  .nav-link { color: var(--text-muted); font-size: 14px; text-decoration: none; padding: 6px 10px; border-radius: 8px; transition: all 0.15s; font-weight: 500; }
+  .nav-link:hover { color: var(--text); background: var(--bg-soft); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 22px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; text-decoration: none; letter-spacing: 0.3px; }
+  .btn-primary { background: var(--primary); color: var(--cream-light); }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-secondary { background: transparent; color: var(--text); border: 1.5px solid var(--cream-dark); }
+  .btn-secondary:hover { background: var(--cream); border-color: var(--primary); }
+  .btn-sm { padding: 7px 14px; font-size: 13px; }
+  .btn-outline { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-outline:hover { background: var(--primary-light); }
+  .btn-green { background: var(--green); color: white; }
+  .btn-red { background: var(--red); color: white; }
+  .btn-whatsapp { background: #25D366; color: white; }
+  .btn-google { background: var(--cream-light); color: var(--text); border: 1.5px solid var(--cream-dark); font-size: 15px; padding: 14px 24px; border-radius: var(--radius-sm); width: 100%; justify-content: center; }
+  .btn-google:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+  .btn-google img { width: 20px; height: 20px; }
+
+  /* ── CONTAINERS ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+  .page-content { padding: 32px 20px; max-width: 1100px; margin: 0 auto; }
+
+  /* ── BADGE / STATUS ── */
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge-yellow { background: var(--yellow-light); color: var(--yellow); }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .badge-blue { background: var(--blue-light); color: var(--blue); }
+  .badge-gray { background: var(--gray-light); color: var(--text-muted); }
+  .badge-orange { background: var(--orange-light); color: var(--orange); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ── CARDS ── */
+  .card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .card-hover { transition: box-shadow 0.15s, transform 0.15s; cursor: pointer; }
+  .card-hover:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+
+  /* ── FORM ── */
+  .form-group { margin-bottom: 20px; }
+  .form-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+  .form-label .optional { font-weight: 400; color: var(--text-muted); font-size: 12px; margin-left: 4px; }
+  .form-input { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; font-family: inherit; color: var(--text); background: white; transition: border-color 0.15s; outline: none; }
+  .form-input:focus { border-color: var(--primary); }
+  .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6B6B' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }
+  .form-textarea { resize: vertical; min-height: 90px; }
+  .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* ── SECTION TITLES ── */
+  .section-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; font-family: 'Playfair Display', serif; }
+  .section-subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 24px; }
+
+  /* ── DUAL BANNER ── */
+  .dual-banner { display: grid; grid-template-columns: 1fr auto 1fr; background: var(--primary); }
+  .dual-card { padding: 52px 44px; display: flex; flex-direction: column; }
+  .dual-buyer { background: var(--cream); }
+  .dual-seller { background: var(--primary); }
+  .dual-eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 18px; }
+  .dual-buyer .dual-eyebrow { color: var(--text-muted); }
+  .dual-seller .dual-eyebrow { color: rgba(232,227,213,0.6); }
+  .dual-title { font-family: 'Playfair Display', serif; font-size: clamp(24px, 2.5vw, 34px); font-weight: 700; line-height: 1.2; margin-bottom: 14px; }
+  .dual-buyer .dual-title { color: var(--primary); }
+  .dual-seller .dual-title { color: var(--cream); }
+  .dual-desc { font-size: 14px; line-height: 1.75; margin-bottom: 24px; }
+  .dual-buyer .dual-desc { color: var(--text-muted); }
+  .dual-seller .dual-desc { color: rgba(232,227,213,0.7); }
+  .dual-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; flex: 1; }
+  .dual-list li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text); }
+  .dual-check { color: var(--green); font-weight: 700; flex-shrink: 0; }
+  .dual-steps { display: flex; flex-direction: column; gap: 14px; margin-bottom: 32px; flex: 1; }
+  .dual-step { display: flex; align-items: center; gap: 12px; font-size: 14px; color: rgba(232,227,213,0.8); }
+  .dual-step-n { width: 26px; height: 26px; border-radius: 50%; background: rgba(232,227,213,0.12); border: 1px solid rgba(232,227,213,0.25); color: var(--cream); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .dual-btn { border: none; padding: 13px 24px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; align-self: flex-start; letter-spacing: 0.2px; }
+  .dual-btn-buyer { background: var(--primary); color: var(--cream); }
+  .dual-btn-buyer:hover { background: var(--primary-dark); }
+  .dual-btn-seller { background: var(--cream); color: var(--primary); }
+  .dual-btn-seller:hover { background: var(--cream-light); }
+  .dual-divider { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 4px; background: var(--primary); }
+  .dual-divider-line { flex: 1; width: 1px; background: rgba(232,227,213,0.15); }
+  .dual-divider-dot { color: rgba(232,227,213,0.4); font-size: 13px; padding: 10px 0; font-style: italic; }
+  @media (max-width: 768px) {
+    .dual-banner { grid-template-columns: 1fr; }
+    .dual-divider { flex-direction: row; padding: 4px 20px; }
+    .dual-divider-line { flex: 1; height: 1px; width: auto; }
+    .dual-card { padding: 36px 20px; }
+  }
+
+  /* ─────────────────────────────────────
+     SCREEN 1: HOMEPAGE
+  ───────────────────────────────────── */
+  .hero { background: var(--cream); padding: 64px 20px 56px; text-align: center; border-bottom: 1px solid var(--cream-dark); }
+  .hero-tag { display: inline-block; background: transparent; color: var(--text-muted); font-size: 11px; font-weight: 500; padding: 4px 14px; border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--cream-dark); letter-spacing: 2px; text-transform: uppercase; }
+  .hero-title { font-size: clamp(28px, 5vw, 46px); font-weight: 700; line-height: 1.15; max-width: 620px; margin: 0 auto 16px; font-family: 'Playfair Display', serif; }
+  .hero-title span { color: var(--primary); border-bottom: 3px solid var(--cream-dark); }
+  .hero-desc { font-size: 17px; color: var(--text-muted); max-width: 480px; margin: 0 auto 32px; }
+  .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .catalog-section { padding: 40px 20px; max-width: 1100px; margin: 0 auto; }
+  .catalog-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-chip { background: transparent; border: 1.5px solid var(--cream-dark); padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px; color: var(--text-muted); }
+  .filter-chip:hover, .filter-chip.active { background: var(--primary); color: var(--cream-light); border-color: var(--primary); }
+  .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+  .item-card { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); cursor: pointer; transition: box-shadow 0.15s, transform 0.15s; }
+  .item-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+  .item-img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: var(--bg-soft); }
+  .item-img-placeholder { width: 100%; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center; font-size: 48px; background: var(--bg-soft); }
+  .item-info { padding: 14px; }
+  .item-name { font-weight: 600; font-size: 14px; margin-bottom: 3px; }
+  .item-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+  .item-price { font-size: 17px; font-weight: 700; color: var(--text); }
+  .item-condition { font-size: 11px; color: var(--text-muted); background: var(--cream); display: inline-block; padding: 2px 7px; border-radius: 10px; margin-bottom: 6px; }
+  .item-wsp-btn { display: flex; align-items: center; gap: 6px; margin-top: 10px; width: 100%; background: #25D366; color: white; border: none; padding: 9px 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity 0.15s; justify-content: center; }
+  .item-wsp-btn:hover { opacity: 0.88; }
+
+  /* ─────────────────────────────────────
+     SCREEN 2: LOGIN
+  ───────────────────────────────────── */
+  .auth-page { min-height: calc(100vh - 42px - 68px); display: flex; align-items: center; justify-content: center; padding: 40px 20px; background: var(--cream); }
+  .auth-card { background: var(--bg); border: 1px solid var(--cream-dark); border-radius: var(--radius); padding: 40px; max-width: 400px; width: 100%; text-align: center; }
+  .auth-logo { width: 80px; height: 80px; background: var(--cream); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 1px solid var(--cream-dark); }
+  .auth-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .auth-subtitle { color: var(--text-muted); font-size: 15px; margin-bottom: 32px; }
+  .auth-divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; color: var(--text-muted); font-size: 13px; }
+  .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-top: 1px solid var(--border); }
+  .auth-terms { font-size: 12px; color: var(--text-muted); margin-top: 20px; line-height: 1.6; }
+
+  /* ─────────────────────────────────────
+     SCREEN 3: USER DASHBOARD
+  ───────────────────────────────────── */
+  .user-nav { background: var(--cream); border-bottom: 1px solid var(--cream-dark); padding: 0 20px; display: flex; gap: 4px; overflow-x: auto; }
+  .user-nav-item { padding: 14px 16px; font-size: 14px; font-weight: 500; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; }
+  .user-nav-item.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; margin-bottom: 32px; }
+  .stat-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 18px; }
+  .stat-num { font-size: 28px; font-weight: 700; margin-bottom: 2px; }
+  .stat-label { font-size: 13px; color: var(--text-muted); }
+  .submission-list { display: flex; flex-direction: column; gap: 14px; }
+  .submission-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; display: flex; gap: 16px; align-items: flex-start; }
+  .submission-icon { width: 48px; height: 48px; border-radius: var(--radius-sm); background: var(--bg-soft); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .submission-content { flex: 1; }
+  .submission-title { font-weight: 600; font-size: 15px; margin-bottom: 3px; }
+  .submission-meta { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+  .prenda-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .prenda-row { display: flex; align-items: center; justify-content: space-between; background: var(--bg-soft); border-radius: var(--radius-sm); padding: 10px 14px; }
+  .prenda-name { font-size: 14px; font-weight: 500; }
+  .prenda-detail { font-size: 12px; color: var(--text-muted); }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .empty-desc { font-size: 14px; margin-bottom: 24px; }
+
+  /* ─────────────────────────────────────
+     SCREEN 4: SUBMISSION WIZARD
+  ───────────────────────────────────── */
+  .wizard-header { background: white; border-bottom: 1px solid var(--border); padding: 20px; }
+  .wizard-steps { display: flex; gap: 0; margin-bottom: 0; }
+  .wizard-step { flex: 1; display: flex; align-items: center; gap: 10px; }
+  .wizard-step:not(:last-child)::after { content: ''; flex: 1; height: 2px; background: var(--border); margin: 0 8px; }
+  .step-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; border: 2px solid var(--border); color: var(--text-muted); background: white; }
+  .step-circle.done { background: var(--primary); border-color: var(--primary); color: white; }
+  .step-circle.active { border-color: var(--primary); color: var(--primary); }
+  .step-label { font-size: 13px; font-weight: 500; color: var(--text-muted); white-space: nowrap; }
+  .step-label.active { color: var(--primary); font-weight: 600; }
+  .step-label.done { color: var(--text); }
+  .wizard-body { max-width: 680px; margin: 0 auto; padding: 32px 20px; }
+  .wizard-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .wizard-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
+  .photo-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 32px; text-align: center; background: var(--bg-soft); cursor: pointer; transition: border-color 0.15s; }
+  .photo-zone:hover { border-color: var(--primary); }
+  .photo-zone-icon { font-size: 36px; margin-bottom: 12px; }
+  .photo-zone-title { font-weight: 600; margin-bottom: 4px; }
+  .photo-zone-hint { font-size: 13px; color: var(--text-muted); }
+  .photo-previews { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .photo-thumb { width: 80px; height: 80px; border-radius: var(--radius-sm); background: var(--bg-soft); display: flex; align-items: center; justify-content: center; font-size: 28px; border: 1px solid var(--border); position: relative; }
+  .photo-thumb-remove { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; background: var(--red); color: white; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .wizard-footer { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-top: 1px solid var(--border); max-width: 680px; margin: 0 auto; }
+  .prenda-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .prenda-header-title { font-size: 16px; font-weight: 700; }
+  .item-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+  /* ─────────────────────────────────────
+     SCREEN 5: ADMIN DASHBOARD
+  ───────────────────────────────────── */
+  .admin-layout { display: flex; min-height: calc(100vh - 42px - 64px); }
+  .admin-sidebar { width: 220px; background: var(--primary); padding: 20px 12px; flex-shrink: 0; }
+  .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-radius: var(--radius-sm); color: #C8C0B0; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; margin-bottom: 2px; }
+  .sidebar-item:hover { background: rgba(255,255,255,0.1); color: var(--cream-light); }
+  .sidebar-item.active { background: rgba(232,227,213,0.18); color: var(--cream-light); border-left: 3px solid var(--cream); }
+  .sidebar-badge { margin-left: auto; background: #E74C3C; color: white; border-radius: 10px; font-size: 11px; padding: 1px 7px; font-weight: 700; }
+  .admin-main { flex: 1; padding: 28px; overflow-y: auto; }
+  .admin-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .admin-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  .stat-big { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .stat-big-num { font-size: 36px; font-weight: 700; margin-bottom: 4px; }
+  .stat-big-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+  .submissions-table { background: white; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .table-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .table-row { display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--border); transition: background 0.1s; cursor: pointer; }
+  .table-row:last-child { border-bottom: none; }
+  .table-row:hover { background: var(--bg-soft); }
+  .row-avatar { width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--bg-soft); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .row-name { font-weight: 600; font-size: 14px; }
+  .row-sub { font-size: 12px; color: var(--text-muted); }
+  .row-actions { margin-left: auto; display: flex; gap: 8px; }
+
+  /* ─────────────────────────────────────
+     SCREEN 6: ADMIN REVIEW
+  ───────────────────────────────────── */
+  .review-header { background: white; border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+  .back-btn { background: var(--bg-soft); border: none; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: inherit; transition: background 0.15s; }
+  .back-btn:hover { background: var(--border); }
+  .review-body { max-width: 900px; margin: 0 auto; padding: 24px 20px; }
+  .seller-info { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; display: flex; gap: 14px; align-items: center; margin-bottom: 24px; }
+  .seller-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .seller-name { font-weight: 700; font-size: 16px; }
+  .seller-contact { font-size: 13px; color: var(--text-muted); }
+  .review-prenda { background: white; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+  .review-prenda-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg-soft); }
+  .review-prenda-body { padding: 20px; display: grid; grid-template-columns: 200px 1fr; gap: 24px; }
+  .review-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .review-photo { border-radius: var(--radius-sm); aspect-ratio: 1; background: var(--bg-soft); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+  .review-details { display: flex; flex-direction: column; gap: 14px; }
+  .detail-row { display: flex; flex-direction: column; gap: 3px; }
+  .detail-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .detail-value { font-size: 15px; font-weight: 500; }
+  .detail-price { font-size: 20px; font-weight: 700; color: var(--text); }
+  .action-panel { display: flex; gap: 10px; padding: 16px 20px; border-top: 1px solid var(--border); align-items: center; flex-wrap: wrap; }
+  .commission-box { background: var(--cream); border: 1px solid var(--cream-dark); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  .commission-box strong { color: var(--primary); }
+  .wsp-btn { display: inline-flex; align-items: center; gap: 8px; background: #25D366; color: white; border: none; padding: 10px 18px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
+  .wsp-btn:hover { opacity: 0.9; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .form-row { grid-template-columns: 1fr; }
+    .review-prenda-body { grid-template-columns: 1fr; }
+    .admin-sidebar { display: none; }
+    .wizard-step .step-label { display: none; }
+    .hero-title { font-size: 26px; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ── TÉRMINOS Y CONDICIONES ── */
+  .terms-body { font-size: 15px; line-height: 1.75; }
+  .terms-alert { background: var(--yellow-light); border-left: 4px solid var(--yellow); border-radius: var(--radius-sm); padding: 14px 18px; margin-bottom: 28px; font-size: 14px; }
+  .terms-h2 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; margin: 28px 0 10px; color: var(--primary); }
+  .terms-p { color: var(--text); margin-bottom: 12px; font-size: 14px; line-height: 1.75; }
+  .terms-ul { padding-left: 20px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .terms-ul li { font-size: 14px; color: var(--text); line-height: 1.6; }
+  .terms-footer-box { background: var(--cream); border: 1px solid var(--cream-dark); border-radius: var(--radius); padding: 20px; margin-top: 32px; text-align: center; }
+
+  /* ── TOAST ── */
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1C1C1C; color: white; padding: 12px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; z-index: 9999; animation: slideUp 0.2s ease; display: none; }
+  .toast.show { display: block; }
+  @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+  /* ── PROFILE ── */
+  .avatar-circle { width: 64px; height: 64px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .profile-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+
+  /* ── CONFIRMATION ── */
+  .confirmation-page { min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; }
+  .confirm-icon { font-size: 64px; margin-bottom: 20px; }
+  .confirm-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .confirm-desc { font-size: 16px; color: var(--text-muted); max-width: 400px; margin-bottom: 28px; }
+</style>
+</head>
+<body>
+
+<!-- DEMO NAVIGATION -->
+<nav class="demo-nav">
+  <span>🎨 DEMO:</span>
+  <button class="demo-btn active" onclick="showScreen('home')">🏠 Inicio</button>
+  <button class="demo-btn" onclick="showScreen('login')">🔐 Ingresar</button>
+  <button class="demo-btn" onclick="showScreen('dashboard')">👤 Mi Panel</button>
+  <button class="demo-btn" onclick="showScreen('submit')">📦 Enviar Prenda</button>
+  <button class="demo-btn" onclick="showScreen('admin')">⚙️ Admin</button>
+  <button class="demo-btn" onclick="showScreen('review')">📋 Revisión</button>
+  <button class="demo-btn" onclick="showScreen('terms')">📄 T&amp;C</button>
+</nav>
+
+<!-- ═══════════════════════════════════
+     SCREEN 1: HOMEPAGE
+════════════════════════════════════ -->
+<div id="screen-home" class="screen active">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <svg class="navbar-logo" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" height="38">
+        <text x="6" y="38" font-family="serif" font-weight="700" font-size="34" fill="#1E1914" letter-spacing="1">MBDA</text>
+        <text x="22" y="52" font-family="sans-serif" font-weight="400" font-size="10" fill="#7A7166" letter-spacing="4">MODAS</text>
+      </svg>
+    </div>
+    <div class="navbar-actions">
+      <a class="nav-link" href="#">Catálogo</a>
+      <a class="nav-link" href="#">Nosotros</a>
+      <button class="btn btn-primary btn-sm" onclick="showScreen('login')">Ingresar</button>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-tag">Tienda física · Catálogo online</div>
+    <h1 class="hero-title">Bienvenida a <span>MBDA Modas</span></h1>
+    <p class="hero-desc">Moda de segunda selección, primera calidad. Prendas únicas elegidas por nuestra comunidad de vendedoras.</p>
+    <div class="hero-cta">
+      <button class="btn btn-primary" onclick="document.getElementById('catalog').scrollIntoView({behavior:'smooth'})">Ver catálogo ↓</button>
+      <button class="btn btn-secondary" onclick="showScreen('login')">Quiero vender</button>
+    </div>
+  </section>
+
+  <!-- BANNER DUAL: COMPRADORES + VENDEDORES -->
+  <section class="dual-banner">
+
+    <!-- PARA COMPRADORES -->
+    <div class="dual-card dual-buyer">
+      <div class="dual-eyebrow">Para compradores</div>
+      <h2 class="dual-title">Prendas únicas.<br>Precios reales.</h2>
+      <p class="dual-desc">Cada prenda fue elegida y revisada por nuestro equipo antes de entrar al catálogo. Moda de personas reales, para personas reales.</p>
+      <ul class="dual-list">
+        <li><span class="dual-check">✓</span> Prendas en buen estado, verificadas</li>
+        <li><span class="dual-check">✓</span> Precios muy por debajo del retail</li>
+        <li><span class="dual-check">✓</span> Consultá por WhatsApp antes de venir</li>
+        <li><span class="dual-check">✓</span> Renovamos el stock constantemente</li>
+      </ul>
+      <button class="dual-btn dual-btn-buyer" onclick="document.getElementById('catalog').scrollIntoView({behavior:'smooth'})">
+        Ver catálogo ↓
+      </button>
+    </div>
+
+    <!-- DIVISOR -->
+    <div class="dual-divider">
+      <div class="dual-divider-line"></div>
+      <div class="dual-divider-dot">o</div>
+      <div class="dual-divider-line"></div>
+    </div>
+
+    <!-- PARA VENDEDORES -->
+    <div class="dual-card dual-seller">
+      <div class="dual-eyebrow">Para vendedores</div>
+      <h2 class="dual-title">Tu ropa vale.<br>Nosotros la vendemos.</h2>
+      <p class="dual-desc">Tenés ropa que ya no usás? Traénosla. La exponemos en vidriera y online. Cuando se vende, te avisamos y cobrás tu parte.</p>
+      <div class="dual-steps">
+        <div class="dual-step"><span class="dual-step-n">1</span><span>Subís fotos y precio desde el celular</span></div>
+        <div class="dual-step"><span class="dual-step-n">2</span><span>Nosotros la revisamos y publicamos</span></div>
+        <div class="dual-step"><span class="dual-step-n">3</span><span>Te avisamos por WhatsApp cuando se vende</span></div>
+      </div>
+      <button class="dual-btn dual-btn-seller" onclick="showScreen('login')">
+        Quiero vender mis prendas →
+      </button>
+    </div>
+
+  </section>
+
+  <section class="catalog-section" id="catalog">
+    <div class="catalog-header">
+      <div>
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:4px;">Catálogo disponible</h2>
+        <p style="font-size:14px;color:var(--text-muted);">24 prendas en tienda</p>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-chip active" onclick="setFilter(this)">Todo</button>
+        <button class="filter-chip" onclick="setFilter(this)">Mujer</button>
+        <button class="filter-chip" onclick="setFilter(this)">Hombre</button>
+        <button class="filter-chip" onclick="setFilter(this)">Calzado</button>
+        <button class="filter-chip" onclick="setFilter(this)">Accesorios</button>
+      </div>
+    </div>
+    <div class="catalog-grid">
+      <div class="item-card">
+        <div class="item-img-placeholder">👗</div>
+        <div class="item-info">
+          <div class="item-condition">Como nueva</div>
+          <div class="item-name">Vestido floral midi</div>
+          <div class="item-meta">Talle M · Mujer</div>
+          <div class="item-price">$8.500</div>
+          <button class="item-wsp-btn" onclick="event.stopPropagation();showToast('Abriendo WhatsApp: Hola MBDA Modas! Me interesa el Vestido floral midi...')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.56 4.136 1.54 5.87L0 24l6.28-1.512A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.909 0-3.694-.496-5.24-1.364l-.376-.22-3.892.937.977-3.762-.244-.389A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            Quiero esta prenda
+          </button>
+        </div>
+      </div>
+      <div class="item-card">
+        <div class="item-img-placeholder">👖</div>
+        <div class="item-info">
+          <div class="item-condition">Buen estado</div>
+          <div class="item-name">Jeans mom fit</div>
+          <div class="item-meta">Talle 38 · Mujer</div>
+          <div class="item-price">$5.200</div>
+          <button class="item-wsp-btn" onclick="event.stopPropagation();showToast('Abriendo WhatsApp: Hola MBDA Modas! Me interesan los Jeans mom fit...')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.56 4.136 1.54 5.87L0 24l6.28-1.512A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.909 0-3.694-.496-5.24-1.364l-.376-.22-3.892.937.977-3.762-.244-.389A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            Quiero esta prenda
+          </button>
+        </div>
+      </div>
+      <div class="item-card">
+        <div class="item-img-placeholder">🧥</div>
+        <div class="item-info">
+          <div class="item-condition">Nueva sin etiqueta</div>
+          <div class="item-name">Campera de cuero</div>
+          <div class="item-meta">Talle L · Mujer</div>
+          <div class="item-price">$22.000</div>
+          <button class="item-wsp-btn" onclick="event.stopPropagation();showToast('Abriendo WhatsApp: Hola MBDA Modas! Me interesa la Campera de cuero...')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.56 4.136 1.54 5.87L0 24l6.28-1.512A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.909 0-3.694-.496-5.24-1.364l-.376-.22-3.892.937.977-3.762-.244-.389A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            Quiero esta prenda
+          </button>
+        </div>
+      </div>
+      <div class="item-card">
+        <div class="item-img-placeholder">👟</div>
+        <div class="item-info">
+          <div class="item-condition">Como nueva</div>
+          <div class="item-name">Zapatillas blancas</div>
+          <div class="item-meta">Talle 38 · Calzado</div>
+          <div class="item-price">$12.800</div>
+          <button class="item-wsp-btn" onclick="event.stopPropagation();showToast('Abriendo WhatsApp: Hola MBDA Modas! Me interesan las Zapatillas blancas...')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.56 4.136 1.54 5.87L0 24l6.28-1.512A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.909 0-3.694-.496-5.24-1.364l-.376-.22-3.892.937.977-3.762-.244-.389A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            Quiero esta prenda
+          </button>
+        </div>
+      </div>
+      <div class="item-card">
+        <div class="item-img-placeholder">👔</div>
+        <div class="item-info">
+          <div class="item-condition">Buen estado</div>
+          <div class="item-name">Camisa de lino</div>
+          <div class="item-meta">Talle M · Hombre</div>
+          <div class="item-price">$4.900</div>
+          <button class="item-wsp-btn" onclick="event.stopPropagation();showToast('Abriendo WhatsApp: Hola MBDA Modas! Me interesa la Camisa de lino...')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.56 4.136 1.54 5.87L0 24l6.28-1.512A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.909 0-3.694-.496-5.24-1.364l-.376-.22-3.892.937.977-3.762-.244-.389A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            Quiero esta prenda
+          </button>
+        </div>
+      </div>
+      <div class="item-card">
+        <div class="item-img-placeholder">👜</div>
+        <div class="item-info">
+          <div class="item-condition">Nueva con etiqueta</div>
+          <div class="item-name">Cartera bandolera</div>
+          <div class="item-meta">Única · Accesorios</div>
+          <div class="item-price">$9.600</div>
+          <button class="item-wsp-btn" onclick="event.stopPropagation();showToast('Abriendo WhatsApp: Hola MBDA Modas! Me interesa la Cartera bandolera...')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.56 4.136 1.54 5.87L0 24l6.28-1.512A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.909 0-3.694-.496-5.24-1.364l-.376-.22-3.892.937.977-3.762-.244-.389A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            Quiero esta prenda
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="background:var(--cream);border-top:1px solid var(--cream-dark);padding:32px 20px;text-align:center;margin-top:40px;">
+    <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:20px;margin-bottom:6px;color:var(--primary);">MBDA Modas</div>
+    <p style="font-size:14px;color:var(--text-muted);margin-bottom:12px;">Tienda física · Comunidad de moda local</p>
+    <p style="font-size:13px;color:var(--text-muted);">📍 Dirección de la tienda · 📞 +54 9 11 XXXX-XXXX</p>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN 2: LOGIN
+════════════════════════════════════ -->
+<div id="screen-login" class="screen">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" height="36">
+        <text x="6" y="38" font-family="serif" font-weight="700" font-size="34" fill="#1E1914" letter-spacing="1">MBDA</text>
+        <text x="22" y="52" font-family="sans-serif" font-weight="400" font-size="10" fill="#7A7166" letter-spacing="4">MODAS</text>
+      </svg>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="showScreen('home')">← Volver</button>
+  </nav>
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" height="44">
+          <text x="6" y="38" font-family="serif" font-weight="700" font-size="34" fill="#1E1914" letter-spacing="1">MBDA</text>
+          <text x="22" y="52" font-family="sans-serif" font-weight="400" font-size="10" fill="#7A7166" letter-spacing="4">MODAS</text>
+        </svg>
+      </div>
+      <h1 class="auth-title">Bienvenida a MBDA Modas</h1>
+      <p class="auth-subtitle">Ingresá con tu cuenta de Google para empezar a vender tus prendas</p>
+
+      <button class="btn btn-google" onclick="showScreen('dashboard'); showToast('¡Bienvenida! Ingresaste con Google ✓')">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.2l6.8-6.8C35.8 2.5 30.2 0 24 0 14.6 0 6.6 5.4 2.6 13.3l7.9 6.1C12.4 13.2 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.2-.4-4.7H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 6.9-10.1 7.1-17.3z"/><path fill="#FBBC05" d="M10.5 28.5c-.5-1.6-.8-3.2-.8-4.9s.3-3.4.8-4.9l-7.9-6.1C.9 16 0 19.9 0 24s.9 8 2.6 11.4l7.9-6.9z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.3 0-11.6-3.7-13.5-9.4l-7.9 6.9C6.6 42.6 14.6 48 24 48z"/></svg>
+        Continuar con Google
+      </button>
+
+      <p class="auth-terms">Al ingresar aceptás nuestros términos y condiciones. Tu información es manejada de forma segura.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN 3: USER DASHBOARD
+════════════════════════════════════ -->
+<div id="screen-dashboard" class="screen">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" height="36">
+        <text x="6" y="38" font-family="serif" font-weight="700" font-size="34" fill="#1E1914" letter-spacing="1">MBDA</text>
+        <text x="22" y="52" font-family="sans-serif" font-weight="400" font-size="10" fill="#7A7166" letter-spacing="4">MODAS</text>
+      </svg>
+    </div>
+    <div class="navbar-actions">
+      <button class="btn btn-primary btn-sm" onclick="showScreen('submit')">+ Enviar prenda</button>
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--cream);border:1px solid var(--cream-dark);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;">👤</div>
+    </div>
+  </nav>
+
+  <div class="user-nav">
+    <div class="user-nav-item active">Mis solicitudes</div>
+    <div class="user-nav-item" onclick="showToast('Perfil en construcción')">Mi perfil</div>
+  </div>
+
+  <div class="page-content">
+    <div style="margin-bottom:24px;">
+      <h2 class="section-title">¡Hola, María! 👋</h2>
+      <p style="color:var(--text-muted);font-size:15px;">Acá podés ver todas tus solicitudes y el estado de tus prendas.</p>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--yellow)">2</div>
+        <div class="stat-label">En revisión</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--green)">1</div>
+        <div class="stat-label">Aprobadas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--blue)">1</div>
+        <div class="stat-label">En tienda</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--text-muted)">3</div>
+        <div class="stat-label">Vendidas</div>
+      </div>
+    </div>
+
+    <div class="submission-list">
+      <!-- Solicitud 1 -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-weight:700;font-size:16px;">Solicitud #004</div>
+            <div style="font-size:13px;color:var(--text-muted);">Enviada el 20 de marzo · 3 prendas</div>
+          </div>
+          <span class="badge badge-yellow"><span class="dot"></span>Pendiente de revisión</span>
+        </div>
+        <div class="prenda-list">
+          <div class="prenda-row">
+            <div>
+              <div class="prenda-name">👗 Vestido de gala negro</div>
+              <div class="prenda-detail">Talle S · Buen estado · $15.000</div>
+            </div>
+            <span class="badge badge-yellow"><span class="dot"></span>En revisión</span>
+          </div>
+          <div class="prenda-row">
+            <div>
+              <div class="prenda-name">👠 Zapatos de taco</div>
+              <div class="prenda-detail">Talle 37 · Como nueva · $7.500</div>
+            </div>
+            <span class="badge badge-yellow"><span class="dot"></span>En revisión</span>
+          </div>
+          <div class="prenda-row">
+            <div>
+              <div class="prenda-name">👜 Cartera negra pequeña</div>
+              <div class="prenda-detail">Única · Como nueva · $5.000</div>
+            </div>
+            <span class="badge badge-yellow"><span class="dot"></span>En revisión</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Solicitud 2 -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-weight:700;font-size:16px;">Solicitud #003</div>
+            <div style="font-size:13px;color:var(--text-muted);">Enviada el 10 de marzo · 2 prendas</div>
+          </div>
+        </div>
+        <div class="prenda-list">
+          <div class="prenda-row">
+            <div>
+              <div class="prenda-name">🧥 Campera beige</div>
+              <div class="prenda-detail">Talle M · Nueva sin etiqueta · $18.000</div>
+            </div>
+            <span class="badge badge-blue"><span class="dot"></span>En tienda</span>
+          </div>
+          <div class="prenda-row">
+            <div>
+              <div class="prenda-name">👖 Pantalón palazzo</div>
+              <div class="prenda-detail">Talle L · Buen estado · $9.000</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+              <span class="badge badge-red"><span class="dot"></span>No aceptada</span>
+              <span style="font-size:11px;color:var(--text-muted);">Motivo: No aplica a temporada actual</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;text-align:center;">
+      <button class="btn btn-primary" onclick="showScreen('submit')">+ Enviar nueva solicitud</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN 4: SUBMIT WIZARD
+════════════════════════════════════ -->
+<div id="screen-submit" class="screen">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" height="36">
+        <text x="6" y="38" font-family="serif" font-weight="700" font-size="34" fill="#1E1914" letter-spacing="1">MBDA</text>
+        <text x="22" y="52" font-family="sans-serif" font-weight="400" font-size="10" fill="#7A7166" letter-spacing="4">MODAS</text>
+      </svg>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="showScreen('dashboard')">← Volver</button>
+  </nav>
+
+  <div id="wizard-step-1">
+    <div class="wizard-header">
+      <div class="wizard-steps">
+        <div class="wizard-step">
+          <div class="step-circle active">1</div>
+          <span class="step-label active">Datos de la prenda</span>
+        </div>
+        <div class="wizard-step">
+          <div class="step-circle">2</div>
+          <span class="step-label">Condición y precio</span>
+        </div>
+        <div class="wizard-step">
+          <div class="step-circle">3</div>
+          <span class="step-label">Fotos</span>
+        </div>
+      </div>
+    </div>
+    <div class="wizard-body">
+      <h2 class="wizard-title">Contanos sobre tu prenda</h2>
+      <p class="wizard-subtitle">Completá los datos básicos. Podés agregar más prendas al final.</p>
+
+      <div class="prenda-header">
+        <div class="prenda-header-title">Prenda 1</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Nombre de la prenda</label>
+        <input type="text" class="form-input" placeholder="Ej: Campera de cuero marrón" value="Vestido floral midi" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción <span class="optional">(opcional)</span></label>
+        <textarea class="form-input form-textarea" placeholder="Describí el estado, material, marca si tiene...">Vestido floral en tono terracota. Tela liviana, ideal para verano. Comprado hace 6 meses, usado 2 veces.</textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Categoría</label>
+          <select class="form-input form-select">
+            <option value="MUJER" selected>Mujer</option>
+            <option>Hombre</option>
+            <option>Niño/a</option>
+            <option>Calzado</option>
+            <option>Accesorios</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Talle</label>
+          <select class="form-input form-select">
+            <option>XS</option>
+            <option>S</option>
+            <option selected>M</option>
+            <option>L</option>
+            <option>XL</option>
+            <option>XXL</option>
+            <option>Única</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="wizard-footer">
+      <button class="btn btn-secondary" onclick="showScreen('dashboard')">Cancelar</button>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span style="font-size:13px;color:var(--text-muted);">1 de 3</span>
+        <button class="btn btn-primary" onclick="goWizardStep(2)">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="wizard-step-2" style="display:none;">
+    <div class="wizard-header">
+      <div class="wizard-steps">
+        <div class="wizard-step">
+          <div class="step-circle done">✓</div>
+          <span class="step-label done">Datos de la prenda</span>
+        </div>
+        <div class="wizard-step">
+          <div class="step-circle active">2</div>
+          <span class="step-label active">Condición y precio</span>
+        </div>
+        <div class="wizard-step">
+          <div class="step-circle">3</div>
+          <span class="step-label">Fotos</span>
+        </div>
+      </div>
+    </div>
+    <div class="wizard-body">
+      <h2 class="wizard-title">Condición y precio</h2>
+      <p class="wizard-subtitle">Sé honesta con el estado de la prenda. Esto ayuda a que el equipo la evalúe correctamente.</p>
+
+      <div class="form-group">
+        <label class="form-label">¿En qué condición está?</label>
+        <select class="form-input form-select">
+          <option>Nueva con etiqueta</option>
+          <option>Nueva sin etiqueta</option>
+          <option selected>Como nueva (usada 1-2 veces)</option>
+          <option>Buen estado</option>
+          <option>Uso moderado</option>
+          <option>Uso intenso</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Cantidad de unidades</label>
+          <input type="number" class="form-input" value="1" min="1" />
+          <p class="form-hint">Si tenés varios del mismo artículo</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Precio de venta deseado</label>
+          <input type="number" class="form-input" placeholder="Ej: 8500" value="8500" />
+          <p class="form-hint">El precio al que querés venderla</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Precio mínimo <span class="optional">(opcional)</span></label>
+        <input type="number" class="form-input" placeholder="Ej: 6000" value="6000" />
+        <p class="form-hint">Precio mínimo que aceptás en caso de promoción o liquidación</p>
+      </div>
+
+      <div style="background:var(--cream);border:1px solid var(--cream-dark);border-radius:var(--radius-sm);padding:14px;font-size:14px;color:var(--text-muted);margin-top:8px;">
+        💡 <strong>¿Querés agregar otra prenda?</strong> Podés hacerlo en el siguiente paso antes de enviar la solicitud.
+      </div>
+    </div>
+    <div class="wizard-footer">
+      <button class="btn btn-secondary" onclick="goWizardStep(1)">← Anterior</button>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span style="font-size:13px;color:var(--text-muted);">2 de 3</span>
+        <button class="btn btn-primary" onclick="goWizardStep(3)">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="wizard-step-3" style="display:none;">
+    <div class="wizard-header">
+      <div class="wizard-steps">
+        <div class="wizard-step">
+          <div class="step-circle done">✓</div>
+          <span class="step-label done">Datos de la prenda</span>
+        </div>
+        <div class="wizard-step">
+          <div class="step-circle done">✓</div>
+          <span class="step-label done">Condición y precio</span>
+        </div>
+        <div class="wizard-step">
+          <div class="step-circle active">3</div>
+          <span class="step-label active">Fotos</span>
+        </div>
+      </div>
+    </div>
+    <div class="wizard-body">
+      <h2 class="wizard-title">Agregá fotos de la prenda</h2>
+      <p class="wizard-subtitle">Cuantas mejores fotos, más chances de que se venda. Podés subir hasta 5 fotos por prenda.</p>
+
+      <div class="photo-zone" onclick="showToast('En la versión real: seleccioná fotos desde tu teléfono o computadora')">
+        <div class="photo-zone-icon">📷</div>
+        <div class="photo-zone-title">Tocá para agregar fotos</div>
+        <div class="photo-zone-hint">JPG o PNG · hasta 5 fotos · máximo 5 MB cada una</div>
+      </div>
+      <div class="photo-previews">
+        <div class="photo-thumb">👗<div class="photo-thumb-remove" onclick="showToast('Foto eliminada')">✕</div></div>
+        <div class="photo-thumb">👗<div class="photo-thumb-remove">✕</div></div>
+        <div class="photo-thumb" style="border:2px dashed var(--border);cursor:pointer;" onclick="showToast('Agregar más fotos')">+</div>
+      </div>
+
+      <hr class="item-divider" />
+
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-size:15px;font-weight:600;">¿Tenés más prendas para enviar?</div>
+          <div style="font-size:13px;color:var(--text-muted);">Las mandamos todas juntas en una sola solicitud</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="showToast('Prenda 2 agregada ✓')">+ Agregar otra prenda</button>
+      </div>
+    </div>
+    <div class="wizard-footer">
+      <button class="btn btn-secondary" onclick="goWizardStep(2)">← Anterior</button>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span style="font-size:13px;color:var(--text-muted);">3 de 4</span>
+        <button class="btn btn-primary" onclick="goWizardStep(4)">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="wizard-step-4" style="display:none;">
+    <div class="wizard-header">
+      <div class="wizard-steps">
+        <div class="wizard-step"><div class="step-circle done">✓</div><span class="step-label done">Datos</span></div>
+        <div class="wizard-step"><div class="step-circle done">✓</div><span class="step-label done">Condición y precio</span></div>
+        <div class="wizard-step"><div class="step-circle done">✓</div><span class="step-label done">Fotos</span></div>
+        <div class="wizard-step"><div class="step-circle active">4</div><span class="step-label active">Confirmación</span></div>
+      </div>
+    </div>
+    <div class="wizard-body">
+      <h2 class="wizard-title">Revisá y confirmá tu solicitud</h2>
+      <p class="wizard-subtitle">Antes de enviar, leé y aceptá los términos del acuerdo de consignación con MBDA Modas.</p>
+
+      <!-- Resumen -->
+      <div style="background:var(--cream);border:1px solid var(--cream-dark);border-radius:var(--radius);padding:18px;margin-bottom:24px;">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">Resumen de tu solicitud</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--cream-dark);">
+          <div>
+            <div style="font-weight:600;font-size:15px;">👗 Vestido floral midi</div>
+            <div style="font-size:13px;color:var(--text-muted);">Talle M · Como nueva · $8.500</div>
+          </div>
+          <span class="badge badge-yellow"><span class="dot"></span>Pendiente de revisión</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-muted);padding-top:12px;">
+          <span>Comisión de la tienda</span>
+          <span style="font-weight:600;color:var(--text);">A confirmar por el equipo</span>
+        </div>
+      </div>
+
+      <!-- Términos y condiciones -->
+      <div style="background:white;border:1.5px solid var(--cream-dark);border-radius:var(--radius);padding:20px;margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px;">📄 Términos y condiciones</div>
+        <p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:12px;">Al enviar esta solicitud, aceptás el Acuerdo de Consignación de MBDA Modas. Entre otras cuestiones, este acuerdo establece que la tienda <strong>no se responsabiliza</strong> por daños, manchas, robo o extravío de las prendas mientras estén en el local, y que las prendas no vendidas pueden ser retiradas en el plazo acordado.</p>
+        <a href="#" onclick="showScreen('terms');return false;" style="font-size:13px;font-weight:600;color:var(--primary);text-decoration:underline;">Leer los Términos y Condiciones completos →</a>
+      </div>
+
+      <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:4px 0;" id="terms-label">
+        <input type="checkbox" id="terms-check" onchange="toggleSubmitBtn()" style="width:18px;height:18px;accent-color:var(--primary);flex-shrink:0;margin-top:2px;" />
+        <span style="font-size:14px;line-height:1.5;">Leí y acepto los <a href="#" onclick="showScreen('terms');return false;" style="color:var(--primary);font-weight:600;text-decoration:underline;">Términos y Condiciones</a> del acuerdo de consignación con MBDA Modas.</span>
+      </label>
+    </div>
+    <div class="wizard-footer">
+      <button class="btn btn-secondary" onclick="goWizardStep(3)">← Anterior</button>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span style="font-size:13px;color:var(--text-muted);">Último paso</span>
+        <button id="submit-btn" class="btn btn-primary" onclick="submitForm()" disabled style="opacity:0.4;cursor:not-allowed;">Enviar solicitud →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="wizard-confirm" style="display:none;">
+    <div class="confirmation-page">
+      <div class="confirm-icon">🎉</div>
+      <h2 class="confirm-title">¡Solicitud enviada!</h2>
+      <p class="confirm-desc">Recibimos tu solicitud con 1 prenda. El equipo de MBDA Modas la va a revisar y te avisamos por WhatsApp en las próximas 48hs.</p>
+      <button class="btn btn-primary" onclick="showScreen('dashboard')">Ver mis solicitudes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN 5: ADMIN DASHBOARD
+════════════════════════════════════ -->
+<div id="screen-admin" class="screen">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <div class="navbar-logo">M</div>
+      <div class="navbar-name">MBDA <span>Modas</span> <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:6px;">· Admin</span></div>
+    </div>
+    <div class="navbar-actions">
+      <button class="btn btn-secondary btn-sm" onclick="showScreen('home')">Ver sitio</button>
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--cream);border:1px solid var(--cream-dark);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--primary);">A</div>
+    </div>
+  </nav>
+
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="sidebar-item active">📊 Dashboard</div>
+      <div class="sidebar-item" onclick="showScreen('review')">
+        📋 Solicitudes
+        <span class="sidebar-badge">4</span>
+      </div>
+      <div class="sidebar-item" onclick="showToast('Catálogo')">🏷️ Catálogo</div>
+      <div class="sidebar-item" onclick="showToast('Usuarios')">👥 Usuarios</div>
+      <div class="sidebar-item" onclick="showToast('Tiendas')">🏪 Tiendas</div>
+    </aside>
+
+    <main class="admin-main">
+      <div class="admin-title">Panel de administración</div>
+      <div class="admin-subtitle">MBDA Modas · Marzo 2026</div>
+
+      <div class="stats-grid">
+        <div class="stat-big" style="border-top:3px solid var(--yellow);">
+          <div class="stat-big-num" style="color:var(--yellow);">4</div>
+          <div class="stat-big-label">⏳ Pendientes de revisión</div>
+        </div>
+        <div class="stat-big" style="border-top:3px solid var(--blue);">
+          <div class="stat-big-num" style="color:var(--blue);">12</div>
+          <div class="stat-big-label">🏷️ Prendas en tienda</div>
+        </div>
+        <div class="stat-big" style="border-top:3px solid var(--green);">
+          <div class="stat-big-num" style="color:var(--green);">8</div>
+          <div class="stat-big-label">✅ Vendidas este mes</div>
+        </div>
+        <div class="stat-big" style="border-top:3px solid var(--primary);">
+          <div class="stat-big-num" style="color:var(--primary);">23</div>
+          <div class="stat-big-label">👥 Vendedores activos</div>
+        </div>
+      </div>
+
+      <div class="submissions-table">
+        <div class="table-header">
+          <div style="font-weight:700;font-size:15px;">Solicitudes pendientes</div>
+          <button class="btn btn-secondary btn-sm" onclick="showScreen('review')">Ver todas</button>
+        </div>
+        <div class="table-row" onclick="showScreen('review')">
+          <div class="row-avatar">👤</div>
+          <div>
+            <div class="row-name">María González</div>
+            <div class="row-sub">3 prendas · hace 2 horas</div>
+          </div>
+          <span class="badge badge-yellow" style="margin-left:auto;margin-right:10px;"><span class="dot"></span>Pendiente</span>
+          <button class="btn btn-primary btn-sm">Revisar</button>
+        </div>
+        <div class="table-row" onclick="showScreen('review')">
+          <div class="row-avatar">👤</div>
+          <div>
+            <div class="row-name">Laura Martínez</div>
+            <div class="row-sub">1 prenda · hace 5 horas</div>
+          </div>
+          <span class="badge badge-yellow" style="margin-left:auto;margin-right:10px;"><span class="dot"></span>Pendiente</span>
+          <button class="btn btn-primary btn-sm">Revisar</button>
+        </div>
+        <div class="table-row" onclick="showScreen('review')">
+          <div class="row-avatar">👤</div>
+          <div>
+            <div class="row-name">Sofía Romero</div>
+            <div class="row-sub">2 prendas · hace 1 día</div>
+          </div>
+          <span class="badge badge-yellow" style="margin-left:auto;margin-right:10px;"><span class="dot"></span>Pendiente</span>
+          <button class="btn btn-primary btn-sm">Revisar</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN 6: ADMIN REVIEW
+════════════════════════════════════ -->
+<div id="screen-review" class="screen">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" height="36">
+        <text x="6" y="38" font-family="serif" font-weight="700" font-size="34" fill="#1E1914" letter-spacing="1">MBDA</text>
+        <text x="22" y="52" font-family="sans-serif" font-weight="400" font-size="10" fill="#7A7166" letter-spacing="4">MODAS</text>
+      </svg>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="showScreen('admin')">← Volver al panel</button>
+  </nav>
+
+  <div class="review-body">
+    <div style="margin-bottom:20px;">
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px;">Solicitud #004 · 20 de marzo de 2026</div>
+      <h2 style="font-size:22px;font-weight:700;">Revisión de solicitud</h2>
+    </div>
+
+    <!-- Seller info -->
+    <div class="seller-info">
+      <div class="seller-avatar">👤</div>
+      <div style="flex:1;">
+        <div class="seller-name">María González</div>
+        <div class="seller-contact">maria@gmail.com · +54 9 11 5555-4444</div>
+      </div>
+      <span class="badge badge-yellow"><span class="dot"></span>3 prendas pendientes</span>
+    </div>
+
+    <!-- Prenda 1 -->
+    <div class="review-prenda">
+      <div class="review-prenda-header">
+        <div style="font-weight:700;font-size:15px;">Prenda 1 — Vestido de gala negro</div>
+        <span class="badge badge-yellow"><span class="dot"></span>En revisión</span>
+      </div>
+      <div class="review-prenda-body">
+        <div>
+          <div class="review-photos">
+            <div class="review-photo">👗</div>
+            <div class="review-photo">👗</div>
+            <div class="review-photo">👗</div>
+            <div class="review-photo" style="border:2px dashed var(--border);font-size:14px;color:var(--text-muted);">+2 más</div>
+          </div>
+        </div>
+        <div class="review-details">
+          <div class="detail-row">
+            <span class="detail-label">Descripción</span>
+            <span class="detail-value">Vestido de gala negro, corte A, tela satinada. Usado 1 vez en una boda.</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="detail-row">
+              <span class="detail-label">Categoría</span>
+              <span class="detail-value">Mujer</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Talle</span>
+              <span class="detail-value">S</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Condición</span>
+              <span class="detail-value">Como nueva</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Cantidad</span>
+              <span class="detail-value">1 unidad</span>
+            </div>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Precio solicitado</span>
+            <span class="detail-price">$15.000</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Precio mínimo</span>
+            <span class="detail-value" style="color:var(--text-muted);">$10.000</span>
+          </div>
+          <div class="commission-box">
+            Comisión de la tienda: <strong>30%</strong> → Vendedora recibe <strong>$10.500</strong>
+          </div>
+        </div>
+      </div>
+      <div class="action-panel">
+        <button class="btn btn-green" onclick="approveItem(this)">✓ Aprobar prenda</button>
+        <button class="btn btn-red btn-sm" onclick="rejectItem(this)">✕ Rechazar</button>
+        <div id="wsp-area-1" style="display:none;margin-left:auto;">
+          <button class="wsp-btn" onclick="showToast('Abriendo WhatsApp con mensaje pre-armado ✓')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.56 4.136 1.54 5.87L0 24l6.28-1.512A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.909 0-3.694-.496-5.24-1.364l-.376-.22-3.892.937.977-3.762-.244-.389A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            Notificar por WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prenda 2 -->
+    <div class="review-prenda">
+      <div class="review-prenda-header">
+        <div style="font-weight:700;font-size:15px;">Prenda 2 — Zapatos de taco</div>
+        <span class="badge badge-yellow"><span class="dot"></span>En revisión</span>
+      </div>
+      <div class="review-prenda-body">
+        <div>
+          <div class="review-photos">
+            <div class="review-photo">👠</div>
+            <div class="review-photo">👠</div>
+          </div>
+        </div>
+        <div class="review-details">
+          <div class="detail-row">
+            <span class="detail-label">Descripción</span>
+            <span class="detail-value">Zapatos de taco 8cm color nude, muy poco uso.</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="detail-row"><span class="detail-label">Categoría</span><span class="detail-value">Calzado</span></div>
+            <div class="detail-row"><span class="detail-label">Talle</span><span class="detail-value">37</span></div>
+            <div class="detail-row"><span class="detail-label">Condición</span><span class="detail-value">Como nueva</span></div>
+            <div class="detail-row"><span class="detail-label">Cantidad</span><span class="detail-value">1 par</span></div>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Precio solicitado</span>
+            <span class="detail-price">$7.500</span>
+          </div>
+          <div class="commission-box">
+            Comisión de la tienda: <strong>30%</strong> → Vendedora recibe <strong>$5.250</strong>
+          </div>
+        </div>
+      </div>
+      <div class="action-panel">
+        <button class="btn btn-green" onclick="approveItem(this)">✓ Aprobar prenda</button>
+        <button class="btn btn-red btn-sm" onclick="rejectItem(this)">✕ Rechazar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SCREEN: TÉRMINOS Y CONDICIONES
+════════════════════════════════════ -->
+<div id="screen-terms" class="screen">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" height="36">
+        <text x="6" y="38" font-family="serif" font-weight="700" font-size="34" fill="#1E1914" letter-spacing="1">MBDA</text>
+        <text x="22" y="52" font-family="sans-serif" font-weight="400" font-size="10" fill="#7A7166" letter-spacing="4">MODAS</text>
+      </svg>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="history.back ? history.back() : showScreen('submit')">← Volver</button>
+  </nav>
+
+  <div style="max-width:760px;margin:0 auto;padding:40px 20px 60px;">
+
+    <div style="text-align:center;margin-bottom:36px;">
+      <div style="font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;">Documento legal</div>
+      <h1 style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;margin-bottom:8px;">Términos y Condiciones</h1>
+      <p style="font-size:14px;color:var(--text-muted);">Acuerdo de Consignación — MBDA Modas<br>Última actualización: Marzo 2026</p>
+    </div>
+
+    <div class="terms-body">
+
+      <div class="terms-alert">
+        <strong>Importante:</strong> Al enviar una solicitud de consignación, la persona usuaria declara haber leído, comprendido y aceptado íntegramente los presentes Términos y Condiciones. La aceptación queda registrada con fecha y hora en nuestros sistemas como evidencia del consentimiento prestado.
+      </div>
+
+      <h2 class="terms-h2">1. Naturaleza del acuerdo</h2>
+      <p class="terms-p">El presente instrumento regula la relación jurídica entre <strong>MBDA Modas</strong> (en adelante, "la Tienda") y la persona que entrega prendas para su comercialización (en adelante, "el/la Consignante"), en el marco de un <strong>contrato de consignación mercantil</strong> conforme a los artículos 1335 a 1344 del Código Civil y Comercial de la Nación Argentina (Ley 26.994).</p>
+      <p class="terms-p">En virtud de este acuerdo, el/la Consignante entrega bienes de su propiedad a la Tienda para que esta los ofrezca en venta en su local físico y/o catálogo digital, actuando la Tienda como intermediaria y percibiendo una comisión por cada venta efectivamente concretada. <strong>La propiedad de las prendas no se transfiere a la Tienda</strong>; el/la Consignante conserva la titularidad hasta que opere la venta.</p>
+
+      <h2 class="terms-h2">2. Proceso de admisión de prendas</h2>
+      <p class="terms-p">2.1. La entrega de prendas se inicia mediante el formulario digital disponible en la plataforma. La Tienda evaluará cada prenda y notificará su decisión de aprobación o rechazo dentro de un plazo razonable.</p>
+      <p class="terms-p">2.2. La Tienda se reserva el derecho de <strong>rechazar prendas</strong> sin expresión de causa, especialmente aquellas que presenten daños graves, no respondan a los estándares de calidad del local, o correspondan a categorías que la Tienda no comercialice en ese momento.</p>
+      <p class="terms-p">2.3. La aprobación de una prenda no garantiza su venta en ningún plazo determinado.</p>
+
+      <h2 class="terms-h2">3. Precio, comisión y liquidación</h2>
+      <p class="terms-p">3.1. El/la Consignante establece el precio de venta deseado y, de manera opcional, un precio mínimo. La Tienda podrá ofrecer descuentos o promociones siempre que el precio final no sea inferior al precio mínimo informado.</p>
+      <p class="terms-p">3.2. La Tienda percibirá una <strong>comisión</strong> sobre el precio de venta final, cuyo porcentaje será informado al momento de la aprobación de cada prenda.</p>
+      <p class="terms-p">3.3. El pago al/la Consignante se realizará una vez concretada y confirmada la venta. El/la Consignante deberá pasar por el local físico a cobrar su parte, previa notificación de la Tienda.</p>
+      <p class="terms-p">3.4. No se realizarán transferencias bancarias ni pagos por medios electrónicos salvo acuerdo expreso y por escrito con la Tienda.</p>
+
+      <h2 class="terms-h2">4. Responsabilidad por daños, pérdida y robo</h2>
+      <p class="terms-p">4.1. <strong>La Tienda no asume responsabilidad alguna</strong> por daños, manchas, roturas, deterioro, pérdida o robo de las prendas consignadas durante su permanencia en el local, ya sea como consecuencia de caso fortuito, fuerza mayor, actos de terceros o cualquier otra circunstancia imprevista.</p>
+      <p class="terms-p">4.2. En particular, y a modo enunciativo, la Tienda queda eximida de responsabilidad ante:</p>
+      <ul class="terms-ul">
+        <li>Manchas o deterioro producido por contacto con otras prendas, probadores o exhibición en vidriera</li>
+        <li>Robo, hurto simple o agravado, por parte de clientes, terceros o personal</li>
+        <li>Pérdida por incendio, inundación, accidente fortuito u otro evento de fuerza mayor</li>
+        <li>Decoloración por exposición a la luz solar en vidriera</li>
+        <li>Deterioro propio del paso del tiempo durante la consignación</li>
+        <li>Daños producidos durante el manipuleo habitual de exhibición y venta</li>
+      </ul>
+      <p class="terms-p">4.3. El/la Consignante reconoce estos riesgos y acepta que la Tienda actúa como depositaria a título gratuito en relación a los bienes no vendidos, sin obligación de custodia especial o aseguramiento.</p>
+
+      <h2 class="terms-h2">5. Plazo de consignación y devolución</h2>
+      <p class="terms-p">5.1. Las prendas podrán permanecer consignadas por un plazo de <strong>noventa (90) días corridos</strong> desde la fecha de aprobación, renovables de común acuerdo.</p>
+      <p class="terms-p">5.2. Vencido dicho plazo sin haberse concretado la venta, el/la Consignante deberá retirar la/s prenda/s dentro de los <strong>quince (15) días hábiles</strong> siguientes a la notificación por WhatsApp o por cualquier medio fehaciente.</p>
+      <p class="terms-p">5.3. Transcurrido ese período adicional sin que el/la Consignante retire las prendas, la Tienda podrá donarlo a una institución de beneficencia sin obligación de compensación alguna, debiendo notificarlo previamente.</p>
+      <p class="terms-p">5.4. El/la Consignante podrá solicitar la devolución anticipada de sus prendas con un preaviso de <strong>48 horas</strong> y siempre que la prenda no esté comprometida en una negociación en curso.</p>
+
+      <h2 class="terms-h2">6. Declaración de titularidad y estado de las prendas</h2>
+      <p class="terms-p">6.1. El/la Consignante declara bajo responsabilidad que es el/la legítimo/a propietario/a de las prendas entregadas o cuenta con autorización expresa del titular para consignarlas.</p>
+      <p class="terms-p">6.2. El/la Consignante declara que las prendas no son objeto de litigio, embargo, prenda, ni gravamen de ninguna especie.</p>
+      <p class="terms-p">6.3. El/la Consignante garantiza que el estado real de las prendas coincide con la condición declarada en el formulario. En caso de discrepancia grave, la Tienda podrá rechazar la prenda al momento de su recepción física.</p>
+      <p class="terms-p">6.4. Ante cualquier reclamo de terceros sobre la propiedad de las prendas consignadas, el/la Consignante asumirá plena responsabilidad civil y penal, manteniendo indemne a la Tienda.</p>
+
+      <h2 class="terms-h2">7. Uso de imágenes y datos de las prendas</h2>
+      <p class="terms-p">7.1. El/la Consignante autoriza expresamente a la Tienda a utilizar las fotos y descripciones de las prendas consignadas para su publicación en el catálogo digital, redes sociales, y cualquier material de difusión de MBDA Modas, durante el período de consignación.</p>
+      <p class="terms-p">7.2. Dicha autorización es gratuita, no exclusiva y finaliza automáticamente al retiro de la prenda o su venta.</p>
+
+      <h2 class="terms-h2">8. Protección de datos personales</h2>
+      <p class="terms-p">8.1. Los datos personales del/la Consignante serán tratados conforme a la <strong>Ley 25.326 de Protección de Datos Personales</strong> de la República Argentina y su normativa reglamentaria.</p>
+      <p class="terms-p">8.2. Los datos serán utilizados exclusivamente para la gestión del acuerdo de consignación, notificaciones sobre el estado de las prendas y comunicaciones relacionadas con la plataforma.</p>
+      <p class="terms-p">8.3. El/la Consignante tiene derecho a acceder, rectificar y suprimir sus datos personales de conformidad con la legislación vigente, contactando a la Tienda por los medios disponibles.</p>
+      <p class="terms-p">8.4. La Tienda se compromete a no ceder ni vender datos personales a terceros con fines comerciales.</p>
+
+      <h2 class="terms-h2">9. Modificaciones a los términos</h2>
+      <p class="terms-p">9.1. La Tienda podrá modificar los presentes Términos y Condiciones con un preaviso mínimo de <strong>15 días</strong>, notificando al/la Consignante por el medio de contacto registrado.</p>
+      <p class="terms-p">9.2. La continuación en el uso de la plataforma y/o el envío de nuevas solicitudes de consignación después del vencimiento del preaviso implica la aceptación de los nuevos términos.</p>
+
+      <h2 class="terms-h2">10. Jurisdicción y resolución de conflictos</h2>
+      <p class="terms-p">10.1. Ante cualquier controversia derivada del presente acuerdo, las partes se comprometen a intentar resolverla en primer lugar mediante el diálogo directo. En caso de no arribar a un acuerdo, se someterán al proceso de <strong>mediación prejudicial obligatoria</strong> conforme a la Ley 26.589.</p>
+      <p class="terms-p">10.2. Si la mediación fracasare, las partes se someten a la jurisdicción de los <strong>Tribunales Ordinarios de la República Argentina</strong>, renunciando a cualquier otro fuero o jurisdicción que pudiera corresponderles.</p>
+      <p class="terms-p">10.3. Para todos los efectos legales, la Tienda constituye domicilio en el domicilio de su local físico debidamente inscripto.</p>
+
+      <h2 class="terms-h2">11. Disposiciones finales</h2>
+      <p class="terms-p">11.1. La nulidad de alguna de las cláusulas del presente acuerdo no afectará la validez de las restantes.</p>
+      <p class="terms-p">11.2. El presente acuerdo constituye el entendimiento completo entre las partes en relación con su objeto y reemplaza cualquier entendimiento anterior, verbal o escrito.</p>
+      <p class="terms-p">11.3. La no exigencia en algún momento del cumplimiento de cualquier disposición del presente acuerdo no será interpretada como renuncia al derecho de exigirla en el futuro.</p>
+
+      <div class="terms-footer-box">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">¿Tenés dudas sobre estos términos?</p>
+        <p style="font-size:13px;">Podés contactarnos por WhatsApp antes de enviar tu solicitud. Estamos para ayudarte.</p>
+      </div>
+
+    </div>
+
+    <div style="text-align:center;margin-top:32px;">
+      <button class="btn btn-primary" style="padding:13px 28px;" onclick="showScreen('submit');goWizardStep(4);">← Volver al formulario</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script>
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+    document.querySelectorAll('.demo-btn').forEach(b => {
+      if (b.getAttribute('onclick')?.includes("'" + name + "'")) b.classList.add('active');
+    });
+    window.scrollTo(0, 0);
+    // Reset wizard when entering submit
+    if (name === 'submit') {
+      showWizardStep(1);
+    }
+  }
+
+  function setFilter(el) {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function goWizardStep(n) {
+    showWizardStep(n);
+  }
+
+  function showWizardStep(n) {
+    ['1','2','3','4','confirm'].forEach(s => {
+      const el = document.getElementById('wizard-step-' + s) || document.getElementById('wizard-' + s);
+      if (el) el.style.display = 'none';
+    });
+    const target = document.getElementById('wizard-step-' + n) || document.getElementById('wizard-' + n);
+    if (target) target.style.display = 'block';
+    // Reset checkbox when entering step 4
+    if (n === 4) {
+      const cb = document.getElementById('terms-check');
+      if (cb) { cb.checked = false; toggleSubmitBtn(); }
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function toggleSubmitBtn() {
+    const cb = document.getElementById('terms-check');
+    const btn = document.getElementById('submit-btn');
+    if (!cb || !btn) return;
+    if (cb.checked) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+    } else {
+      btn.disabled = true;
+      btn.style.opacity = '0.4';
+      btn.style.cursor = 'not-allowed';
+    }
+  }
+
+  function submitForm() {
+    document.getElementById('wizard-step-4').style.display = 'none';
+    document.getElementById('wizard-confirm').style.display = 'block';
+    window.scrollTo(0, 0);
+  }
+
+  function approveItem(btn) {
+    const panel = btn.closest('.action-panel');
+    const header = btn.closest('.review-prenda').querySelector('.review-prenda-header .badge');
+    header.className = 'badge badge-green';
+    header.innerHTML = '<span class="dot"></span>Aprobada ✓';
+    panel.innerHTML = `
+      <span class="badge badge-green" style="font-size:14px;padding:8px 14px;">✓ Prenda aprobada</span>
+      <button class="wsp-btn" style="margin-left:auto;" onclick="showToast('Abriendo WhatsApp: Tu prenda fue aprobada por MBDA Modas ✓')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.56 4.136 1.54 5.87L0 24l6.28-1.512A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.909 0-3.694-.496-5.24-1.364l-.376-.22-3.892.937.977-3.762-.244-.389A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+        Notificar por WhatsApp
+      </button>`;
+    showToast('✓ Prenda aprobada. Botón de WhatsApp listo.');
+  }
+
+  function rejectItem(btn) {
+    const panel = btn.closest('.action-panel');
+    const header = btn.closest('.review-prenda').querySelector('.review-prenda-header .badge');
+    header.className = 'badge badge-red';
+    header.innerHTML = '<span class="dot"></span>No aceptada';
+    panel.innerHTML = `
+      <span class="badge badge-red" style="font-size:14px;padding:8px 14px;">✕ No aceptada</span>
+      <span style="font-size:13px;color:var(--text-muted);">Motivo: No aplica a la temporada actual</span>
+      <button class="wsp-btn" style="margin-left:auto;" onclick="showToast('Abriendo WhatsApp: Motivo de rechazo enviado ✓')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.56 4.136 1.54 5.87L0 24l6.28-1.512A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.909 0-3.694-.496-5.24-1.364l-.376-.22-3.892.937.977-3.762-.244-.389A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+        Notificar por WhatsApp
+      </button>`;
+    showToast('Prenda rechazada. Botón de WhatsApp listo.');
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  }
+</script>
+</body>
+</html>
