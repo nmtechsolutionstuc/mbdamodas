@@ -15,6 +15,8 @@ import { SubmissionDetailPage } from './pages/user/SubmissionDetailPage'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { AdminSubmissionsPage } from './pages/admin/AdminSubmissionsPage'
 import { AdminSubmissionDetailPage } from './pages/admin/AdminSubmissionDetailPage'
+import { AdminStoresPage } from './pages/admin/AdminStoresPage'
+import { TermsPage } from './pages/public/TermsPage'
 
 function App() {
   return (
@@ -24,6 +26,7 @@ function App() {
           {/* Públicas */}
           <Route path="/" element={<HomePage />} />
           <Route path="/item/:id" element={<ItemDetailPage />} />
+          <Route path="/terminos-y-condiciones" element={<TermsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/callback" element={<GoogleCallbackPage />} />
 
@@ -40,7 +43,7 @@ function App() {
           <Route path="/admin/solicitudes/:id" element={<AdminRoute><AdminSubmissionDetailPage /></AdminRoute>} />
           <Route path="/admin/catalogo" element={<AdminRoute><div style={{ padding: '2rem' }}>Catálogo admin — próximamente</div></AdminRoute>} />
           <Route path="/admin/usuarios" element={<AdminRoute><div style={{ padding: '2rem' }}>Usuarios admin — próximamente</div></AdminRoute>} />
-          <Route path="/admin/tiendas" element={<AdminRoute><div style={{ padding: '2rem' }}>Tiendas admin — próximamente</div></AdminRoute>} />
+          <Route path="/admin/tiendas" element={<AdminRoute><AdminStoresPage /></AdminRoute>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

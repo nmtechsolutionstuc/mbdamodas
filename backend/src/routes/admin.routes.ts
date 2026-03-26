@@ -8,6 +8,7 @@ import {
   listUsers, deactivateUser,
   getDashboardStats,
 } from '../controllers/admin.controller'
+import { listStores, createStore, updateStore } from '../controllers/store.controller'
 
 const router = Router()
 
@@ -35,5 +36,10 @@ router.delete('/catalog/:id', softDeleteCatalogItem)
 // Usuarios
 router.get('/users', listUsers)
 router.patch('/users/:id/deactivate', deactivateUser)
+
+// Tiendas
+router.get('/stores', listStores)
+router.post('/stores', createStore)
+router.patch('/stores/:id', updateStore)
 
 export default router
