@@ -4,7 +4,7 @@ import { authorize } from '../middlewares/authorize'
 import {
   listSubmissions, getSubmission,
   approve, reject, markInStore, markSold, markReturned,
-  editCatalogItem, softDeleteCatalogItem,
+  listCatalog, editCatalogItem, softDeleteCatalogItem,
   listUsers, deactivateUser,
   getDashboardStats,
 } from '../controllers/admin.controller'
@@ -30,6 +30,7 @@ router.patch('/items/:itemId/mark-sold', markSold)
 router.patch('/items/:itemId/mark-returned', markReturned)
 
 // Catálogo (Items aprobados)
+router.get('/catalog', listCatalog)
 router.patch('/catalog/:id', editCatalogItem)
 router.delete('/catalog/:id', softDeleteCatalogItem)
 

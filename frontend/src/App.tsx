@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { AdminRoute } from './routes/AdminRoute'
+import { Navbar } from './components/layout/Navbar'
 import { LoginPage } from './pages/auth/LoginPage'
 import { GoogleCallbackPage } from './pages/auth/GoogleCallbackPage'
 import { HomePage } from './pages/public/HomePage'
@@ -16,12 +17,15 @@ import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { AdminSubmissionsPage } from './pages/admin/AdminSubmissionsPage'
 import { AdminSubmissionDetailPage } from './pages/admin/AdminSubmissionDetailPage'
 import { AdminStoresPage } from './pages/admin/AdminStoresPage'
+import { AdminCatalogPage } from './pages/admin/AdminCatalogPage'
+import { AdminUsersPage } from './pages/admin/AdminUsersPage'
 import { TermsPage } from './pages/public/TermsPage'
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <Navbar />
         <Routes>
           {/* Públicas */}
           <Route path="/" element={<HomePage />} />
@@ -41,8 +45,8 @@ function App() {
           <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
           <Route path="/admin/solicitudes" element={<AdminRoute><AdminSubmissionsPage /></AdminRoute>} />
           <Route path="/admin/solicitudes/:id" element={<AdminRoute><AdminSubmissionDetailPage /></AdminRoute>} />
-          <Route path="/admin/catalogo" element={<AdminRoute><div style={{ padding: '2rem' }}>Catálogo admin — próximamente</div></AdminRoute>} />
-          <Route path="/admin/usuarios" element={<AdminRoute><div style={{ padding: '2rem' }}>Usuarios admin — próximamente</div></AdminRoute>} />
+          <Route path="/admin/catalogo" element={<AdminRoute><AdminCatalogPage /></AdminRoute>} />
+          <Route path="/admin/usuarios" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
           <Route path="/admin/tiendas" element={<AdminRoute><AdminStoresPage /></AdminRoute>} />
         </Routes>
       </AuthProvider>

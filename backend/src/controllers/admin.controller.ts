@@ -81,6 +81,31 @@ export async function softDeleteCatalogItem(req: Request, res: Response): Promis
   }
 }
 
+export async function listCatalog(req: Request, res: Response): Promise<void> {
+  const page = req.query.page ? parseInt(req.query.page as string, 10) : 1
+  const limit = 20
+  const skip = (page - 1) * limit
+
+  const [items, total] = await prisma.$transaction([
+    prisma.item.findMany({
+      skip,
+      take: limit,
+      orderBy: { submissionItem: { updatedAt: 'desc' } },
+      include: {
+        photos: { orderBy: { order: 'asc' } },
+        submissionItem: {
+          select: {
+            status: true,
+            submission: { select: { seller: { select: { firstName: true, lastName: true, phone: true } } } },
+          },
+        },
+      },
+    }),
+    prisma.item.count(),
+  ])
+  ok(res, items, { page, limit, total })
+}
+
 export async function listUsers(req: Request, res: Response): Promise<void> {
   const page = req.query.page ? parseInt(req.query.page as string, 10) : 1
   const limit = 20
@@ -96,7 +121,10 @@ export async function listUsers(req: Request, res: Response): Promise<void> {
     : {}
 
   const [users, total] = await prisma.$transaction([
-    prisma.user.findMany({ where, skip, take: limit, orderBy: { createdAt: 'desc' }, select: { id: true, email: true, firstName: true, lastName: true, phone: true, role: true, isActive: true, createdAt: true } }),
+    prisma.user.findMany({
+      where, skip, take: limit, orderBy: { createdAt: 'desc' },
+      select: { id: true, email: true, firstName: true, lastName: true, phone: true, role: true, isActive: true, createdAt: true, _count: { select: { submissions: true } } },
+    }),
     prisma.user.count({ where }),
   ])
   ok(res, users, { page, limit, total })
