@@ -5,6 +5,7 @@ import { calculateCommission } from '../utils/commission'
 
 export async function getAdminSubmissions(filters: {
   storeId?: string
+  status?: string
   page?: number
   limit?: number
 }) {
@@ -12,7 +13,10 @@ export async function getAdminSubmissions(filters: {
   const limit = Math.min(filters.limit ?? 20, 50)
   const skip = (page - 1) * limit
 
-  const where = { ...(filters.storeId && { storeId: filters.storeId }) }
+  const where = {
+    ...(filters.storeId && { storeId: filters.storeId }),
+    ...(filters.status && { items: { some: { status: filters.status as SubmissionItemStatus } } }),
+  }
 
   const [submissions, total] = await prisma.$transaction([
     prisma.submission.findMany({

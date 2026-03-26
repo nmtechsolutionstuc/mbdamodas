@@ -6,6 +6,7 @@ import {
   listMySubmissions,
   getMySubmission,
   cancelMySubmission,
+  getMyStats,
 } from '../controllers/submission.controller'
 
 const router = Router()
@@ -19,6 +20,7 @@ router.post('/', upload.fields(
 ), createSubmissionHandler)
 
 router.get('/mine', listMySubmissions)
+router.get('/mine/stats', getMyStats)
 router.get('/mine/:id', getMySubmission)
 router.delete('/mine/:id', cancelMySubmission)
 

@@ -6,8 +6,8 @@ export async function fetchAdminStats(): Promise<{ pending: number; inStore: num
   return data.data
 }
 
-export async function fetchAdminSubmissions(page = 1) {
-  const { data } = await axiosClient.get('/admin/submissions', { params: { page } })
+export async function fetchAdminSubmissions(status?: string) {
+  const { data } = await axiosClient.get('/admin/submissions', { params: { ...(status && { status }) } })
   return data
 }
 

@@ -84,3 +84,17 @@ export async function cancelMySubmission(req: Request, res: Response): Promise<v
   }
   ok(res, { message: 'Solicitud cancelada' })
 }
+
+export async function getMyStats(req: Request, res: Response): Promise<void> {
+  const userId = req.user!.sub
+  const counts = await prisma.submissionItem.groupBy({
+    by: ['status'],
+    where: { submission: { sellerId: userId } },
+    _count: { status: true },
+  })
+  const stats = { PENDING: 0, APPROVED: 0, IN_STORE: 0, SOLD: 0, REJECTED: 0, RETURNED: 0 }
+  for (const row of counts) {
+    stats[row.status] = row._count.status
+  }
+  ok(res, stats)
+}

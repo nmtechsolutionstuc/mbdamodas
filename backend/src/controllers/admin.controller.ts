@@ -9,7 +9,11 @@ import { ok, notFound, badRequest, serverError } from '../utils/apiResponse'
 
 export async function listSubmissions(req: Request, res: Response): Promise<void> {
   const page = req.query.page ? parseInt(req.query.page as string, 10) : 1
-  const result = await getAdminSubmissions({ storeId: req.query.storeId as string, page })
+  const result = await getAdminSubmissions({
+    storeId: req.query.storeId as string,
+    status: req.query.status as string | undefined,
+    page,
+  })
   ok(res, result.submissions, { page: result.page, limit: result.limit, total: result.total })
 }
 

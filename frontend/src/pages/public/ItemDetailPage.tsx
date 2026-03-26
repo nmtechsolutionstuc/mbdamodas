@@ -25,8 +25,22 @@ export function ItemDetailPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#FAF8F3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#9ca3af' }}>Cargando...</p>
+      <div style={{ minHeight: '100vh', background: '#FAF8F3' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '2rem 1.5rem' }}>
+          <div style={{ height: '1rem', width: '120px', background: '#E8E3D5', borderRadius: '0.5rem', marginBottom: '1.5rem' }} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
+            <div style={{ borderRadius: '1rem', background: '#E8E3D5', aspectRatio: '3/4' }} className="mbda-shimmer" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingTop: '0.5rem' }}>
+              <div style={{ height: '0.75rem', width: '80px', background: '#E8E3D5', borderRadius: '0.5rem' }} className="mbda-shimmer" />
+              <div style={{ height: '1.75rem', width: '75%', background: '#E8E3D5', borderRadius: '0.5rem' }} className="mbda-shimmer" />
+              <div style={{ height: '1.75rem', width: '40%', background: '#E8E3D5', borderRadius: '0.5rem' }} className="mbda-shimmer" />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '0.5rem' }}>
+                {[1,2].map(i => <div key={i} style={{ height: '2rem', background: '#E8E3D5', borderRadius: '0.5rem' }} className="mbda-shimmer" />)}
+              </div>
+              <div style={{ height: '3rem', width: '100%', background: '#E8E3D5', borderRadius: '0.875rem', marginTop: '1rem' }} className="mbda-shimmer" />
+            </div>
+          </div>
+        </div>
       </div>
     )
   }

@@ -18,7 +18,24 @@ export function SubmissionDetailPage() {
       .finally(() => setLoading(false))
   }, [id])
 
-  if (loading) return <div style={{ padding: '2rem', color: '#9ca3af' }}>Cargando...</div>
+  if (loading) return (
+    <div style={{ minHeight: '100vh', background: '#FAF8F3', padding: '1.5rem' }}>
+      <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+        <div style={{ height: '0.75rem', width: '100px', background: '#E8E3D5', borderRadius: '0.5rem', marginBottom: '1.5rem' }} className="mbda-shimmer" />
+        <div style={{ height: '1.75rem', width: '60%', background: '#E8E3D5', borderRadius: '0.5rem', marginBottom: '0.5rem' }} className="mbda-shimmer" />
+        <div style={{ height: '0.75rem', width: '40%', background: '#E8E3D5', borderRadius: '0.5rem', marginBottom: '1.5rem' }} className="mbda-shimmer" />
+        {[1,2,3].map(i => (
+          <div key={i} style={{ background: '#fff', border: '1px solid #E8E3D5', borderRadius: '1rem', padding: '1.25rem', marginBottom: '1rem', display: 'grid', gridTemplateColumns: '80px 1fr', gap: '1rem' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '0.75rem', background: '#E8E3D5' }} className="mbda-shimmer" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div style={{ height: '1rem', width: '70%', background: '#E8E3D5', borderRadius: '0.5rem' }} className="mbda-shimmer" />
+              <div style={{ height: '0.75rem', width: '50%', background: '#E8E3D5', borderRadius: '0.5rem' }} className="mbda-shimmer" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
   if (!submission) return (
     <div style={{ padding: '2rem' }}>
       <p style={{ color: '#6b7280' }}>Solicitud no encontrada.</p>
