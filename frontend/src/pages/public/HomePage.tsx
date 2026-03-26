@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ItemCard } from '../../components/catalog/ItemCard'
+import { ItemCardSkeleton } from '../../components/ui/Skeleton'
 import { fetchItems } from '../../api/items'
 import type { Item, ItemCategory, ItemSize } from '../../types'
 import { CATEGORY_LABELS, SIZE_LABELS } from '../../types'
@@ -187,7 +188,9 @@ export function HomePage() {
 
         {/* Grid */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '3rem', color: '#9ca3af' }}>Cargando...</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.25rem' }}>
+            {Array.from({ length: 8 }).map((_, i) => <ItemCardSkeleton key={i} />)}
+          </div>
         ) : items.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '3rem', color: '#9ca3af' }}>
             No hay prendas disponibles en este momento.

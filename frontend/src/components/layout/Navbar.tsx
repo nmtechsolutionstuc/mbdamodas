@@ -33,6 +33,7 @@ export function Navbar() {
       ]
     : [
         { label: 'Catálogo', to: '/' },
+        { label: 'Nosotros', to: '/nosotros' },
         { label: 'Vender mis prendas', to: '/login' },
       ]
 

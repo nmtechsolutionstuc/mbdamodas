@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { fetchAdminSubmissions } from '../../api/admin'
 import { StatusBadge } from '../../components/catalog/StatusBadge'
+import { ListRowSkeleton } from '../../components/ui/Skeleton'
 import type { SubmissionItemStatus } from '../../types'
 
 interface AdminSubmission {
@@ -33,7 +34,9 @@ export function AdminSubmissionsPage() {
         </div>
 
         {loading ? (
-          <p style={{ color: '#9ca3af', textAlign: 'center', padding: '3rem' }}>Cargando...</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {Array.from({ length: 4 }).map((_, i) => <ListRowSkeleton key={i} />)}
+          </div>
         ) : submissions.length === 0 ? (
           <p style={{ color: '#9ca3af', textAlign: 'center', padding: '3rem' }}>No hay solicitudes.</p>
         ) : (

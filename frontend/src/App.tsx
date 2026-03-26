@@ -20,6 +20,7 @@ import { AdminStoresPage } from './pages/admin/AdminStoresPage'
 import { AdminCatalogPage } from './pages/admin/AdminCatalogPage'
 import { AdminUsersPage } from './pages/admin/AdminUsersPage'
 import { TermsPage } from './pages/public/TermsPage'
+import { AboutPage } from './pages/public/AboutPage'
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/item/:id" element={<ItemDetailPage />} />
           <Route path="/terminos-y-condiciones" element={<TermsPage />} />
+          <Route path="/nosotros" element={<AboutPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/callback" element={<GoogleCallbackPage />} />
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { fetchAdminUsers, deactivateUser } from '../../api/admin'
+import { ListRowSkeleton } from '../../components/ui/Skeleton'
 import { useToast } from '../../context/ToastContext'
 
 interface AdminUser {
@@ -103,7 +104,9 @@ export function AdminUsersPage() {
         />
 
         {loading ? (
-          <p style={{ color: '#9ca3af', textAlign: 'center', padding: '3rem' }}>Cargando...</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {Array.from({ length: 5 }).map((_, i) => <ListRowSkeleton key={i} />)}
+          </div>
         ) : users.length === 0 ? (
           <p style={{ color: '#9ca3af', textAlign: 'center', padding: '3rem' }}>No se encontraron usuarios.</p>
         ) : (
