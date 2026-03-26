@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { AdminRoute } from './routes/AdminRoute'
 import { Navbar } from './components/layout/Navbar'
+import { Footer } from './components/layout/Footer'
 import { LoginPage } from './pages/auth/LoginPage'
 import { GoogleCallbackPage } from './pages/auth/GoogleCallbackPage'
 import { HomePage } from './pages/public/HomePage'
@@ -27,6 +28,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Navbar />
+        <main>
         <Routes>
           {/* Públicas */}
           <Route path="/" element={<HomePage />} />
@@ -51,6 +53,8 @@ function App() {
           <Route path="/admin/usuarios" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
           <Route path="/admin/tiendas" element={<AdminRoute><AdminStoresPage /></AdminRoute>} />
         </Routes>
+        </main>
+        <Footer />
       </AuthProvider>
     </BrowserRouter>
   )

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { fetchAdminCatalog, updateCatalogItem, deleteCatalogItem, markSold, markReturned } from '../../api/admin'
 import { StatusBadge } from '../../components/catalog/StatusBadge'
 import { useToast } from '../../context/ToastContext'
+import { ListRowSkeleton } from '../../components/ui/Skeleton'
 import type { ItemCategory, ItemSize, SubmissionItemStatus } from '../../types'
 
 interface CatalogItem {
@@ -153,7 +154,9 @@ export function AdminCatalogPage() {
         </div>
 
         {loading ? (
-          <p style={{ color: '#9ca3af', textAlign: 'center', padding: '3rem' }}>Cargando...</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {Array.from({ length: 5 }).map((_, i) => <ListRowSkeleton key={i} />)}
+          </div>
         ) : items.length === 0 ? (
           <p style={{ color: '#9ca3af', textAlign: 'center', padding: '3rem' }}>No hay prendas en el catálogo.</p>
         ) : (
