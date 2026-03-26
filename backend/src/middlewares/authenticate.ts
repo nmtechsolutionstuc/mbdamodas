@@ -4,9 +4,9 @@ import { unauthorized } from '../utils/apiResponse'
 
 declare global {
   namespace Express {
-    interface Request {
-      user?: AccessTokenPayload
-    }
+    // Passport declara req.user como Express.User — extendemos esa interface
+    // para que req.user sea compatible con AccessTokenPayload
+    interface User extends AccessTokenPayload {}
   }
 }
 

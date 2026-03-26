@@ -21,7 +21,7 @@ export function noContent(res: Response): Response {
 export function badRequest(res: Response, message: string, details?: unknown): Response {
   return res.status(400).json({
     success: false,
-    error: { code: 'BAD_REQUEST', message, ...(details && { details }) },
+    error: { code: 'BAD_REQUEST', message, ...(details ? { details } : {}) },
   })
 }
 

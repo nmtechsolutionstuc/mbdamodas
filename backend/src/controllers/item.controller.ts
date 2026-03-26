@@ -23,7 +23,7 @@ export async function listItems(req: Request, res: Response): Promise<void> {
 }
 
 export async function getItem(req: Request, res: Response): Promise<void> {
-  const item = await getPublicItemById(req.params.id!)
+  const item = await getPublicItemById(req.params['id'] as string)
   if (!item) {
     notFound(res, 'Prenda no encontrada')
     return
