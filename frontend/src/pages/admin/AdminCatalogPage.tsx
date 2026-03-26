@@ -40,6 +40,7 @@ export function AdminCatalogPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<EditForm>({ title: '', description: '', price: '', commission: '' })
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [confirmingDeactivateId, setConfirmingDeactivateId] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const limit = 20
@@ -91,7 +92,6 @@ export function AdminCatalogPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('¿Desactivar esta prenda del catálogo?')) return
     setActionLoading(id)
     try {
       await deleteCatalogItem(id)
@@ -101,6 +101,7 @@ export function AdminCatalogPage() {
       toast('Error al desactivar', 'error')
     } finally {
       setActionLoading(null)
+      setConfirmingDeactivateId(null)
     }
   }
 
@@ -300,13 +301,31 @@ export function AdminCatalogPage() {
                               >
                                 Editar
                               </button>
-                              <button
-                                onClick={() => handleDelete(item.id)}
-                                disabled={isBusy}
-                                style={{ background: 'transparent', color: '#dc2626', border: '1px solid #dc2626', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.8rem' }}
-                              >
-                                Desactivar
-                              </button>
+                              {confirmingDeactivateId === item.id ? (
+                                <div style={{ display: 'flex', gap: '0.375rem' }}>
+                                  <button
+                                    onClick={() => handleDelete(item.id)}
+                                    disabled={isBusy}
+                                    style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.375rem 0.75rem', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}
+                                  >
+                                    Sí
+                                  </button>
+                                  <button
+                                    onClick={() => setConfirmingDeactivateId(null)}
+                                    style={{ background: '#E8E3D5', color: '#1E1914', border: 'none', borderRadius: '0.5rem', padding: '0.375rem 0.75rem', cursor: 'pointer', fontSize: '0.75rem' }}
+                                  >
+                                    No
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setConfirmingDeactivateId(item.id)}
+                                  disabled={isBusy}
+                                  style={{ background: 'transparent', color: '#dc2626', border: '1px solid #dc2626', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.8rem' }}
+                                >
+                                  Desactivar
+                                </button>
+                              )}
                             </>
                           )}
                         </>

@@ -63,7 +63,11 @@ export function ItemDetailPage() {
           ← Volver al catálogo
         </Link>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
+        <style>{`
+          .mbda-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+          @media (max-width: 640px) { .mbda-detail { grid-template-columns: 1fr; gap: 1.5rem; } }
+        `}</style>
+        <div className="mbda-detail">
           {/* Fotos */}
           <div>
             <div style={{ borderRadius: '1rem', overflow: 'hidden', background: '#E8E3D5', aspectRatio: '3/4', marginBottom: '0.75rem' }}>

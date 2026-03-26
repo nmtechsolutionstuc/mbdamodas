@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { ErrorBoundary } from './components/layout/ErrorBoundary'
+import { ToastProvider } from './context/ToastContext'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { AdminRoute } from './routes/AdminRoute'
 import { Navbar } from './components/layout/Navbar'
@@ -27,11 +29,13 @@ import { NotFoundPage } from './pages/public/NotFoundPage'
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Navbar />
-        <main>
-        <Routes>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <ToastProvider>
+            <Navbar />
+            <main>
+            <Routes>
           {/* Públicas */}
           <Route path="/" element={<HomePage />} />
           <Route path="/item/:id" element={<ItemDetailPage />} />
@@ -58,11 +62,13 @@ function App() {
 
           {/* 404 */}
           <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-        </main>
-        <Footer />
-      </AuthProvider>
-    </BrowserRouter>
+            </Routes>
+            </main>
+            <Footer />
+          </ToastProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }
 

@@ -44,7 +44,11 @@ export function HomePage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F3' }}>
       {/* ── Banner dual: Compradores | Vendedores ─────────── */}
-      <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '320px' }}>
+      <style>{`
+        .mbda-banner { display: grid; grid-template-columns: 1fr 1fr; }
+        @media (max-width: 640px) { .mbda-banner { grid-template-columns: 1fr; } }
+      `}</style>
+      <section className="mbda-banner" style={{ minHeight: '320px' }}>
         {/* Panel comprador */}
         <div
           style={{

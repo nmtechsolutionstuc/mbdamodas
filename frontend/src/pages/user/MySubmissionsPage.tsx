@@ -7,6 +7,7 @@ import type { Submission } from '../../types'
 export function MySubmissionsPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchMySubmissions()
@@ -16,10 +17,10 @@ export function MySubmissionsPage() {
   }, [])
 
   async function handleCancel(id: string) {
-    if (!confirm('¿Cancelar esta solicitud? Esta acción no se puede deshacer.')) return
     try {
       await cancelSubmission(id)
       setSubmissions(prev => prev.filter(s => s.id !== id))
+      setConfirmingId(null)
     } catch {
       alert('No se pudo cancelar. Solo podés cancelar solicitudes con todas las prendas en estado pendiente.')
     }
@@ -82,12 +83,30 @@ export function MySubmissionsPage() {
 
                 {/* Cancelar solo si todas están pendientes */}
                 {sub.items.every(it => it.status === 'PENDING') && (
-                  <button
-                    onClick={() => handleCancel(sub.id)}
-                    style={{ marginTop: '0.875rem', fontSize: '0.8rem', color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                  >
-                    Cancelar solicitud
-                  </button>
+                  confirmingId === sub.id ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.875rem' }}>
+                      <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>¿Cancelar esta solicitud?</span>
+                      <button
+                        onClick={() => handleCancel(sub.id)}
+                        style={{ fontSize: '0.8rem', color: '#dc2626', background: 'none', border: '1px solid #dc2626', borderRadius: '0.5rem', padding: '0.25rem 0.75rem', cursor: 'pointer' }}
+                      >
+                        Sí, cancelar
+                      </button>
+                      <button
+                        onClick={() => setConfirmingId(null)}
+                        style={{ fontSize: '0.8rem', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer' }}
+                      >
+                        No
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmingId(sub.id)}
+                      style={{ marginTop: '0.875rem', fontSize: '0.8rem', color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    >
+                      Cancelar solicitud
+                    </button>
+                  )
                 )}
               </div>
             ))}
