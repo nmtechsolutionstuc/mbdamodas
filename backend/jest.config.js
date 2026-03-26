@@ -11,6 +11,7 @@ module.exports = {
   transform: {
     '^.+\\.ts$': ['ts-jest', {
       tsconfig: { rootDir: '.' },
+      diagnostics: { warnOnly: true },
     }],
   },
   collectCoverageFrom: ['src/**/*.ts', '!src/server.ts'],
