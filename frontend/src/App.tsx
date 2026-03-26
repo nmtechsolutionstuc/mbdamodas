@@ -5,6 +5,7 @@ import { AdminRoute } from './routes/AdminRoute'
 import { Navbar } from './components/layout/Navbar'
 import { Footer } from './components/layout/Footer'
 import { LoginPage } from './pages/auth/LoginPage'
+import { RegisterPage } from './pages/auth/RegisterPage'
 import { GoogleCallbackPage } from './pages/auth/GoogleCallbackPage'
 import { HomePage } from './pages/public/HomePage'
 import { ItemDetailPage } from './pages/public/ItemDetailPage'
@@ -37,6 +38,7 @@ function App() {
           <Route path="/terminos-y-condiciones" element={<TermsPage />} />
           <Route path="/nosotros" element={<AboutPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/auth/callback" element={<GoogleCallbackPage />} />
 
           {/* Usuario autenticado */}

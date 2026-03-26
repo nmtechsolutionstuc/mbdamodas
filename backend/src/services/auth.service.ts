@@ -3,6 +3,8 @@ import crypto from 'crypto'
 import { prisma } from '../config/prisma'
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt'
 import { env } from '../config/env'
+import bcrypt from 'bcryptjs'
+import { z } from 'zod'
 
 const REFRESH_TOKEN_EXPIRES_MS = parseDurationToMs(env.jwtRefreshExpiresIn)
 
@@ -60,4 +62,51 @@ export async function revokeRefreshToken(rawToken: string): Promise<void> {
     where: { token: rawToken },
     data: { revoked: true },
   })
+}
+
+export const registerSchema = z.object({
+  firstName: z.string().min(1, 'Nombre requerido').max(50),
+  lastName: z.string().min(1, 'Apellido requerido').max(50),
+  email: z.string().email('Email inválido').toLowerCase(),
+  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
+})
+
+export type RegisterInput = z.infer<typeof registerSchema>
+
+export async function registerUser(
+  input: RegisterInput,
+): Promise<{ user: User; accessToken: string; refreshToken: string }> {
+  const existing = await prisma.user.findUnique({ where: { email: input.email } })
+  if (existing) {
+    const err = new Error('El email ya está registrado')
+    ;(err as NodeJS.ErrnoException).code = 'EMAIL_IN_USE'
+    throw err
+  }
+
+  const hash = await bcrypt.hash(input.password, 12)
+  const user = await prisma.user.create({
+    data: {
+      email: input.email,
+      firstName: input.firstName,
+      lastName: input.lastName,
+      password: hash,
+    },
+  })
+
+  const { accessToken, refreshToken } = await issueTokens(user)
+  return { user, accessToken, refreshToken }
+}
+
+export async function loginUser(
+  email: string,
+  password: string,
+): Promise<{ user: User; accessToken: string; refreshToken: string } | null> {
+  const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } })
+  if (!user || !user.password || !user.isActive) return null
+
+  const valid = await bcrypt.compare(password, user.password)
+  if (!valid) return null
+
+  const { accessToken, refreshToken } = await issueTokens(user)
+  return { user, accessToken, refreshToken }
 }

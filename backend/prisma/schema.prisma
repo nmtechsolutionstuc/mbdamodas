@@ -80,13 +80,14 @@ model Store {
 }
 
 // ─────────────────────────────────────────────────────────────
-// USER — Solo Google OAuth, sin contraseña
+// USER — Autenticación por email + contraseña (bcryptjs)
 // ─────────────────────────────────────────────────────────────
 
 model User {
   id               String    @id @default(uuid())
-  googleId         String    @unique
+  googleId         String?   @unique  // Legacy / futuro OAuth — opcional
   email            String    @unique
+  password         String?             // Hash bcrypt — null solo para cuentas legacy OAuth
   firstName        String
   lastName         String
   phone            String?   // Número WhatsApp del vendedor

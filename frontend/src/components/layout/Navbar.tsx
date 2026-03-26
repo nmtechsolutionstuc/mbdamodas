@@ -119,12 +119,22 @@ export function Navbar() {
               </button>
             </div>
           ) : (
-            <Link
-              to="/login"
-              style={{ marginLeft: '0.5rem', background: '#E8E3D5', color: '#1E1914', textDecoration: 'none', padding: '0.375rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}
-            >
-              Ingresar
-            </Link>
+            <div style={{ display: 'flex', gap: '0.375rem', marginLeft: '0.5rem' }}>
+              <Link
+                to="/login"
+                style={{ color: '#E8E3D5', textDecoration: 'none', padding: '0.375rem 0.875rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, opacity: 0.85 }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
+              >
+                Ingresar
+              </Link>
+              <Link
+                to="/register"
+                style={{ background: '#E8E3D5', color: '#1E1914', textDecoration: 'none', padding: '0.375rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}
+              >
+                Registrate
+              </Link>
+            </div>
           )}
         </div>
 
@@ -171,13 +181,22 @@ export function Navbar() {
               </button>
             </>
           ) : (
-            <Link
-              to="/login"
-              onClick={() => setMenuOpen(false)}
-              style={{ display: 'block', color: '#E8E3D5', textDecoration: 'none', padding: '0.75rem 0', fontSize: '1rem', fontWeight: 600, marginTop: '0.25rem' }}
-            >
-              Ingresar
-            </Link>
+            <>
+              <Link
+                to="/login"
+                onClick={() => setMenuOpen(false)}
+                style={{ display: 'block', color: '#E8E3D5', textDecoration: 'none', padding: '0.75rem 0', fontSize: '1rem', borderBottom: '1px solid rgba(232,227,213,0.08)' }}
+              >
+                Ingresar
+              </Link>
+              <Link
+                to="/register"
+                onClick={() => setMenuOpen(false)}
+                style={{ display: 'block', color: '#1E1914', background: '#E8E3D5', textDecoration: 'none', padding: '0.625rem 1rem', borderRadius: '0.75rem', fontSize: '1rem', fontWeight: 600, marginTop: '0.5rem', textAlign: 'center' }}
+              >
+                Registrate
+              </Link>
+            </>
           )}
         </div>
       )}

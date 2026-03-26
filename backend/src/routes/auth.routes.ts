@@ -1,19 +1,14 @@
 import { Router } from 'express'
-import passport from '../config/passport'
-import { googleCallback, refresh, logout, me } from '../controllers/auth.controller'
+import { register, login, refresh, logout, me } from '../controllers/auth.controller'
 import { authenticate } from '../middlewares/authenticate'
 
 const router = Router()
 
-// Inicia el flujo OAuth con Google
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }))
+// Registro con email + contraseña
+router.post('/register', register)
 
-// Google redirige acá luego de autorizar
-router.get(
-  '/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: '/login?error=oauth' }),
-  googleCallback,
-)
+// Login con email + contraseña
+router.post('/login', login)
 
 // Renueva el access token usando el refresh token (httpOnly cookie)
 router.post('/refresh', refresh)

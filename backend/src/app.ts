@@ -45,11 +45,6 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// ── Passport (sin sesión — stateless JWT) ─────────────────────────────────────
-import './config/passport'
-import passport from 'passport'
-app.use(passport.initialize())
-
 // ── Rutas API ─────────────────────────────────────────────────────────────────
 import apiRoutes from './routes/index'
 app.use('/api/v1', apiRoutes)

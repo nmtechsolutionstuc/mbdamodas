@@ -1,13 +1,70 @@
 import request from 'supertest'
 import app from '../../src/app'
+import { prisma } from '../../src/config/prisma'
+
+// Mock Prisma to avoid real DB connections
+jest.mock('../../src/config/prisma', () => ({
+  prisma: {
+    user: {
+      findUnique: jest.fn().mockResolvedValue(null),
+      create: jest.fn(),
+    },
+    refreshToken: {
+      create: jest.fn().mockResolvedValue({}),
+      findUnique: jest.fn().mockResolvedValue(null),
+      updateMany: jest.fn().mockResolvedValue({}),
+    },
+  },
+}))
+
+const mockPrisma = prisma as jest.Mocked<typeof prisma>
 
 describe('Auth endpoints', () => {
-  describe('GET /api/v1/auth/google', () => {
-    it('redirige al flujo de OAuth de Google', async () => {
-      const res = await request(app).get('/api/v1/auth/google')
-      // Passport redirige a accounts.google.com
-      expect(res.status).toBe(302)
-      expect(res.headers.location).toContain('accounts.google.com')
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  describe('POST /api/v1/auth/register', () => {
+    it('responde 400 si faltan campos', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/register')
+        .send({ email: 'test@test.com' })
+      expect(res.status).toBe(400)
+      expect(res.body.success).toBe(false)
+    })
+
+    it('responde 400 si la contraseña es muy corta', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/register')
+        .send({ firstName: 'Ana', lastName: 'García', email: 'ana@test.com', password: '123' })
+      expect(res.status).toBe(400)
+    })
+
+    it('responde 409 si el email ya existe', async () => {
+      ;(mockPrisma.user.findUnique as jest.Mock).mockResolvedValueOnce({
+        id: '1', email: 'existing@test.com', isActive: true,
+      })
+      const res = await request(app)
+        .post('/api/v1/auth/register')
+        .send({ firstName: 'Ana', lastName: 'García', email: 'existing@test.com', password: 'password123' })
+      expect(res.status).toBe(409)
+    })
+  })
+
+  describe('POST /api/v1/auth/login', () => {
+    it('responde 401 con credenciales inexistentes', async () => {
+      ;(mockPrisma.user.findUnique as jest.Mock).mockResolvedValueOnce(null)
+      const res = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: 'noexiste@test.com', password: 'cualquiera' })
+      expect(res.status).toBe(401)
+    })
+
+    it('responde 400 si falta el email', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ password: 'algo' })
+      expect(res.status).toBe(400)
     })
   })
 

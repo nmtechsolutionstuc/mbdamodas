@@ -1,6 +1,26 @@
 import axiosClient from './axiosClient'
 import type { User, ApiResponse } from '../types'
 
+interface AuthResponse {
+  user: User
+  accessToken: string
+}
+
+export async function register(data: {
+  firstName: string
+  lastName: string
+  email: string
+  password: string
+}): Promise<AuthResponse> {
+  const { data: res } = await axiosClient.post<ApiResponse<AuthResponse>>('/auth/register', data)
+  return res.data
+}
+
+export async function login(email: string, password: string): Promise<AuthResponse> {
+  const { data: res } = await axiosClient.post<ApiResponse<AuthResponse>>('/auth/login', { email, password })
+  return res.data
+}
+
 export async function fetchMe(): Promise<User> {
   const { data } = await axiosClient.get<ApiResponse<User>>('/auth/me')
   return data.data

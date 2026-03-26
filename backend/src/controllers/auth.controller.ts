@@ -1,7 +1,10 @@
 import { Request, Response } from 'express'
-import { User } from '@prisma/client'
-import { issueTokens, refreshTokens, revokeRefreshToken } from '../services/auth.service'
-import { ok, unauthorized } from '../utils/apiResponse'
+import { z } from 'zod'
+import {
+  issueTokens, refreshTokens, revokeRefreshToken,
+  registerUser, loginUser, registerSchema,
+} from '../services/auth.service'
+import { ok, created, badRequest, unauthorized, conflict, serverError } from '../utils/apiResponse'
 import { env } from '../config/env'
 
 const COOKIE_OPTIONS = {
@@ -11,14 +14,71 @@ const COOKIE_OPTIONS = {
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 días
 }
 
-export async function googleCallback(req: Request, res: Response): Promise<void> {
-  const user = req.user as unknown as User
-  const { accessToken, refreshToken } = await issueTokens(user)
+export async function register(req: Request, res: Response): Promise<void> {
+  const parsed = registerSchema.safeParse(req.body)
+  if (!parsed.success) {
+    badRequest(res, parsed.error.errors[0]?.message ?? 'Datos inválidos')
+    return
+  }
 
+  try {
+    const { user, accessToken, refreshToken } = await registerUser(parsed.data)
+    res.cookie('refreshToken', refreshToken, COOKIE_OPTIONS)
+    created(res, {
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        avatarUrl: user.avatarUrl,
+        role: user.role,
+        isActive: user.isActive,
+      },
+      accessToken,
+    })
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code
+    if (code === 'EMAIL_IN_USE') {
+      conflict(res, 'El email ya está registrado')
+    } else {
+      serverError(res)
+    }
+  }
+}
+
+export async function login(req: Request, res: Response): Promise<void> {
+  const schema = z.object({
+    email: z.string().email('Email inválido'),
+    password: z.string().min(1, 'Contraseña requerida'),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) {
+    badRequest(res, parsed.error.errors[0]?.message ?? 'Datos inválidos')
+    return
+  }
+
+  const result = await loginUser(parsed.data.email, parsed.data.password)
+  if (!result) {
+    unauthorized(res, 'Email o contraseña incorrectos')
+    return
+  }
+
+  const { user, accessToken, refreshToken } = result
   res.cookie('refreshToken', refreshToken, COOKIE_OPTIONS)
-
-  // Redirige al frontend con el access token en el hash (nunca llega al servidor)
-  res.redirect(`${env.frontendUrl}/auth/callback#token=${accessToken}`)
+  ok(res, {
+    user: {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      avatarUrl: user.avatarUrl,
+      role: user.role,
+      isActive: user.isActive,
+    },
+    accessToken,
+  })
 }
 
 export async function refresh(req: Request, res: Response): Promise<void> {
