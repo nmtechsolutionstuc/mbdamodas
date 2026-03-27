@@ -23,6 +23,8 @@ export function RegisterPage() {
   const navigate = useNavigate()
   const { setAuth } = useAuthStore()
   const [serverError, setServerError] = useState<string | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<string>('EFECTIVO')
+  const [bankAlias, setBankAlias] = useState<string>('')
 
   const {
     register,
@@ -33,6 +35,8 @@ export function RegisterPage() {
   async function onSubmit(values: FormData) {
     setServerError(null)
     try {
+      // NOTE: backend register does not yet accept paymentMethod/bankAlias.
+      // These will be saved via updateProfile after registration if needed.
       const { user, accessToken } = await registerUser({
         firstName: values.firstName,
         lastName: values.lastName,
@@ -64,7 +68,7 @@ export function RegisterPage() {
           Crear cuenta
         </h1>
         <p style={{ color: '#6b7280', textAlign: 'center', marginBottom: '2rem' }}>
-          Vendé tus prendas en MBDA Modas
+          Vendé tus productos en MBDA Modas
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -97,6 +101,46 @@ export function RegisterPage() {
             <label style={lbl}>Confirmar contraseña</label>
             <input {...register('confirmPassword')} type="password" autoComplete="new-password" placeholder="••••••••" style={inp} />
             {errors.confirmPassword && <p style={err}>{errors.confirmPassword.message}</p>}
+          </div>
+
+          {/* Método de pago */}
+          <div>
+            <label style={lbl}>¿Cómo preferís recibir tus pagos?</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914', fontFamily: "'Inter', sans-serif" }}>
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="EFECTIVO"
+                  checked={paymentMethod === 'EFECTIVO'}
+                  onChange={() => setPaymentMethod('EFECTIVO')}
+                  style={{ accentColor: '#1E1914', width: '16px', height: '16px' }}
+                />
+                Efectivo (retirás en tienda)
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914', fontFamily: "'Inter', sans-serif" }}>
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="TRANSFERENCIA"
+                  checked={paymentMethod === 'TRANSFERENCIA'}
+                  onChange={() => setPaymentMethod('TRANSFERENCIA')}
+                  style={{ accentColor: '#1E1914', width: '16px', height: '16px' }}
+                />
+                Transferencia bancaria
+              </label>
+            </div>
+            {paymentMethod === 'TRANSFERENCIA' && (
+              <div style={{ marginTop: '0.5rem' }}>
+                <label style={{ ...lbl, fontSize: '0.8rem' }}>Alias o CVU</label>
+                <input
+                  value={bankAlias}
+                  onChange={e => setBankAlias(e.target.value)}
+                  placeholder="Ej: mi.alias.mp"
+                  style={inp}
+                />
+              </div>
+            )}
           </div>
 
           {serverError && (

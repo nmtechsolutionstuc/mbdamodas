@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { z } from 'zod'
-import { ItemCategory, ItemCondition, ItemSize } from '@prisma/client'
+import { ItemCondition } from '@prisma/client'
 import { createSubmission, getSellerSubmissions, getSellerSubmissionById, cancelSubmission } from '../services/submission.service'
 import { getPhotoUrls } from '../services/upload.service'
 import { ok, created, badRequest, notFound, forbidden } from '../utils/apiResponse'
@@ -10,8 +10,9 @@ const itemSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(1000).optional(),
   condition: z.nativeEnum(ItemCondition),
-  size: z.nativeEnum(ItemSize),
-  category: z.nativeEnum(ItemCategory),
+  productTypeId: z.string().min(1),
+  sizeId: z.string().min(1).optional().nullable(),
+  tagIds: z.array(z.string().min(1)).optional().default([]),
   quantity: z.coerce.number().int().min(1).default(1),
   desiredPrice: z.coerce.number().positive(),
   minimumPrice: z.coerce.number().positive().optional(),

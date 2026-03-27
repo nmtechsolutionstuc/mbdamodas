@@ -25,26 +25,6 @@ enum SubmissionItemStatus {
   RETURNED   // Devuelta al vendedor
 }
 
-enum ItemSize {
-  XS
-  S
-  M
-  L
-  XL
-  XXL
-  UNICA
-}
-
-enum ItemCategory {
-  MUJER
-  HOMBRE
-  NINO
-  NINA
-  CALZADO
-  ACCESORIOS
-  OTRO
-}
-
 enum ItemCondition {
   NUEVA_CON_ETIQUETA  // Nueva, con etiqueta original
   NUEVA_SIN_ETIQUETA  // Nueva, sin etiqueta (sin uso)
@@ -52,6 +32,91 @@ enum ItemCondition {
   BUEN_ESTADO         // Signos mínimos de uso
   USO_MODERADO        // Desgaste visible pero aceptable
   USO_INTENSO         // Desgaste notable
+}
+
+// ─────────────────────────────────────────────────────────────
+// PRODUCT TYPE — Reemplaza ItemCategory. Tipos de producto parametrizables.
+// ─────────────────────────────────────────────────────────────
+
+model ProductType {
+  id           String   @id @default(uuid())
+  name         String   @unique  // "Ropa", "Calzado", "Otro"
+  code         String   @unique  // "ROPA", "CALZADO", "OTRO"
+  requiresSize Boolean  @default(true) // false for "OTRO"
+  isActive     Boolean  @default(true)
+  order        Int      @default(0) // for display ordering
+  createdAt    DateTime @default(now())
+
+  items           Item[]
+  submissionItems SubmissionItem[]
+  tags            Tag[]
+  sizes           Size[]
+
+  @@map("product_types")
+}
+
+// ─────────────────────────────────────────────────────────────
+// SIZE — Reemplaza ItemSize. Talles parametrizables por tipo de producto.
+// ─────────────────────────────────────────────────────────────
+
+model Size {
+  id        String   @id @default(uuid())
+  name      String   // "XS", "S", "M", "L", "XL", "36", "37", "38", etc.
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  productTypeId String
+  productType   ProductType @relation(fields: [productTypeId], references: [id])
+
+  items           Item[]
+  submissionItems SubmissionItem[]
+
+  @@unique([productTypeId, name])
+  @@index([productTypeId])
+  @@map("sizes")
+}
+
+// ─────────────────────────────────────────────────────────────
+// TAG — Etiquetas parametrizables por tipo de producto.
+// ─────────────────────────────────────────────────────────────
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String   // "Deportivo", "Casual", "Formal", etc.
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  productTypeId String
+  productType   ProductType @relation(fields: [productTypeId], references: [id])
+
+  items           ItemTag[]
+  submissionItems SubmissionItemTag[]
+
+  @@unique([productTypeId, name])
+  @@index([productTypeId])
+  @@map("tags")
+}
+
+model ItemTag {
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  tagId  String
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, tagId])
+  @@map("item_tags")
+}
+
+model SubmissionItemTag {
+  submissionItemId String
+  submissionItem   SubmissionItem @relation(fields: [submissionItemId], references: [id], onDelete: Cascade)
+  tagId            String
+  tag              Tag            @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([submissionItemId, tagId])
+  @@map("submission_item_tags")
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -95,6 +160,8 @@ model User {
   role             Role      @default(USER)
   isActive         Boolean   @default(true)
   termsAcceptedAt  DateTime? // Timestamp de aceptación de T&C (evidencia legal)
+  paymentMethod    String?   // "EFECTIVO" or "TRANSFERENCIA"
+  bankAlias        String?   // CBU/CVU/Alias for transfers
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -126,7 +193,7 @@ model RefreshToken {
 }
 
 // ─────────────────────────────────────────────────────────────
-// SUBMISSION — Solicitud grupal. Agrupa N prendas de un vendedor.
+// SUBMISSION — Solicitud grupal. Agrupa N productos de un vendedor.
 // ─────────────────────────────────────────────────────────────
 
 model Submission {
@@ -149,8 +216,8 @@ model Submission {
 }
 
 // ─────────────────────────────────────────────────────────────
-// SUBMISSION ITEM — Prenda individual dentro de una solicitud.
-// Cada prenda tiene su propio estado y ciclo de vida.
+// SUBMISSION ITEM — Producto individual dentro de una solicitud.
+// Cada producto tiene su propio estado y ciclo de vida.
 // ─────────────────────────────────────────────────────────────
 
 model SubmissionItem {
@@ -158,8 +225,6 @@ model SubmissionItem {
   title        String
   description  String?
   condition    ItemCondition
-  size         ItemSize
-  category     ItemCategory
   quantity     Int                  @default(1)
   desiredPrice Decimal              @db.Decimal(10, 2)
   minimumPrice Decimal?             @db.Decimal(10, 2)
@@ -169,19 +234,27 @@ model SubmissionItem {
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
 
+  productTypeId String
+  productType   ProductType @relation(fields: [productTypeId], references: [id])
+
+  sizeId String?
+  size   Size?   @relation(fields: [sizeId], references: [id])
+
   submissionId String
   submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
   photos SubmissionItemPhoto[]
+  tags   SubmissionItemTag[]
   item   Item?                 // Creado al aprobar (1:1)
 
   @@index([submissionId])
   @@index([status])
+  @@index([productTypeId])
   @@map("submission_items")
 }
 
 // ─────────────────────────────────────────────────────────────
-// SUBMISSION ITEM PHOTO — Fotos de una prenda en solicitud
+// SUBMISSION ITEM PHOTO — Fotos de un producto en solicitud
 // ─────────────────────────────────────────────────────────────
 
 model SubmissionItemPhoto {
@@ -198,37 +271,43 @@ model SubmissionItemPhoto {
 }
 
 // ─────────────────────────────────────────────────────────────
-// ITEM — Prenda aprobada, visible en catálogo público.
+// ITEM — Producto aprobado, visible en catálogo público.
 // Se crea automáticamente al aprobar un SubmissionItem.
 // ─────────────────────────────────────────────────────────────
 
 model Item {
-  id           String       @id @default(uuid())
+  id           String        @id @default(uuid())
+  code         String?       @unique  // Código identificador (ej: MBDA-0001), generado al aprobar
   title        String
   description  String?
   condition    ItemCondition
-  size         ItemSize
-  category     ItemCategory
   quantity     Int
-  price        Decimal      @db.Decimal(10, 2)
-  minimumPrice Decimal?     @db.Decimal(10, 2) // Visible solo para admin
-  commission   Decimal      @db.Decimal(5, 2)  // Copiado de Store.defaultCommission al aprobar
-  isActive     Boolean      @default(true)     // false = no aparece en catálogo
+  price        Decimal       @db.Decimal(10, 2)
+  minimumPrice Decimal?      @db.Decimal(10, 2) // Visible solo para admin
+  commission   Decimal       @db.Decimal(5, 2)  // Copiado de Store.defaultCommission al aprobar
+  isActive     Boolean       @default(true)     // false = no aparece en catálogo
   soldAt       DateTime?
   returnedAt   DateTime?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
-  submissionItemId String         @unique
-  submissionItem   SubmissionItem @relation(fields: [submissionItemId], references: [id])
+  productTypeId String
+  productType   ProductType @relation(fields: [productTypeId], references: [id])
+
+  sizeId String?
+  size   Size?   @relation(fields: [sizeId], references: [id])
+
+  submissionItemId String?        @unique
+  submissionItem   SubmissionItem? @relation(fields: [submissionItemId], references: [id])
 
   storeId String
   store   Store  @relation(fields: [storeId], references: [id])
 
   photos ItemPhoto[]
+  tags   ItemTag[]
 
   @@index([storeId])
-  @@index([category])
+  @@index([productTypeId])
   @@index([isActive])
   @@map("items")
 }

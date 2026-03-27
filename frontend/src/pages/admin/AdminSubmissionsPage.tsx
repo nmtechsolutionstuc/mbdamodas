@@ -75,7 +75,7 @@ export function AdminSubmissionsPage() {
         ) : submissions.length === 0 ? (
           <p style={{ color: '#9ca3af', textAlign: 'center', padding: '3rem' }}>
             {filter === 'PENDING' ? 'No hay solicitudes pendientes. ¡Al día!' :
-             filter === 'IN_STORE' ? 'No hay prendas en tienda actualmente.' :
+             filter === 'IN_STORE' ? 'No hay productos en tienda actualmente.' :
              'No hay solicitudes.'}
           </p>
         ) : (

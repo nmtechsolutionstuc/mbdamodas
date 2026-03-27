@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { fetchMySubmissions, cancelSubmission } from '../../api/submissions'
 import { StatusBadge } from '../../components/catalog/StatusBadge'
+import { useToast } from '../../context/ToastContext'
 import type { Submission } from '../../types'
 
 export function MySubmissionsPage() {
+  const { toast } = useToast()
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
@@ -22,7 +24,7 @@ export function MySubmissionsPage() {
       setSubmissions(prev => prev.filter(s => s.id !== id))
       setConfirmingId(null)
     } catch {
-      alert('No se pudo cancelar. Solo podés cancelar solicitudes con todas las prendas en estado pendiente.')
+      toast('No se pudo cancelar. Solo podés cancelar solicitudes con todos los productos pendientes.', 'error')
     }
   }
 
@@ -46,7 +48,7 @@ export function MySubmissionsPage() {
         ) : submissions.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '3rem' }}>
             <p style={{ color: '#9ca3af', marginBottom: '1rem' }}>Todavía no enviaste ninguna solicitud.</p>
-            <Link to="/dashboard/enviar" style={{ color: '#1E1914', fontWeight: 600 }}>Enviar mis primeras prendas →</Link>
+            <Link to="/dashboard/enviar" style={{ color: '#1E1914', fontWeight: 600 }}>Enviar mis primeros productos →</Link>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -58,7 +60,7 @@ export function MySubmissionsPage() {
                       {new Date(sub.createdAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
                     <p style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-                      {sub.items.length} {sub.items.length === 1 ? 'prenda' : 'prendas'}
+                      {sub.items.length} {sub.items.length === 1 ? 'producto' : 'productos'}
                     </p>
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -71,7 +73,7 @@ export function MySubmissionsPage() {
                   </div>
                 </div>
 
-                {/* Lista de prendas */}
+                {/* Lista de productos */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {sub.items.map(it => (
                     <div key={it.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderTop: '1px solid #f3f4f6' }}>

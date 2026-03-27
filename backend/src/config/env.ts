@@ -18,9 +18,10 @@ export const env = {
   jwtRefreshSecret: required('JWT_REFRESH_SECRET'),
   jwtAccessExpiresIn: optional('JWT_ACCESS_EXPIRES_IN', '15m'),
   jwtRefreshExpiresIn: optional('JWT_REFRESH_EXPIRES_IN', '30d'),
-  googleClientId: required('GOOGLE_CLIENT_ID'),
-  googleClientSecret: required('GOOGLE_CLIENT_SECRET'),
-  googleCallbackUrl: required('GOOGLE_CALLBACK_URL'),
+  // Google OAuth deshabilitado — estos campos ahora son opcionales
+  googleClientId: process.env['GOOGLE_CLIENT_ID'] ?? '',
+  googleClientSecret: process.env['GOOGLE_CLIENT_SECRET'] ?? '',
+  googleCallbackUrl: process.env['GOOGLE_CALLBACK_URL'] ?? '',
   frontendUrl: optional('FRONTEND_URL', 'http://localhost:5173'),
   storageProvider: optional('STORAGE_PROVIDER', 'local') as 'local' | 'cloudinary',
   cloudinaryCloudName: process.env['CLOUDINARY_CLOUD_NAME'],

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchAdminUsers, deactivateUser } from '../../api/admin'
+import { fetchAdminUsers, deactivateUser, createUser } from '../../api/admin'
+import type { AxiosError } from 'axios'
 import { ListRowSkeleton } from '../../components/ui/Skeleton'
 import { useToast } from '../../context/ToastContext'
 
@@ -27,6 +28,18 @@ export function AdminUsersPage() {
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const limit = 20
+
+  // Create user form state
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [createLoading, setCreateLoading] = useState(false)
+  const [newUser, setNewUser] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    phone: '',
+    role: 'USER' as 'USER' | 'ADMIN',
+  })
 
   // Debounce search
   useEffect(() => {
@@ -69,6 +82,39 @@ export function AdminUsersPage() {
     }
   }
 
+  async function handleCreateUser(e: React.FormEvent) {
+    e.preventDefault()
+    setCreateLoading(true)
+    try {
+      await createUser({
+        firstName: newUser.firstName.trim(),
+        lastName: newUser.lastName.trim(),
+        email: newUser.email.trim(),
+        password: newUser.password,
+        phone: newUser.phone.trim() || undefined,
+        role: newUser.role,
+      })
+      toast('Usuario creado correctamente', 'success')
+      setShowCreateForm(false)
+      setNewUser({ firstName: '', lastName: '', email: '', password: '', phone: '', role: 'USER' })
+      loadUsers()
+    } catch (err) {
+      const axiosErr = err as AxiosError
+      if (axiosErr.response?.status === 409) {
+        toast('El email ya está registrado', 'error')
+      } else {
+        toast('No se pudo crear el usuario', 'error')
+      }
+    } finally {
+      setCreateLoading(false)
+    }
+  }
+
+  function resetCreateForm() {
+    setShowCreateForm(false)
+    setNewUser({ firstName: '', lastName: '', email: '', password: '', phone: '', role: 'USER' })
+  }
+
   const totalPages = Math.ceil(total / limit)
 
   return (
@@ -84,7 +130,145 @@ export function AdminUsersPage() {
               {total}
             </span>
           )}
+          <div style={{ marginLeft: 'auto' }}>
+            <button
+              onClick={() => setShowCreateForm(true)}
+              style={{
+                background: '#1E1914',
+                color: '#E8E3D5',
+                border: 'none',
+                borderRadius: '0.875rem',
+                padding: '0.625rem 1.25rem',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                fontFamily: "'Inter', sans-serif",
+                cursor: 'pointer',
+              }}
+            >
+              + Crear usuario
+            </button>
+          </div>
         </div>
+
+        {/* Formulario de creación */}
+        {showCreateForm && (
+          <form
+            onSubmit={handleCreateUser}
+            style={{
+              background: '#fff',
+              borderRadius: '1rem',
+              padding: '1.5rem',
+              marginBottom: '1.5rem',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+              border: '1px solid #E8E3D5',
+            }}
+          >
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.2rem', fontWeight: 700, color: '#1E1914', marginTop: 0, marginBottom: '1.25rem' }}>
+              Nuevo usuario
+            </h2>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#1E1914', marginBottom: '0.375rem', fontFamily: "'Inter', sans-serif" }}>Nombre</label>
+                <input
+                  required
+                  type="text"
+                  value={newUser.firstName}
+                  onChange={e => setNewUser(p => ({ ...p, firstName: e.target.value }))}
+                  style={{ width: '100%', border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.75rem 1rem', fontSize: '0.9rem', background: '#fff', outline: 'none', boxSizing: 'border-box', fontFamily: "'Inter', sans-serif" }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#1E1914', marginBottom: '0.375rem', fontFamily: "'Inter', sans-serif" }}>Apellido</label>
+                <input
+                  required
+                  type="text"
+                  value={newUser.lastName}
+                  onChange={e => setNewUser(p => ({ ...p, lastName: e.target.value }))}
+                  style={{ width: '100%', border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.75rem 1rem', fontSize: '0.9rem', background: '#fff', outline: 'none', boxSizing: 'border-box', fontFamily: "'Inter', sans-serif" }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#1E1914', marginBottom: '0.375rem', fontFamily: "'Inter', sans-serif" }}>Email</label>
+                <input
+                  required
+                  type="email"
+                  value={newUser.email}
+                  onChange={e => setNewUser(p => ({ ...p, email: e.target.value }))}
+                  style={{ width: '100%', border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.75rem 1rem', fontSize: '0.9rem', background: '#fff', outline: 'none', boxSizing: 'border-box', fontFamily: "'Inter', sans-serif" }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#1E1914', marginBottom: '0.375rem', fontFamily: "'Inter', sans-serif" }}>Contraseña</label>
+                <input
+                  required
+                  type="password"
+                  value={newUser.password}
+                  onChange={e => setNewUser(p => ({ ...p, password: e.target.value }))}
+                  style={{ width: '100%', border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.75rem 1rem', fontSize: '0.9rem', background: '#fff', outline: 'none', boxSizing: 'border-box', fontFamily: "'Inter', sans-serif" }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#1E1914', marginBottom: '0.375rem', fontFamily: "'Inter', sans-serif" }}>Teléfono (opcional)</label>
+                <input
+                  type="text"
+                  value={newUser.phone}
+                  onChange={e => setNewUser(p => ({ ...p, phone: e.target.value }))}
+                  style={{ width: '100%', border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.75rem 1rem', fontSize: '0.9rem', background: '#fff', outline: 'none', boxSizing: 'border-box', fontFamily: "'Inter', sans-serif" }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#1E1914', marginBottom: '0.375rem', fontFamily: "'Inter', sans-serif" }}>Rol</label>
+                <select
+                  value={newUser.role}
+                  onChange={e => setNewUser(p => ({ ...p, role: e.target.value as 'USER' | 'ADMIN' }))}
+                  style={{ width: '100%', border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.75rem 1rem', fontSize: '0.9rem', background: '#fff', outline: 'none', boxSizing: 'border-box', fontFamily: "'Inter', sans-serif", cursor: 'pointer' }}
+                >
+                  <option value="USER">Vendedor</option>
+                  <option value="ADMIN">Administrador</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={resetCreateForm}
+                style={{
+                  background: '#E8E3D5',
+                  color: '#1E1914',
+                  border: 'none',
+                  borderRadius: '0.875rem',
+                  padding: '0.625rem 1.25rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 500,
+                  fontFamily: "'Inter', sans-serif",
+                  cursor: 'pointer',
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={createLoading}
+                style={{
+                  background: '#1E1914',
+                  color: '#E8E3D5',
+                  border: 'none',
+                  borderRadius: '0.875rem',
+                  padding: '0.625rem 1.25rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  fontFamily: "'Inter', sans-serif",
+                  cursor: createLoading ? 'not-allowed' : 'pointer',
+                  opacity: createLoading ? 0.6 : 1,
+                }}
+              >
+                {createLoading ? 'Creando...' : 'Crear'}
+              </button>
+            </div>
+          </form>
+        )}
 
         {/* Buscador */}
         <input

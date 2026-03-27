@@ -8,6 +8,8 @@ export interface User {
   phone: string | null
   avatarUrl: string | null
   role: Role
+  paymentMethod?: string | null
+  bankAlias?: string | null
 }
 
 export type SubmissionItemStatus =
@@ -18,16 +20,32 @@ export type SubmissionItemStatus =
   | 'SOLD'
   | 'RETURNED'
 
-export type ItemSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'UNICA'
+export interface ProductType {
+  id: string
+  name: string
+  code: string
+  requiresSize: boolean
+  isActive: boolean
+  order: number
+  sizes?: Size[]
+  tags?: Tag[]
+}
 
-export type ItemCategory =
-  | 'MUJER'
-  | 'HOMBRE'
-  | 'NINO'
-  | 'NINA'
-  | 'CALZADO'
-  | 'ACCESORIOS'
-  | 'OTRO'
+export interface Size {
+  id: string
+  name: string
+  order: number
+  isActive: boolean
+  productTypeId: string
+}
+
+export interface Tag {
+  id: string
+  name: string
+  isActive: boolean
+  order: number
+  productTypeId: string
+}
 
 export type ItemCondition =
   | 'NUEVA_CON_ETIQUETA'
@@ -44,15 +62,6 @@ export const CONDITION_LABELS: Record<ItemCondition, string> = {
   BUEN_ESTADO: 'Buen estado',
   USO_MODERADO: 'Uso moderado',
   USO_INTENSO: 'Uso intenso',
-}
-
-export const SIZE_LABELS: Record<ItemSize, string> = {
-  XS: 'XS', S: 'S', M: 'M', L: 'L', XL: 'XL', XXL: 'XXL', UNICA: 'Única',
-}
-
-export const CATEGORY_LABELS: Record<ItemCategory, string> = {
-  MUJER: 'Mujer', HOMBRE: 'Hombre', NINO: 'Niño', NINA: 'Niña',
-  CALZADO: 'Calzado', ACCESORIOS: 'Accesorios', OTRO: 'Otro',
 }
 
 export const STATUS_LABELS: Record<SubmissionItemStatus, string> = {
@@ -72,11 +81,15 @@ export interface ItemPhoto {
 
 export interface Item {
   id: string
+  code?: string | null
   title: string
   description: string | null
   condition: ItemCondition
-  size: ItemSize
-  category: ItemCategory
+  productTypeId: string
+  productType?: ProductType
+  sizeId?: string | null
+  size?: Size | null
+  tags?: { tag: Tag }[]
   quantity: number
   price: number
   isActive: boolean
@@ -89,8 +102,11 @@ export interface SubmissionItem {
   title: string
   description: string | null
   condition: ItemCondition
-  size: ItemSize
-  category: ItemCategory
+  productTypeId: string
+  productType?: ProductType
+  sizeId?: string | null
+  size?: Size | null
+  tags?: { tag: Tag }[]
   quantity: number
   desiredPrice: number
   minimumPrice: number | null

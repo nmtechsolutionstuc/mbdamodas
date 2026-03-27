@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import axiosClient from '../../api/axiosClient'
+import { useToast } from '../../context/ToastContext'
 
 interface Store {
   id: string
@@ -12,6 +13,7 @@ interface Store {
 }
 
 export function AdminStoresPage() {
+  const { toast } = useToast()
   const [stores, setStores] = useState<Store[]>([])
   const [editing, setEditing] = useState<Store | null>(null)
   const [loading, setLoading] = useState(true)
@@ -47,7 +49,7 @@ export function AdminStoresPage() {
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch {
-      alert('No se pudo guardar')
+      toast('No se pudo guardar', 'error')
     } finally {
       setSaving(false)
     }

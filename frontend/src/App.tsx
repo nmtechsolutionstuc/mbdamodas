@@ -23,6 +23,7 @@ import { AdminSubmissionDetailPage } from './pages/admin/AdminSubmissionDetailPa
 import { AdminStoresPage } from './pages/admin/AdminStoresPage'
 import { AdminCatalogPage } from './pages/admin/AdminCatalogPage'
 import { AdminUsersPage } from './pages/admin/AdminUsersPage'
+import { AdminCatalogSettingsPage } from './pages/admin/AdminCatalogSettingsPage'
 import { TermsPage } from './pages/public/TermsPage'
 import { AboutPage } from './pages/public/AboutPage'
 import { NotFoundPage } from './pages/public/NotFoundPage'
@@ -59,6 +60,7 @@ function App() {
           <Route path="/admin/catalogo" element={<AdminRoute><AdminCatalogPage /></AdminRoute>} />
           <Route path="/admin/usuarios" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
           <Route path="/admin/tiendas" element={<AdminRoute><AdminStoresPage /></AdminRoute>} />
+          <Route path="/admin/configuracion" element={<AdminRoute><AdminCatalogSettingsPage /></AdminRoute>} />
 
           {/* 404 */}
           <Route path="*" element={<NotFoundPage />} />

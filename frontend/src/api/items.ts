@@ -1,9 +1,10 @@
 import axiosClient from './axiosClient'
-import type { Item, ApiResponse } from '../types'
+import type { Item, ProductType, ApiResponse } from '../types'
 
 export interface ItemFilters {
-  category?: string
-  size?: string
+  productTypeId?: string
+  sizeId?: string
+  tagId?: string
   search?: string
   storeId?: string
   page?: number
@@ -18,5 +19,10 @@ export async function fetchItems(filters: ItemFilters = {}): Promise<{ items: It
 
 export async function fetchItemById(id: string): Promise<Item> {
   const { data } = await axiosClient.get<ApiResponse<Item>>(`/items/${id}`)
+  return data.data
+}
+
+export async function fetchPublicProductTypes(): Promise<ProductType[]> {
+  const { data } = await axiosClient.get<ApiResponse<ProductType[]>>('/items/product-types')
   return data.data
 }

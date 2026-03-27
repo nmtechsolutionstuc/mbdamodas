@@ -23,7 +23,7 @@ export function Footer() {
             {[
               { label: 'Catálogo', to: '/' },
               { label: 'Nosotros', to: '/nosotros' },
-              { label: 'Vender mis prendas', to: '/login' },
+              { label: 'Vender mis productos', to: '/register' },
             ].map(l => (
               <Link key={l.to} to={l.to} style={{ color: 'rgba(232,227,213,0.7)', textDecoration: 'none', fontSize: '0.875rem', transition: 'color 0.15s' }}
                 onMouseEnter={e => (e.currentTarget.style.color = '#E8E3D5')}

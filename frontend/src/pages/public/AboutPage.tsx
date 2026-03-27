@@ -13,7 +13,7 @@ export function AboutPage() {
             La tienda donde la ropa encuentra su próxima historia
           </h1>
           <p style={{ fontSize: '1.1rem', opacity: 0.8, lineHeight: 1.7 }}>
-            MBDA Modas es una tienda de consignación en Buenos Aires. Ayudamos a personas a vender su ropa en buen estado y a compradores a encontrar prendas únicas a precios accesibles.
+            MBDA Modas es una tienda de consignación en Buenos Aires. Ayudamos a personas a vender su ropa en buen estado y a compradores a encontrar productos únicos a precios accesibles.
           </p>
         </div>
       </div>
@@ -28,9 +28,9 @@ export function AboutPage() {
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {[
-              { n: '1', title: 'Enviás tus prendas', desc: 'Ingresás al catálogo online, completás los datos de tus prendas y subís fotos desde tu celular.' },
-              { n: '2', title: 'Nosotros las revisamos', desc: 'El equipo de MBDA Modas revisa cada prenda. Si la aprobamos, la sumamos a nuestra vidriera física y al catálogo online.' },
-              { n: '3', title: 'Se vende y te avisamos', desc: 'Cuando alguien compra tu prenda, te notificamos por WhatsApp con el monto que te corresponde. Pasás a buscar tu dinero.' },
+              { n: '1', title: 'Enviás tus productos', desc: 'Ingresás al catálogo online, completás los datos de tus productos y subís fotos desde tu celular.' },
+              { n: '2', title: 'Nosotros los revisamos', desc: 'El equipo de MBDA Modas revisa cada producto. Si lo aprobamos, lo sumamos a nuestra vidriera física y al catálogo online.' },
+              { n: '3', title: 'Se vende y te avisamos', desc: 'Cuando alguien compra tu producto, te notificamos por WhatsApp con el monto que te corresponde. Pasás a buscar tu dinero.' },
             ].map(step => (
               <div key={step.n} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#1E1914', color: '#E8E3D5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 700, flexShrink: 0 }}>
@@ -51,7 +51,7 @@ export function AboutPage() {
             Para compradores
           </h2>
           <p style={{ color: '#4b5563', lineHeight: 1.7, marginBottom: '1.25rem' }}>
-            Cada prenda en nuestro catálogo fue revisada y seleccionada por nuestro equipo. Encontrás ropa de calidad a precios que no vas a ver en ninguna tienda nueva. Y si te interesa algo, consultás directo por WhatsApp.
+            Cada producto en nuestro catálogo fue revisado y seleccionado por nuestro equipo. Encontrás ropa de calidad a precios que no vas a ver en ninguna tienda nueva. Y si te interesa algo, consultás directo por WhatsApp.
           </p>
           <Link
             to="/"
@@ -70,7 +70,7 @@ export function AboutPage() {
             Sin capital inicial, sin esfuerzo. Vos traés la ropa, nosotros la vendemos. Al concretarse la venta te transferimos tu parte descontando la comisión acordada. Sin sorpresas.
           </p>
           <Link
-            to="/login"
+            to="/register"
             style={{ display: 'inline-block', background: '#E8E3D5', color: '#1E1914', padding: '0.75rem 1.5rem', borderRadius: '0.875rem', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}
           >
             Empezar a vender

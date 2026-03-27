@@ -13,23 +13,23 @@ export function TermsPage() {
         {[
           {
             title: 'Art. 1 — Objeto',
-            body: 'El presente contrato regula la relación de consignación entre MBDA Modas (en adelante "la Tienda") y el usuario vendedor (en adelante "el Consignante") para la comercialización de prendas de vestir y accesorios de segunda mano a través de la plataforma digital y el local físico de la Tienda.',
+            body: 'El presente contrato regula la relación de consignación entre MBDA Modas (en adelante "la Tienda") y el usuario vendedor (en adelante "el Consignante") para la comercialización de productos de vestir y accesorios de segunda mano a través de la plataforma digital y el local físico de la Tienda.',
           },
           {
             title: 'Art. 2 — Consignación mercantil',
-            body: 'Las prendas entregadas en consignación continúan siendo propiedad del Consignante hasta el momento de su venta efectiva. La Tienda actúa como intermediaria y no adquiere propiedad sobre las prendas consignadas.',
+            body: 'Los productos entregados en consignación continúan siendo propiedad del Consignante hasta el momento de su venta efectiva. La Tienda actúa como intermediaria y no adquiere propiedad sobre los productos consignados.',
           },
           {
             title: 'Art. 3 — Comisión',
-            body: 'La Tienda retendrá el porcentaje de comisión vigente al momento de la aprobación de la prenda, informado en la notificación de aprobación. El monto neto correspondiente al Consignante será liquidado una vez verificada la venta. La comisión puede variar según lo determine la Tienda, siendo notificado al Consignante antes de la entrega física de la prenda.',
+            body: 'La Tienda retendrá el porcentaje de comisión vigente al momento de la aprobación del producto, informado en la notificación de aprobación. El monto neto correspondiente al Consignante será liquidado una vez verificada la venta. La comisión puede variar según lo determine la Tienda, siendo notificado al Consignante antes de la entrega física del producto.',
           },
           {
             title: 'Art. 4 — Proceso de admisión',
-            body: 'El Consignante enviará solicitudes a través de la plataforma digital. La Tienda se reserva el derecho de aceptar o rechazar prendas sin obligación de fundamentar su decisión más allá de la notificación al Consignante. Solo las prendas aprobadas serán incluidas en el catálogo y expuestas en el local.',
+            body: 'El Consignante enviará solicitudes a través de la plataforma digital. La Tienda se reserva el derecho de aceptar o rechazar productos sin obligación de fundamentar su decisión más allá de la notificación al Consignante. Solo los productos aprobados serán incluidos en el catálogo y expuestos en el local.',
           },
           {
-            title: 'Art. 5 — Estado de las prendas',
-            body: 'El Consignante garantiza que las prendas son de su legítima propiedad, se encuentran en las condiciones declaradas en el formulario de envío y no tienen cargas, gravámenes ni restricciones legales. La Tienda podrá rechazar físicamente prendas que no coincidan con la descripción digital.',
+            title: 'Art. 5 — Estado de los productos',
+            body: 'El Consignante garantiza que los productos son de su legítima propiedad, se encuentran en las condiciones declaradas en el formulario de envío y no tienen cargas, gravámenes ni restricciones legales. La Tienda podrá rechazar físicamente productos que no coincidan con la descripción digital.',
           },
           {
             title: 'Art. 6 — Precio de venta',
@@ -37,15 +37,15 @@ export function TermsPage() {
           },
           {
             title: 'Art. 7 — Plazo y devolución',
-            body: 'Las prendas permanecerán en consignación por tiempo indeterminado. El Consignante podrá solicitar la devolución de sus prendas en cualquier momento, siempre que no hayan sido vendidas. La Tienda notificará la disponibilidad de retiro vía WhatsApp.',
+            body: 'Los productos permanecerán en consignación por tiempo indeterminado. El Consignante podrá solicitar la devolución de sus productos en cualquier momento, siempre que no hayan sido vendidos. La Tienda notificará la disponibilidad de retiro vía WhatsApp.',
           },
           {
             title: 'Art. 8 — Responsabilidad',
-            body: 'La Tienda tomará los recaudos razonables para la custodia de las prendas, pero no responde por caso fortuito, fuerza mayor, robo con violencia o siniestros. Se recomienda al Consignante no consignar prendas de valor sentimental irremplazable.',
+            body: 'La Tienda tomará los recaudos razonables para la custodia de los productos, pero no responde por caso fortuito, fuerza mayor, robo con violencia o siniestros. Se recomienda al Consignante no consignar productos de valor sentimental irremplazable.',
           },
           {
             title: 'Art. 9 — Notificaciones',
-            body: 'Todas las notificaciones relacionadas con el estado de las prendas se realizarán a través de la plataforma y/o WhatsApp al número registrado por el Consignante en su perfil. Es responsabilidad del Consignante mantener su número actualizado.',
+            body: 'Todas las notificaciones relacionadas con el estado de los productos se realizarán a través de la plataforma y/o WhatsApp al número registrado por el Consignante en su perfil. Es responsabilidad del Consignante mantener su número actualizado.',
           },
           {
             title: 'Art. 10 — Protección de datos',

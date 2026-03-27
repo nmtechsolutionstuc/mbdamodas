@@ -17,24 +17,24 @@ export function Navbar() {
 
   const isAdmin = user?.role === 'ADMIN'
 
-  // Links según rol
+  // Links segun rol
   const links = isAdmin
     ? [
         { label: 'Solicitudes', to: '/admin/solicitudes' },
-        { label: 'Catálogo', to: '/admin/catalogo' },
+        { label: 'Catalogo', to: '/admin/catalogo' },
         { label: 'Usuarios', to: '/admin/usuarios' },
         { label: 'Tiendas', to: '/admin/tiendas' },
       ]
     : user
     ? [
-        { label: 'Catálogo', to: '/' },
+        { label: 'Catalogo', to: '/' },
         { label: 'Mis solicitudes', to: '/dashboard/mis-solicitudes' },
-        { label: 'Vender prendas', to: '/dashboard/enviar' },
+        { label: 'Vender productos', to: '/dashboard/enviar' },
       ]
     : [
-        { label: 'Catálogo', to: '/' },
+        { label: 'Catalogo', to: '/' },
         { label: 'Nosotros', to: '/nosotros' },
-        { label: 'Vender mis prendas', to: '/login' },
+        { label: 'Vender mis productos', to: '/register' },
       ]
 
   return (
@@ -65,7 +65,17 @@ export function Navbar() {
             MBDA Modas
           </span>
           {isAdmin && (
-            <span style={{ fontSize: '0.65rem', background: '#E8E3D5', color: '#1E1914', padding: '0.1rem 0.4rem', borderRadius: '999px', fontWeight: 700, letterSpacing: '0.05em' }}>
+            <span style={{
+              fontSize: '0.6rem',
+              background: 'linear-gradient(135deg, #E8E3D5 0%, #d9d2c0 100%)',
+              color: '#1E1914',
+              padding: '0.15rem 0.5rem',
+              borderRadius: '999px',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+            }}>
               ADMIN
             </span>
           )}
@@ -84,11 +94,12 @@ export function Navbar() {
                 borderRadius: '0.5rem',
                 fontSize: '0.875rem',
                 fontWeight: 500,
+                fontFamily: "'Inter', sans-serif",
                 opacity: 0.85,
-                transition: 'opacity 0.15s',
+                transition: 'opacity 0.15s ease, background 0.15s ease',
               }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = 'rgba(232,227,213,0.08)' }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '0.85'; e.currentTarget.style.background = 'transparent' }}
             >
               {l.label}
             </Link>
@@ -98,22 +109,22 @@ export function Navbar() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '0.5rem' }}>
               <Link
                 to={isAdmin ? '/admin' : '/dashboard/perfil'}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', textDecoration: 'none', color: '#E8E3D5', fontSize: '0.875rem', opacity: 0.85 }}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', textDecoration: 'none', color: '#E8E3D5', fontSize: '0.875rem', opacity: 0.85, transition: 'opacity 0.15s ease' }}
                 onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
                 onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
               >
-                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#E8E3D5', color: '#1E1914', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700 }}>
-                  {user.firstName.charAt(0).toUpperCase()}
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#E8E3D5', color: '#1E1914', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
+                  {user.firstName?.charAt(0)?.toUpperCase() ?? '?'}
                 </div>
-                <span style={{ maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {user.firstName}
+                <span style={{ maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: "'Inter', sans-serif" }}>
+                  {user.firstName ?? ''}
                 </span>
               </Link>
               <button
                 onClick={handleLogout}
-                style={{ background: 'transparent', border: '1px solid rgba(232,227,213,0.4)', color: '#E8E3D5', borderRadius: '0.5rem', padding: '0.25rem 0.75rem', cursor: 'pointer', fontSize: '0.8rem', opacity: 0.8 }}
-                onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-                onMouseLeave={e => (e.currentTarget.style.opacity = '0.8')}
+                style={{ background: 'transparent', border: '1px solid rgba(232,227,213,0.4)', color: '#E8E3D5', borderRadius: '0.5rem', padding: '0.25rem 0.75rem', cursor: 'pointer', fontSize: '0.8rem', opacity: 0.8, fontFamily: "'Inter', sans-serif", transition: 'opacity 0.15s ease, border-color 0.15s ease' }}
+                onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.borderColor = 'rgba(232,227,213,0.7)' }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = '0.8'; e.currentTarget.style.borderColor = 'rgba(232,227,213,0.4)' }}
               >
                 Salir
               </button>
@@ -122,7 +133,7 @@ export function Navbar() {
             <div style={{ display: 'flex', gap: '0.375rem', marginLeft: '0.5rem' }}>
               <Link
                 to="/login"
-                style={{ color: '#E8E3D5', textDecoration: 'none', padding: '0.375rem 0.875rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, opacity: 0.85 }}
+                style={{ color: '#E8E3D5', textDecoration: 'none', padding: '0.375rem 0.875rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, opacity: 0.85, fontFamily: "'Inter', sans-serif", transition: 'opacity 0.15s ease' }}
                 onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
                 onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
               >
@@ -130,7 +141,9 @@ export function Navbar() {
               </Link>
               <Link
                 to="/register"
-                style={{ background: '#E8E3D5', color: '#1E1914', textDecoration: 'none', padding: '0.375rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}
+                style={{ background: '#E8E3D5', color: '#1E1914', textDecoration: 'none', padding: '0.375rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 600, fontFamily: "'Inter', sans-serif", transition: 'background 0.15s ease' }}
+                onMouseEnter={e => (e.currentTarget.style.background = '#f5f0e6')}
+                onMouseLeave={e => (e.currentTarget.style.background = '#E8E3D5')}
               >
                 Registrate
               </Link>
@@ -141,65 +154,88 @@ export function Navbar() {
         {/* Hamburger (mobile) */}
         <button
           onClick={() => setMenuOpen(v => !v)}
-          aria-label="Abrir menú"
+          aria-label="Abrir menu"
           style={{ background: 'transparent', border: 'none', color: '#E8E3D5', cursor: 'pointer', padding: '0.375rem', display: 'none' }}
           className="hamburger-btn"
         >
-          <span style={{ display: 'block', width: '22px', height: '2px', background: '#E8E3D5', marginBottom: '5px', borderRadius: '2px' }} />
-          <span style={{ display: 'block', width: '22px', height: '2px', background: '#E8E3D5', marginBottom: '5px', borderRadius: '2px' }} />
-          <span style={{ display: 'block', width: '22px', height: '2px', background: '#E8E3D5', borderRadius: '2px' }} />
+          <span style={{
+            display: 'block', width: '22px', height: '2px', background: '#E8E3D5', borderRadius: '2px',
+            transition: 'transform 0.25s ease, opacity 0.25s ease',
+            transform: menuOpen ? 'rotate(45deg) translate(3.5px, 3.5px)' : 'none',
+            marginBottom: menuOpen ? '0' : '5px',
+          }} />
+          <span style={{
+            display: 'block', width: '22px', height: '2px', background: '#E8E3D5', borderRadius: '2px',
+            transition: 'opacity 0.2s ease',
+            opacity: menuOpen ? 0 : 1,
+            marginBottom: menuOpen ? '0' : '5px',
+          }} />
+          <span style={{
+            display: 'block', width: '22px', height: '2px', background: '#E8E3D5', borderRadius: '2px',
+            transition: 'transform 0.25s ease, opacity 0.25s ease',
+            transform: menuOpen ? 'rotate(-45deg) translate(3.5px, -3.5px)' : 'none',
+          }} />
         </button>
       </div>
 
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div style={{ background: '#2a2420', padding: '0.75rem 1rem 1rem', borderTop: '1px solid rgba(232,227,213,0.1)', display: 'none' }} className="mobile-menu">
-          {links.map(l => (
+      {/* Mobile menu - always rendered, controlled by max-height transition */}
+      <div
+        style={{
+          background: '#2a2420',
+          borderTop: '1px solid rgba(232,227,213,0.1)',
+          display: 'none',
+          overflow: 'hidden',
+          maxHeight: menuOpen ? '500px' : '0',
+          transition: 'max-height 0.3s ease-in-out',
+          padding: menuOpen ? '0.75rem 1rem 1rem' : '0 1rem',
+        }}
+        className="mobile-menu"
+      >
+        {links.map(l => (
+          <Link
+            key={l.to}
+            to={l.to}
+            onClick={() => setMenuOpen(false)}
+            style={{ display: 'block', color: '#E8E3D5', textDecoration: 'none', padding: '0.75rem 0', fontSize: '1rem', borderBottom: '1px solid rgba(232,227,213,0.08)', fontFamily: "'Inter', sans-serif" }}
+          >
+            {l.label}
+          </Link>
+        ))}
+        {user ? (
+          <>
             <Link
-              key={l.to}
-              to={l.to}
+              to={isAdmin ? '/admin' : '/dashboard/perfil'}
               onClick={() => setMenuOpen(false)}
-              style={{ display: 'block', color: '#E8E3D5', textDecoration: 'none', padding: '0.75rem 0', fontSize: '1rem', borderBottom: '1px solid rgba(232,227,213,0.08)' }}
+              style={{ display: 'block', color: '#E8E3D5', textDecoration: 'none', padding: '0.75rem 0', fontSize: '1rem', borderBottom: '1px solid rgba(232,227,213,0.08)', fontFamily: "'Inter', sans-serif" }}
             >
-              {l.label}
+              Mi perfil ({user.firstName ?? ''})
             </Link>
-          ))}
-          {user ? (
-            <>
-              <Link
-                to={isAdmin ? '/admin' : '/dashboard/perfil'}
-                onClick={() => setMenuOpen(false)}
-                style={{ display: 'block', color: '#E8E3D5', textDecoration: 'none', padding: '0.75rem 0', fontSize: '1rem', borderBottom: '1px solid rgba(232,227,213,0.08)' }}
-              >
-                Mi perfil ({user.firstName})
-              </Link>
-              <button
-                onClick={handleLogout}
-                style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', color: '#fca5a5', padding: '0.75rem 0', fontSize: '1rem', cursor: 'pointer', marginTop: '0.25rem' }}
-              >
-                Cerrar sesión
-              </button>
-            </>
-          ) : (
-            <>
-              <Link
-                to="/login"
-                onClick={() => setMenuOpen(false)}
-                style={{ display: 'block', color: '#E8E3D5', textDecoration: 'none', padding: '0.75rem 0', fontSize: '1rem', borderBottom: '1px solid rgba(232,227,213,0.08)' }}
-              >
-                Ingresar
-              </Link>
-              <Link
-                to="/register"
-                onClick={() => setMenuOpen(false)}
-                style={{ display: 'block', color: '#1E1914', background: '#E8E3D5', textDecoration: 'none', padding: '0.625rem 1rem', borderRadius: '0.75rem', fontSize: '1rem', fontWeight: 600, marginTop: '0.5rem', textAlign: 'center' }}
-              >
-                Registrate
-              </Link>
-            </>
-          )}
-        </div>
-      )}
+            <button
+              onClick={handleLogout}
+              style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', color: '#fca5a5', padding: '0.75rem 0', fontSize: '1rem', cursor: 'pointer', marginTop: '0.25rem', fontFamily: "'Inter', sans-serif" }}
+            >
+              Cerrar sesion
+            </button>
+          </>
+        ) : (
+          <>
+            <Link
+              to="/login"
+              onClick={() => setMenuOpen(false)}
+              style={{ display: 'block', color: '#E8E3D5', textDecoration: 'none', padding: '0.75rem 0', fontSize: '1rem', borderBottom: '1px solid rgba(232,227,213,0.08)', fontFamily: "'Inter', sans-serif" }}
+            >
+              Ingresar
+            </Link>
+            <Link
+              to="/register"
+              onClick={() => setMenuOpen(false)}
+              style={{ display: 'block', color: '#1E1914', background: '#E8E3D5', textDecoration: 'none', padding: '0.625rem 1rem', borderRadius: '0.75rem', fontSize: '1rem', fontWeight: 600, marginTop: '0.5rem', textAlign: 'center', fontFamily: "'Inter', sans-serif" }}
+            >
+              Registrate
+            </Link>
+          </>
+        )}
+      </div>
 
       {/* Responsive styles */}
       <style>{`

@@ -4,9 +4,12 @@ import { authorize } from '../middlewares/authorize'
 import {
   listSubmissions, getSubmission,
   approve, reject, markInStore, markSold, markReturned,
-  listCatalog, editCatalogItem, softDeleteCatalogItem,
-  listUsers, deactivateUser,
+  listCatalog, createCatalogItem, editCatalogItem, softDeleteCatalogItem,
+  listUsers, createUser, deactivateUser,
   getDashboardStats,
+  listProductTypes, toggleProductType,
+  createSize, toggleSize,
+  createTag, toggleTag,
 } from '../controllers/admin.controller'
 import { listStores, createStore, updateStore } from '../controllers/store.controller'
 
@@ -31,11 +34,21 @@ router.patch('/items/:itemId/mark-returned', markReturned)
 
 // Catálogo (Items aprobados)
 router.get('/catalog', listCatalog)
+router.post('/catalog', createCatalogItem)
 router.patch('/catalog/:id', editCatalogItem)
 router.delete('/catalog/:id', softDeleteCatalogItem)
 
+// Product Types / Sizes / Tags
+router.get('/product-types', listProductTypes)
+router.patch('/product-types/:id/toggle', toggleProductType)
+router.post('/sizes', createSize)
+router.patch('/sizes/:id/toggle', toggleSize)
+router.post('/tags', createTag)
+router.patch('/tags/:id/toggle', toggleTag)
+
 // Usuarios
 router.get('/users', listUsers)
+router.post('/users', createUser)
 router.patch('/users/:id/deactivate', deactivateUser)
 
 // Tiendas

@@ -16,11 +16,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Al montar: si hay token en memoria intentar obtener el usuario;
   // si no, intentar renovar con el refresh token (httpOnly cookie)
   useEffect(() => {
+    let cancelled = false
+
     if (accessToken && !user) {
       fetchMe()
-        .then(u => setAuth(u, accessToken))
-        .catch(() => clearAuth())
-      return
+        .then(u => { if (!cancelled) setAuth(u, accessToken) })
+        .catch(() => { if (!cancelled) clearAuth() })
+      return () => { cancelled = true }
     }
     if (!accessToken) {
       // Intenta renovar silenciosamente
@@ -29,15 +31,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .post('/auth/refresh')
           .then(({ data }) => {
             const newToken: string = data.data.accessToken
-            return fetchMe().then(u => setAuth(u, newToken))
+            return fetchMe().then(u => {
+              if (!cancelled) setAuth(u, newToken)
+            })
           })
           .catch(() => {
-            clearAuth()
+            // Solo limpiar si no se autenticó por otro camino (ej: register/login)
+            if (!cancelled && !useAuthStore.getState().user) {
+              clearAuth()
+            } else if (!cancelled) {
+              setLoading(false)
+            }
           })
       })
     } else {
       setLoading(false)
     }
+
+    return () => { cancelled = true }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const value: AuthContextValue = {

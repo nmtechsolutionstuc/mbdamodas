@@ -1,14 +1,14 @@
 import { Request, Response } from 'express'
-import { ItemCategory, ItemSize } from '@prisma/client'
 import { getPublicItems, getPublicItemById } from '../services/item.service'
+import { prisma } from '../config/prisma'
 import { ok, notFound } from '../utils/apiResponse'
 
 export async function listItems(req: Request, res: Response): Promise<void> {
-  const { category, size, search, storeId, page, limit } = req.query
+  const { productTypeId, sizeId, search, storeId, page, limit } = req.query
 
   const items = await getPublicItems({
-    category: category as ItemCategory | undefined,
-    size: size as ItemSize | undefined,
+    productTypeId: productTypeId as string | undefined,
+    sizeId: sizeId as string | undefined,
     search: search as string | undefined,
     storeId: storeId as string | undefined,
     page: page ? parseInt(page as string, 10) : undefined,
@@ -20,6 +20,18 @@ export async function listItems(req: Request, res: Response): Promise<void> {
     limit: items.limit,
     total: items.total,
   })
+}
+
+export async function listPublicProductTypes(_req: Request, res: Response): Promise<void> {
+  const productTypes = await prisma.productType.findMany({
+    where: { isActive: true },
+    orderBy: { order: 'asc' },
+    include: {
+      sizes: { where: { isActive: true }, orderBy: { order: 'asc' } },
+      tags: { where: { isActive: true }, orderBy: { order: 'asc' } },
+    },
+  })
+  ok(res, productTypes)
 }
 
 export async function getItem(req: Request, res: Response): Promise<void> {

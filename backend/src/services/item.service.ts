@@ -1,9 +1,9 @@
-import { ItemCategory, ItemSize, Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { prisma } from '../config/prisma'
 
 export interface ItemFilters {
-  category?: ItemCategory
-  size?: ItemSize
+  productTypeId?: string
+  sizeId?: string
   search?: string
   storeId?: string
   page?: number
@@ -17,8 +17,8 @@ export async function getPublicItems(filters: ItemFilters) {
 
   const where: Prisma.ItemWhereInput = {
     isActive: true,
-    ...(filters.category && { category: filters.category }),
-    ...(filters.size && { size: filters.size }),
+    ...(filters.productTypeId && { productTypeId: filters.productTypeId }),
+    ...(filters.sizeId && { sizeId: filters.sizeId }),
     ...(filters.storeId && { storeId: filters.storeId }),
     ...(filters.search && {
       OR: [
@@ -36,11 +36,14 @@ export async function getPublicItems(filters: ItemFilters) {
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
+        code: true,
         title: true,
         description: true,
         condition: true,
-        size: true,
-        category: true,
+        productTypeId: true,
+        productType: { select: { id: true, name: true, code: true } },
+        sizeId: true,
+        size: { select: { id: true, name: true } },
         quantity: true,
         price: true,
         isActive: true,
@@ -52,6 +55,9 @@ export async function getPublicItems(filters: ItemFilters) {
         },
         store: {
           select: { id: true, name: true, phone: true },
+        },
+        tags: {
+          include: { tag: { select: { id: true, name: true } } },
         },
       },
     }),
@@ -66,11 +72,14 @@ export async function getPublicItemById(id: string) {
     where: { id, isActive: true },
     select: {
       id: true,
+      code: true,
       title: true,
       description: true,
       condition: true,
-      size: true,
-      category: true,
+      productTypeId: true,
+      productType: { select: { id: true, name: true, code: true } },
+      sizeId: true,
+      size: { select: { id: true, name: true } },
       quantity: true,
       price: true,
       createdAt: true,
@@ -80,6 +89,9 @@ export async function getPublicItemById(id: string) {
       },
       store: {
         select: { id: true, name: true, phone: true },
+      },
+      tags: {
+        include: { tag: { select: { id: true, name: true } } },
       },
     },
   })

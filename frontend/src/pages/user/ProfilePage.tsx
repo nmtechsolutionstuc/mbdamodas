@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useAuthStore } from '../../store/authStore'
 import { updateProfile } from '../../api/auth'
+import { useToast } from '../../context/ToastContext'
 
 const schema = z.object({
   firstName: z.string().min(1, 'Requerido'),
@@ -15,8 +16,10 @@ type FormData = z.infer<typeof schema>
 
 export function ProfilePage() {
   const { user, setAuth, accessToken } = useAuthStore()
-  const [saved, setSaved] = useState(false)
+  const { toast } = useToast()
   const [error, setError] = useState<string | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<string>(user?.paymentMethod ?? 'EFECTIVO')
+  const [bankAlias, setBankAlias] = useState<string>(user?.bankAlias ?? '')
 
   const {
     register,
@@ -31,6 +34,9 @@ export function ProfilePage() {
     },
   })
 
+  const labelStyle = { display: 'block', fontSize: '0.875rem', fontWeight: 500 as const, color: '#1E1914', marginBottom: '0.25rem' }
+  const inputStyle = { width: '100%', padding: '0.75rem 1rem', borderRadius: '0.75rem', border: '1px solid #E8E3D5', fontSize: '1rem', color: '#1E1914', background: '#fff', boxSizing: 'border-box' as const }
+
   async function onSubmit(values: FormData) {
     setError(null)
     try {
@@ -38,94 +44,117 @@ export function ProfilePage() {
         firstName: values.firstName,
         lastName: values.lastName,
         phone: values.phone || null,
+        paymentMethod: paymentMethod || null,
+        bankAlias: paymentMethod === 'TRANSFERENCIA' ? (bankAlias || null) : null,
       })
       setAuth(updated, accessToken!)
-      setSaved(true)
-      setTimeout(() => setSaved(false), 3000)
+      toast('Datos guardados correctamente', 'success')
     } catch {
       setError('No se pudo guardar. Intentá de nuevo.')
     }
   }
 
   return (
-    <div className="min-h-screen p-6" style={{ background: '#FAF8F3' }}>
-      <div className="max-w-md mx-auto">
+    <div style={{ minHeight: '100vh', background: '#FAF8F3', padding: '1.5rem' }}>
+      <div style={{ maxWidth: '460px', margin: '0 auto' }}>
         <h1
-          className="text-3xl font-bold mb-6"
-          style={{ fontFamily: "'Playfair Display', serif", color: '#1E1914' }}
+          style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.75rem', fontWeight: 700, color: '#1E1914', marginBottom: '1.5rem' }}
         >
           Mi perfil
         </h1>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: '#1E1914' }}>
-              Nombre
-            </label>
-            <input
-              {...register('firstName')}
-              className="w-full px-4 py-3 rounded-xl border text-base"
-              style={{ borderColor: '#E8E3D5', background: '#fff', color: '#1E1914' }}
-            />
+            <label style={labelStyle}>Nombre</label>
+            <input {...register('firstName')} style={inputStyle} />
             {errors.firstName && (
-              <p className="text-sm mt-1" style={{ color: '#ef4444' }}>{errors.firstName.message}</p>
+              <p style={{ fontSize: '0.8rem', color: '#ef4444', marginTop: '0.25rem' }}>{errors.firstName.message}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: '#1E1914' }}>
-              Apellido
-            </label>
-            <input
-              {...register('lastName')}
-              className="w-full px-4 py-3 rounded-xl border text-base"
-              style={{ borderColor: '#E8E3D5', background: '#fff', color: '#1E1914' }}
-            />
+            <label style={labelStyle}>Apellido</label>
+            <input {...register('lastName')} style={inputStyle} />
             {errors.lastName && (
-              <p className="text-sm mt-1" style={{ color: '#ef4444' }}>{errors.lastName.message}</p>
+              <p style={{ fontSize: '0.8rem', color: '#ef4444', marginTop: '0.25rem' }}>{errors.lastName.message}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: '#1E1914' }}>
-              Número de WhatsApp
-            </label>
-            <p className="text-sm mb-2" style={{ color: '#6b7280' }}>
-              Lo usamos para avisarte cuando tu prenda sea aprobada, vendida o devuelta.
+            <label style={labelStyle}>Número de WhatsApp</label>
+            <p style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+              Lo usamos para avisarte cuando tu producto sea aprobado, vendido o devuelto.
             </p>
             <input
               {...register('phone')}
               placeholder="Ej: 5491112345678"
-              className="w-full px-4 py-3 rounded-xl border text-base"
-              style={{ borderColor: '#E8E3D5', background: '#fff', color: '#1E1914' }}
+              style={inputStyle}
             />
-            <p className="text-xs mt-1" style={{ color: '#9ca3af' }}>
+            <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>
               Formato internacional sin + ni espacios (ej: 5491112345678)
             </p>
           </div>
 
-          {error && (
-            <p className="text-sm p-3 rounded-lg" style={{ background: '#fee2e2', color: '#dc2626' }}>
-              {error}
-            </p>
-          )}
+          {/* Método de pago */}
+          <div>
+            <label style={labelStyle}>¿Cómo preferís recibir tus pagos?</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.375rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#1E1914', fontFamily: "'Inter', sans-serif" }}>
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="EFECTIVO"
+                  checked={paymentMethod === 'EFECTIVO'}
+                  onChange={() => setPaymentMethod('EFECTIVO')}
+                  style={{ accentColor: '#1E1914', width: '16px', height: '16px' }}
+                />
+                Efectivo (retirás en tienda)
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#1E1914', fontFamily: "'Inter', sans-serif" }}>
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="TRANSFERENCIA"
+                  checked={paymentMethod === 'TRANSFERENCIA'}
+                  onChange={() => setPaymentMethod('TRANSFERENCIA')}
+                  style={{ accentColor: '#1E1914', width: '16px', height: '16px' }}
+                />
+                Transferencia bancaria
+              </label>
+            </div>
+            {paymentMethod === 'TRANSFERENCIA' && (
+              <div style={{ marginTop: '0.75rem' }}>
+                <label style={{ ...labelStyle, fontSize: '0.8rem' }}>Alias o CVU</label>
+                <input
+                  value={bankAlias}
+                  onChange={e => setBankAlias(e.target.value)}
+                  placeholder="Ej: mi.alias.mp"
+                  style={inputStyle}
+                />
+              </div>
+            )}
+          </div>
 
-          {saved && (
-            <p className="text-sm p-3 rounded-lg" style={{ background: '#dcfce7', color: '#16a34a' }}>
-              ✓ Datos guardados correctamente
+          {error && (
+            <p style={{ background: '#fee2e2', color: '#dc2626', padding: '0.75rem 1rem', borderRadius: '0.75rem', fontSize: '0.875rem' }}>
+              {error}
             </p>
           )}
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="py-3 px-6 rounded-xl font-medium text-base mt-2"
             style={{
+              padding: '0.875rem 1.5rem',
+              borderRadius: '0.875rem',
+              border: 'none',
+              fontSize: '1rem',
+              fontWeight: 600,
               background: '#1E1914',
               color: '#E8E3D5',
               opacity: isSubmitting ? 0.7 : 1,
               cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              border: 'none',
+              marginTop: '0.5rem',
             }}
           >
             {isSubmitting ? 'Guardando...' : 'Guardar cambios'}

@@ -1,12 +1,13 @@
 import { prisma } from '../config/prisma'
-import { ItemCategory, ItemCondition, ItemSize } from '@prisma/client'
+import { ItemCondition } from '@prisma/client'
 
 export interface SubmissionItemInput {
   title: string
   description?: string
   condition: ItemCondition
-  size: ItemSize
-  category: ItemCategory
+  productTypeId: string
+  sizeId?: string | null
+  tagIds?: string[]
   quantity: number
   desiredPrice: number
   minimumPrice?: number
@@ -36,20 +37,28 @@ export async function createSubmission(
           title: item.title,
           description: item.description,
           condition: item.condition,
-          size: item.size,
-          category: item.category,
+          productTypeId: item.productTypeId,
+          sizeId: item.sizeId ?? null,
           quantity: item.quantity,
           desiredPrice: item.desiredPrice,
           minimumPrice: item.minimumPrice,
           photos: {
             create: item.photoUrls.map((url, order) => ({ url, order })),
           },
+          ...(item.tagIds && item.tagIds.length > 0 && {
+            tags: { create: item.tagIds.map(tagId => ({ tagId })) },
+          }),
         })),
       },
     },
     include: {
       items: {
-        include: { photos: true },
+        include: {
+          photos: true,
+          productType: true,
+          size: true,
+          tags: { include: { tag: true } },
+        },
       },
     },
   })
@@ -67,6 +76,8 @@ export async function getSellerSubmissions(sellerId: string, page = 1, limit = 1
         items: {
           include: {
             photos: { orderBy: { order: 'asc' }, take: 1 },
+            productType: true,
+            size: true,
           },
         },
       },
@@ -81,7 +92,12 @@ export async function getSellerSubmissionById(id: string, sellerId: string) {
     where: { id, sellerId },
     include: {
       items: {
-        include: { photos: { orderBy: { order: 'asc' } } },
+        include: {
+          photos: { orderBy: { order: 'asc' } },
+          productType: true,
+          size: true,
+          tags: { include: { tag: true } },
+        },
         orderBy: { createdAt: 'asc' },
       },
     },

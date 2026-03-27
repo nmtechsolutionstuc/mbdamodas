@@ -3,9 +3,17 @@ import { z } from 'zod'
 import {
   getAdminSubmissions, getAdminSubmissionById,
   approveItem, rejectItem, markItemInStore, markItemSold, markItemReturned,
+  createUser as createUserService,
+  createCatalogItem as createCatalogItemService,
+  listProductTypes as listProductTypesService,
+  toggleProductType as toggleProductTypeService,
+  createSize as createSizeService,
+  toggleSize as toggleSizeService,
+  createTag as createTagService,
+  toggleTag as toggleTagService,
 } from '../services/admin.service'
 import { prisma } from '../config/prisma'
-import { ok, notFound, badRequest, serverError } from '../utils/apiResponse'
+import { ok, created, notFound, badRequest, conflict, serverError } from '../utils/apiResponse'
 
 export async function listSubmissions(req: Request, res: Response): Promise<void> {
   const page = req.query.page ? parseInt(req.query.page as string, 10) : 1
@@ -64,6 +72,10 @@ export async function editCatalogItem(req: Request, res: Response): Promise<void
     price: z.number().positive().optional(),
     commission: z.number().min(0).max(100).optional(),
     isActive: z.boolean().optional(),
+    productTypeId: z.string().min(1).optional(),
+    sizeId: z.string().min(1).optional().nullable(),
+    condition: z.enum(['NUEVA_CON_ETIQUETA', 'NUEVA_SIN_ETIQUETA', 'COMO_NUEVA', 'BUEN_ESTADO', 'USO_MODERADO', 'USO_INTENSO']).optional(),
+    quantity: z.number().int().positive().optional(),
   })
   const parsed = schema.safeParse(req.body)
   if (!parsed.success) { badRequest(res, 'Datos inválidos'); return }
@@ -85,6 +97,31 @@ export async function softDeleteCatalogItem(req: Request, res: Response): Promis
   }
 }
 
+export async function createCatalogItem(req: Request, res: Response): Promise<void> {
+  const schema = z.object({
+    title: z.string().min(1, 'Título requerido'),
+    description: z.string().optional(),
+    condition: z.enum(['NUEVA_CON_ETIQUETA', 'NUEVA_SIN_ETIQUETA', 'COMO_NUEVA', 'BUEN_ESTADO', 'USO_MODERADO', 'USO_INTENSO']),
+    productTypeId: z.string().min(1, 'Tipo de producto requerido'),
+    sizeId: z.string().min(1).optional().nullable(),
+    tagIds: z.array(z.string().min(1)).optional().default([]),
+    quantity: z.number().int().positive().optional().default(1),
+    price: z.number().positive('Precio debe ser mayor a 0'),
+    minimumPrice: z.number().positive().optional(),
+    commission: z.number().min(0).max(100),
+    storeId: z.string().min(1, 'Tienda requerida'),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) { badRequest(res, parsed.error.errors[0]?.message ?? 'Datos inválidos'); return }
+
+  try {
+    const item = await createCatalogItemService(parsed.data)
+    created(res, item)
+  } catch {
+    serverError(res)
+  }
+}
+
 export async function listCatalog(req: Request, res: Response): Promise<void> {
   const page = req.query.page ? parseInt(req.query.page as string, 10) : 1
   const limit = 20
@@ -97,6 +134,9 @@ export async function listCatalog(req: Request, res: Response): Promise<void> {
       orderBy: { submissionItem: { updatedAt: 'desc' } },
       include: {
         photos: { orderBy: { order: 'asc' } },
+        productType: true,
+        size: true,
+        tags: { include: { tag: true } },
         submissionItem: {
           select: {
             status: true,
@@ -143,6 +183,31 @@ export async function deactivateUser(req: Request, res: Response): Promise<void>
   }
 }
 
+export async function createUser(req: Request, res: Response): Promise<void> {
+  const schema = z.object({
+    email: z.string().email('Email inválido').toLowerCase(),
+    password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+    firstName: z.string().min(1, 'Nombre requerido'),
+    lastName: z.string().min(1, 'Apellido requerido'),
+    phone: z.string().optional(),
+    role: z.enum(['USER', 'ADMIN']),
+    storeId: z.string().optional(),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) { badRequest(res, parsed.error.errors[0]?.message ?? 'Datos inválidos'); return }
+
+  try {
+    const user = await createUserService(parsed.data)
+    created(res, user)
+  } catch (err: unknown) {
+    if ((err as NodeJS.ErrnoException).code === 'EMAIL_IN_USE') {
+      conflict(res, 'El email ya está registrado')
+      return
+    }
+    serverError(res)
+  }
+}
+
 export async function getDashboardStats(req: Request, res: Response): Promise<void> {
   try {
     const [pending, inStore, soldThisMonth] = await prisma.$transaction([
@@ -159,4 +224,61 @@ export async function getDashboardStats(req: Request, res: Response): Promise<vo
   } catch {
     serverError(res)
   }
+}
+
+// ─── Product Type / Size / Tag endpoints ────────────────────
+
+export async function listProductTypes(req: Request, res: Response): Promise<void> {
+  const productTypes = await listProductTypesService()
+  ok(res, productTypes)
+}
+
+export async function toggleProductType(req: Request, res: Response): Promise<void> {
+  const result = await toggleProductTypeService(req.params.id!)
+  if (!result) { notFound(res, 'Tipo de producto no encontrado'); return }
+  ok(res, result)
+}
+
+export async function createSize(req: Request, res: Response): Promise<void> {
+  const schema = z.object({
+    name: z.string().min(1, 'Nombre requerido'),
+    productTypeId: z.string().min(1, 'Tipo de producto requerido'),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) { badRequest(res, parsed.error.errors[0]?.message ?? 'Datos inválidos'); return }
+
+  try {
+    const size = await createSizeService(parsed.data.name, parsed.data.productTypeId)
+    created(res, size)
+  } catch {
+    conflict(res, 'El talle ya existe para este tipo de producto')
+  }
+}
+
+export async function toggleSize(req: Request, res: Response): Promise<void> {
+  const result = await toggleSizeService(req.params.id!)
+  if (!result) { notFound(res, 'Talle no encontrado'); return }
+  ok(res, result)
+}
+
+export async function createTag(req: Request, res: Response): Promise<void> {
+  const schema = z.object({
+    name: z.string().min(1, 'Nombre requerido'),
+    productTypeId: z.string().min(1, 'Tipo de producto requerido'),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) { badRequest(res, parsed.error.errors[0]?.message ?? 'Datos inválidos'); return }
+
+  try {
+    const tag = await createTagService(parsed.data.name, parsed.data.productTypeId)
+    created(res, tag)
+  } catch {
+    conflict(res, 'La etiqueta ya existe para este tipo de producto')
+  }
+}
+
+export async function toggleTag(req: Request, res: Response): Promise<void> {
+  const result = await toggleTagService(req.params.id!)
+  if (!result) { notFound(res, 'Etiqueta no encontrada'); return }
+  ok(res, result)
 }

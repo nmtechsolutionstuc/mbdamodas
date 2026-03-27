@@ -7,6 +7,8 @@ const updateMeSchema = z.object({
   firstName: z.string().min(1).max(100).optional(),
   lastName: z.string().min(1).max(100).optional(),
   phone: z.string().max(20).optional().nullable(),
+  paymentMethod: z.enum(['EFECTIVO', 'TRANSFERENCIA']).optional().nullable(),
+  bankAlias: z.string().max(100).optional().nullable(),
 })
 
 export async function updateMe(req: Request, res: Response): Promise<void> {
@@ -27,6 +29,8 @@ export async function updateMe(req: Request, res: Response): Promise<void> {
       phone: true,
       avatarUrl: true,
       role: true,
+      paymentMethod: true,
+      bankAlias: true,
     },
   })
 

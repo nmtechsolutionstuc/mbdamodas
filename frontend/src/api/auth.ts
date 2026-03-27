@@ -34,6 +34,8 @@ export async function updateProfile(payload: {
   firstName?: string
   lastName?: string
   phone?: string | null
+  paymentMethod?: string | null
+  bankAlias?: string | null
 }): Promise<User> {
   const { data } = await axiosClient.patch<ApiResponse<User>>('/users/me', payload)
   return data.data

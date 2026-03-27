@@ -5,16 +5,18 @@ import {
   markInStore, markSold, markReturned,
 } from '../../api/admin'
 import { StatusBadge } from '../../components/catalog/StatusBadge'
+import { useToast } from '../../context/ToastContext'
 import type { SubmissionItemStatus } from '../../types'
-import { SIZE_LABELS, CATEGORY_LABELS, CONDITION_LABELS } from '../../types'
+import { CONDITION_LABELS } from '../../types'
 
 interface AdminItem {
   id: string
   title: string
   description: string | null
   condition: string
-  size: string
-  category: string
+  productType?: { id: string; name: string }
+  size?: { id: string; name: string } | null
+  tags?: { tag: { id: string; name: string } }[]
   quantity: number
   desiredPrice: number
   minimumPrice: number | null
@@ -31,6 +33,7 @@ interface AdminSubmissionDetail {
 }
 
 export function AdminSubmissionDetailPage() {
+  const { toast } = useToast()
   const { id } = useParams<{ id: string }>()
   const [submission, setSubmission] = useState<AdminSubmissionDetail | null>(null)
   const [loading, setLoading] = useState(true)
@@ -38,6 +41,7 @@ export function AdminSubmissionDetailPage() {
   const [whatsappLinks, setWhatsappLinks] = useState<{ [itemId: string]: string | null }>({})
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [commissionResult, setCommissionResult] = useState<{ [itemId: string]: { salePrice: number; commissionAmount: number; sellerAmount: number } }>({})
+  const [itemCodes, setItemCodes] = useState<{ [itemId: string]: string }>({})
 
   useEffect(() => {
     if (!id) return
@@ -50,11 +54,12 @@ export function AdminSubmissionDetailPage() {
       const result = await action()
       if (result.whatsappLink) setWhatsappLinks(prev => ({ ...prev, [itemId]: result.whatsappLink ?? null }))
       if (result.commission) setCommissionResult(prev => ({ ...prev, [itemId]: result.commission! }))
+      if (result.item?.code) setItemCodes(prev => ({ ...prev, [itemId]: result.item.code }))
       // Recargar la solicitud para ver el estado actualizado
       const updated = await fetchAdminSubmissionById(id!)
       setSubmission(updated)
     } catch {
-      alert('Error al ejecutar la acción')
+      toast('Error al ejecutar la acción', 'error')
     } finally {
       setActionLoading(null)
     }
@@ -96,15 +101,40 @@ export function AdminSubmissionDetailPage() {
                 <div>
                   <h3 style={{ fontWeight: 700, color: '#1E1914', marginBottom: '0.25rem' }}>{idx + 1}. {item.title}</h3>
                   <p style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-                    {CATEGORY_LABELS[item.category as keyof typeof CATEGORY_LABELS]} · Talle {SIZE_LABELS[item.size as keyof typeof SIZE_LABELS]} · {CONDITION_LABELS[item.condition as keyof typeof CONDITION_LABELS]}
+                    {item.productType?.name ?? ''}{item.size ? ` · Talle ${item.size.name}` : ''} · {CONDITION_LABELS[item.condition as keyof typeof CONDITION_LABELS]}
                     {item.quantity > 1 && ` · ${item.quantity} unidades`}
                   </p>
+                  {item.tags && item.tags.length > 0 && (
+                    <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap', marginTop: '0.375rem' }}>
+                      {item.tags.map(({ tag }) => (
+                        <span key={tag.id} style={{ background: '#E8E3D5', color: '#1E1914', fontSize: '0.7rem', padding: '0.1rem 0.5rem', borderRadius: '999px', fontWeight: 500 }}>
+                          {tag.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   <p style={{ fontSize: '0.9rem', fontWeight: 600, color: '#1E1914', marginTop: '0.25rem' }}>
                     Precio deseado: ${item.desiredPrice.toLocaleString('es-AR')}
                     {item.minimumPrice && <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: '0.75rem', fontSize: '0.8rem' }}>(mínimo: ${item.minimumPrice.toLocaleString('es-AR')})</span>}
                   </p>
                 </div>
-                <StatusBadge status={item.status} />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.375rem' }}>
+                  <StatusBadge status={item.status} />
+                  {itemCodes[item.id] && (
+                    <span style={{
+                      background: '#f0f9ff',
+                      color: '#0369a1',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      padding: '0.2rem 0.625rem',
+                      borderRadius: '0.375rem',
+                      fontFamily: "'Inter', sans-serif",
+                      letterSpacing: '0.05em',
+                    }}>
+                      {itemCodes[item.id]}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Fotos */}

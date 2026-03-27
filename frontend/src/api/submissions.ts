@@ -5,8 +5,9 @@ export interface SubmissionItemFormData {
   title: string
   description?: string
   condition: string
-  size: string
-  category: string
+  productTypeId: string
+  sizeId?: string | null
+  tagIds: string[]
   quantity: number
   desiredPrice: number
   minimumPrice?: number
@@ -19,8 +20,9 @@ export async function createSubmission(items: SubmissionItemFormData[]): Promise
     formData.append(`items[${i}][title]`, item.title)
     if (item.description) formData.append(`items[${i}][description]`, item.description)
     formData.append(`items[${i}][condition]`, item.condition)
-    formData.append(`items[${i}][size]`, item.size)
-    formData.append(`items[${i}][category]`, item.category)
+    formData.append(`items[${i}][productTypeId]`, item.productTypeId)
+    if (item.sizeId) formData.append(`items[${i}][sizeId]`, item.sizeId)
+    item.tagIds.forEach(tagId => formData.append(`items[${i}][tagIds]`, tagId))
     formData.append(`items[${i}][quantity]`, String(item.quantity))
     formData.append(`items[${i}][desiredPrice]`, String(item.desiredPrice))
     if (item.minimumPrice) formData.append(`items[${i}][minimumPrice]`, String(item.minimumPrice))

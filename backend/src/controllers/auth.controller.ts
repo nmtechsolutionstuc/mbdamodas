@@ -6,6 +6,8 @@ import {
 } from '../services/auth.service'
 import { ok, created, badRequest, unauthorized, conflict, serverError } from '../utils/apiResponse'
 import { env } from '../config/env'
+// Ensure Express.User augmentation from authenticate middleware is loaded
+import '../middlewares/authenticate'
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -108,6 +110,24 @@ export async function logout(req: Request, res: Response): Promise<void> {
   ok(res, { message: 'Sesión cerrada' })
 }
 
-export function me(req: Request, res: Response): void {
-  ok(res, req.user)
+export async function me(req: Request, res: Response): Promise<void> {
+  const { prisma } = await import('../config/prisma')
+  const user = await prisma.user.findUnique({
+    where: { id: req.user!.sub },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      phone: true,
+      avatarUrl: true,
+      role: true,
+      isActive: true,
+    },
+  })
+  if (!user) {
+    unauthorized(res, 'Usuario no encontrado')
+    return
+  }
+  ok(res, user)
 }
