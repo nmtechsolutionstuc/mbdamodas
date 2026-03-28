@@ -80,6 +80,20 @@ export function ProfilePage() {
             )}
           </div>
 
+          {user?.dni && (
+            <div>
+              <label style={labelStyle}>DNI</label>
+              <input
+                value={user.dni}
+                disabled
+                style={{ ...inputStyle, background: '#f3f4f6', color: '#6b7280', cursor: 'not-allowed' }}
+              />
+              <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>
+                El DNI no se puede modificar.
+              </p>
+            </div>
+          )}
+
           <div>
             <label style={labelStyle}>Número de WhatsApp</label>
             <p style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.5rem' }}>

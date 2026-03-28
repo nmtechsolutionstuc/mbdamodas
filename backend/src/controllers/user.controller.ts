@@ -26,6 +26,7 @@ export async function updateMe(req: Request, res: Response): Promise<void> {
       email: true,
       firstName: true,
       lastName: true,
+      dni: true,
       phone: true,
       avatarUrl: true,
       role: true,

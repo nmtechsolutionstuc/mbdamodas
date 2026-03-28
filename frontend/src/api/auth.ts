@@ -9,6 +9,7 @@ interface AuthResponse {
 export async function register(data: {
   firstName: string
   lastName: string
+  dni: string
   email: string
   password: string
 }): Promise<AuthResponse> {

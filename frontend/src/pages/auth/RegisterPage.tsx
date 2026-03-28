@@ -9,6 +9,7 @@ import { useAuthStore } from '../../store/authStore'
 const schema = z.object({
   firstName: z.string().min(1, 'Requerido').max(50),
   lastName: z.string().min(1, 'Requerido').max(50),
+  dni: z.string().min(7, 'Mínimo 7 dígitos').max(10, 'Máximo 10 dígitos').regex(/^\d+$/, 'Solo números'),
   email: z.string().email('Email inválido'),
   password: z.string().min(8, 'Mínimo 8 caracteres'),
   confirmPassword: z.string(),
@@ -40,6 +41,7 @@ export function RegisterPage() {
       const { user, accessToken } = await registerUser({
         firstName: values.firstName,
         lastName: values.lastName,
+        dni: values.dni,
         email: values.email,
         password: values.password,
       })
@@ -83,6 +85,12 @@ export function RegisterPage() {
               <input {...register('lastName')} placeholder="García" style={inp} />
               {errors.lastName && <p style={err}>{errors.lastName.message}</p>}
             </div>
+          </div>
+
+          <div>
+            <label style={lbl}>DNI *</label>
+            <input {...register('dni')} inputMode="numeric" placeholder="12345678" style={inp} />
+            {errors.dni && <p style={err}>{errors.dni.message}</p>}
           </div>
 
           <div>

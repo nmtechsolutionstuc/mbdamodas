@@ -67,6 +67,7 @@ export async function revokeRefreshToken(rawToken: string): Promise<void> {
 export const registerSchema = z.object({
   firstName: z.string().min(1, 'Nombre requerido').max(50),
   lastName: z.string().min(1, 'Apellido requerido').max(50),
+  dni: z.string().min(7, 'DNI debe tener al menos 7 dígitos').max(10, 'DNI debe tener máximo 10 dígitos').regex(/^\d+$/, 'El DNI solo debe contener números'),
   email: z.string().email('Email inválido').toLowerCase(),
   password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
 })
@@ -89,6 +90,7 @@ export async function registerUser(
       email: input.email,
       firstName: input.firstName,
       lastName: input.lastName,
+      dni: input.dni,
       password: hash,
     },
   })
