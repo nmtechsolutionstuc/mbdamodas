@@ -42,3 +42,91 @@ export function generateWhatsAppLink(status: SubmissionItemStatus, ctx: WhatsApp
 
   return `https://wa.me/${ctx.sellerPhone}?text=${encodeURIComponent(message)}`
 }
+
+// ─── Reservation WhatsApp Messages ───────────────────────────────────────────
+
+export type ReservationMessageType =
+  | 'QUERY_ATTENDANT'       // Admin → store attendant: is product available?
+  | 'APPROVED_TO_PROMOTER'  // System → promoter: approved + voucher link
+  | 'REJECTED_TO_PROMOTER'  // System → promoter: rejected with reason
+  | 'EXTENDED_TO_PROMOTER'  // System → promoter: reservation extended
+  | 'COMPLETED_TRANSFER'    // System → promoter: payment via transfer
+  | 'COMPLETED_CASH'        // System → promoter: payment in cash
+  | 'SEND_VOUCHER'          // Admin → promoter: reminder to get voucher
+
+export interface ReservationWAContext {
+  storeName: string
+  storeAttendantPhone?: string | null
+  promoterPhone: string
+  promoterName: string
+  promoterDni?: string | null
+  itemTitle: string
+  itemCode?: string | null
+  reservationCode: string
+  earnings?: number
+  expiresAt?: Date | null
+  adminNote?: string | null
+  paymentMethod?: string | null
+  bankAlias?: string | null
+  voucherUrl?: string
+}
+
+export function generateReservationWALink(
+  type: ReservationMessageType,
+  ctx: ReservationWAContext
+): string | null {
+  const codePart = ctx.itemCode ? ` (${ctx.itemCode})` : ''
+  const expiresStr = ctx.expiresAt
+    ? new Date(ctx.expiresAt).toLocaleString('es-AR', {
+        day: '2-digit', month: '2-digit',
+        hour: '2-digit', minute: '2-digit',
+        timeZone: 'America/Argentina/Buenos_Aires',
+      })
+    : '?'
+
+  let phone: string
+  let text: string
+
+  switch (type) {
+    case 'QUERY_ATTENDANT':
+      if (!ctx.storeAttendantPhone) return null
+      phone = ctx.storeAttendantPhone
+      text = `Hola! Hay una reserva para el producto "${ctx.itemTitle}"${codePart}, código ${ctx.reservationCode}. ¿El producto está disponible? ¿La tienda abrirá en las próximas 24hs?`
+      break
+
+    case 'APPROVED_TO_PROMOTER':
+      phone = ctx.promoterPhone
+      text = `✅ ¡Tu reserva fue aprobada!\n\nProducto: ${ctx.itemTitle}${codePart}\nCódigo: ${ctx.reservationCode}\nTu ganancia estimada: $${ctx.earnings?.toLocaleString('es-AR') ?? '?'}\nVálido hasta: ${expiresStr}\n\n---\nEn el sitio se generó un comprobante al que debés sacar captura y enviar a tu comprador para ser presentado en la tienda y se efectúe la venta correctamente.\n${ctx.voucherUrl ?? ''}`
+      break
+
+    case 'REJECTED_TO_PROMOTER':
+      phone = ctx.promoterPhone
+      text = `Lo sentimos, tu reserva para "${ctx.itemTitle}"${codePart} (${ctx.reservationCode}) no pudo ser aprobada.${ctx.adminNote ? `\nMotivo: ${ctx.adminNote}` : ''}`
+      break
+
+    case 'EXTENDED_TO_PROMOTER':
+      phone = ctx.promoterPhone
+      text = `Tu reserva para "${ctx.itemTitle}"${codePart} (${ctx.reservationCode}) fue extendida.\nNuevo vencimiento: ${expiresStr}. ¡Gracias por tu paciencia!`
+      break
+
+    case 'COMPLETED_TRANSFER':
+      phone = ctx.promoterPhone
+      text = `🎉 ¡Venta completada! "${ctx.itemTitle}"${codePart}\nTu ganancia: $${ctx.earnings?.toLocaleString('es-AR') ?? '?'}.\nConfirmás este alias/CVU: ${ctx.bankAlias ?? '?'}? Te hacemos la transferencia a la brevedad.`
+      break
+
+    case 'COMPLETED_CASH':
+      phone = ctx.promoterPhone
+      text = `🎉 ¡Venta completada! "${ctx.itemTitle}"${codePart}\nTu ganancia: $${ctx.earnings?.toLocaleString('es-AR') ?? '?'}.\nPasá por ${ctx.storeName} a retirar tu efectivo.`
+      break
+
+    case 'SEND_VOUCHER':
+      phone = ctx.promoterPhone
+      text = `Hola ${ctx.promoterName}! Aquí está tu comprobante de reserva.\nEntrá al link, sacá captura de pantalla y mandásela a tu comprador:\n${ctx.voucherUrl ?? ''}`
+      break
+
+    default:
+      return null
+  }
+
+  return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
+}

@@ -12,6 +12,10 @@ import {
   createTag, toggleTag,
 } from '../controllers/admin.controller'
 import { listStores, createStore, updateStore } from '../controllers/store.controller'
+import {
+  listAdminReservations, approveReservationHandler, rejectReservationHandler,
+  completeReservationHandler, extendReservationHandler,
+} from '../controllers/reservation.controller'
 
 const router = Router()
 
@@ -55,5 +59,12 @@ router.patch('/users/:id/deactivate', deactivateUser)
 router.get('/stores', listStores)
 router.post('/stores', createStore)
 router.patch('/stores/:id', updateStore)
+
+// Reservas
+router.get('/reservations', listAdminReservations)
+router.patch('/reservations/:id/approve', approveReservationHandler)
+router.patch('/reservations/:id/reject', rejectReservationHandler)
+router.patch('/reservations/:id/complete', completeReservationHandler)
+router.patch('/reservations/:id/extend', extendReservationHandler)
 
 export default router

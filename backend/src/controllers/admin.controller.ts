@@ -76,6 +76,8 @@ export async function editCatalogItem(req: Request, res: Response): Promise<void
     sizeId: z.string().min(1).optional().nullable(),
     condition: z.enum(['NUEVA_CON_ETIQUETA', 'NUEVA_SIN_ETIQUETA', 'COMO_NUEVA', 'BUEN_ESTADO', 'USO_MODERADO', 'USO_INTENSO']).optional(),
     quantity: z.number().int().positive().optional(),
+    isOwnProduct: z.boolean().optional(),
+    promoterCommissionPct: z.number().min(0).max(100).optional().nullable(),
   })
   const parsed = schema.safeParse(req.body)
   if (!parsed.success) { badRequest(res, 'Datos inválidos'); return }
@@ -110,6 +112,8 @@ export async function createCatalogItem(req: Request, res: Response): Promise<vo
     minimumPrice: z.number().positive().optional(),
     commission: z.number().min(0).max(100),
     storeId: z.string().min(1, 'Tienda requerida'),
+    isOwnProduct: z.boolean().optional().default(false),
+    promoterCommissionPct: z.number().min(0).max(100).optional().nullable(),
   })
   const parsed = schema.safeParse(req.body)
   if (!parsed.success) { badRequest(res, parsed.error.errors[0]?.message ?? 'Datos inválidos'); return }

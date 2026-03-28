@@ -12,6 +12,7 @@ const storeSchema = z.object({
   logoUrl: z.string().url().optional().nullable(),
   defaultCommission: z.number().min(0).max(100).optional(),
   isActive: z.boolean().optional(),
+  storeAttendantPhone: z.string().max(30).optional().nullable(),
 })
 
 export async function listStores(_req: Request, res: Response): Promise<void> {
