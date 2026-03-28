@@ -326,6 +326,8 @@ export async function createCatalogItem(input: {
   storeId: string
   isActive?: boolean
   tagIds?: string[]
+  isOwnProduct?: boolean
+  promoterCommissionPct?: number | null
 }) {
   const code = await generateItemCode()
   const item = await prisma.item.create({
@@ -342,6 +344,8 @@ export async function createCatalogItem(input: {
       commission: input.commission,
       storeId: input.storeId,
       isActive: input.isActive ?? true,
+      isOwnProduct: input.isOwnProduct ?? false,
+      promoterCommissionPct: input.promoterCommissionPct ?? null,
       ...(input.tagIds && input.tagIds.length > 0 && {
         tags: { create: input.tagIds.map(tagId => ({ tagId })) },
       }),

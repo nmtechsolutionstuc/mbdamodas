@@ -11,6 +11,11 @@ export interface ItemFilters {
 }
 
 export async function getPublicItems(filters: ItemFilters) {
+  await prisma.reservation.updateMany({
+    where: { status: 'APPROVED', expiresAt: { lt: new Date() } },
+    data: { status: 'EXPIRED' },
+  })
+
   const page = filters.page ?? 1
   const limit = Math.min(filters.limit ?? 20, 50)
   const skip = (page - 1) * limit
@@ -59,6 +64,13 @@ export async function getPublicItems(filters: ItemFilters) {
         tags: {
           include: { tag: { select: { id: true, name: true } } },
         },
+        isOwnProduct: true,
+        promoterCommissionPct: true,
+        reservations: {
+          where: { status: { in: ['PENDING_APPROVAL', 'APPROVED'] } },
+          select: { id: true, status: true },
+          take: 1,
+        },
       },
     }),
     prisma.item.count({ where }),
@@ -68,6 +80,11 @@ export async function getPublicItems(filters: ItemFilters) {
 }
 
 export async function getPublicItemById(id: string) {
+  await prisma.reservation.updateMany({
+    where: { status: 'APPROVED', expiresAt: { lt: new Date() } },
+    data: { status: 'EXPIRED' },
+  })
+
   return prisma.item.findFirst({
     where: { id, isActive: true },
     select: {
@@ -92,6 +109,13 @@ export async function getPublicItemById(id: string) {
       },
       tags: {
         include: { tag: { select: { id: true, name: true } } },
+      },
+      isOwnProduct: true,
+      promoterCommissionPct: true,
+      reservations: {
+        where: { status: { in: ['PENDING_APPROVAL', 'APPROVED'] } },
+        select: { id: true, status: true },
+        take: 1,
       },
     },
   })

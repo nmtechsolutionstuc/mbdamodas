@@ -10,7 +10,25 @@ import { env } from './config/env'
 const app = express()
 
 // ── Seguridad ─────────────────────────────────────────────────────────────────
-app.use(helmet())
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https://*.supabase.co'],
+        connectSrc: ["'self'", 'https://*.supabase.co'],
+        frameSrc: ["'none'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false, // Permite cargar imágenes de Supabase
+  }),
+)
 app.use(
   cors({
     origin: env.frontendUrl,
@@ -27,8 +45,8 @@ app.use(
 )
 
 // ── Parsers ───────────────────────────────────────────────────────────────────
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+app.use(express.json({ limit: '2mb' }))
+app.use(express.urlencoded({ extended: true, limit: '2mb' }))
 app.use(cookieParser())
 app.use(compression())
 

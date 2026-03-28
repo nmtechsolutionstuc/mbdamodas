@@ -35,6 +35,15 @@ enum ItemCondition {
   USO_INTENSO         // Desgaste notable
 }
 
+enum ReservationStatus {
+  PENDING_APPROVAL  // Creada por el usuario, esperando confirmación del admin
+  APPROVED          // Aprobada — producto reservado por 24h
+  REJECTED          // Rechazada por el admin (con motivo)
+  COMPLETED         // Venta realizada — promotor cobra comisión
+  CANCELLED         // Cancelada por el usuario (solo desde PENDING_APPROVAL)
+  EXPIRED           // Venció el plazo de 24h sin completarse
+}
+
 // ─────────────────────────────────────────────────────────────
 // PRODUCT TYPE — Reemplaza ItemCategory. Tipos de producto parametrizables.
 // ─────────────────────────────────────────────────────────────
@@ -138,9 +147,12 @@ model Store {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  users       User[]
-  submissions Submission[]
-  items       Item[]
+  storeAttendantPhone  String?   // teléfono del encargado de la tienda
+
+  users        User[]
+  submissions  Submission[]
+  items        Item[]
+  reservations Reservation[]
 
   @@map("stores")
 }
@@ -172,6 +184,7 @@ model User {
 
   refreshTokens RefreshToken[]
   submissions   Submission[]
+  reservations  Reservation[]
 
   @@map("users")
 }
@@ -305,13 +318,38 @@ model Item {
   storeId String
   store   Store  @relation(fields: [storeId], references: [id])
 
-  photos ItemPhoto[]
-  tags   ItemTag[]
+  isOwnProduct          Boolean       @default(false)
+  promoterCommissionPct Decimal?      @db.Decimal(5, 2)
+
+  photos       ItemPhoto[]
+  tags         ItemTag[]
+  reservations Reservation[]
 
   @@index([storeId])
   @@index([productTypeId])
   @@index([isActive])
   @@map("items")
+}
+
+// ─────────────────────────────────────────────────────────────
+// SECURITY AUDIT LOG — Registro de eventos de seguridad
+// ─────────────────────────────────────────────────────────────
+
+model SecurityLog {
+  id        String   @id @default(uuid())
+  event     String   // LOGIN_SUCCESS, LOGIN_FAILED, REGISTER, ADMIN_ACTION, etc.
+  email     String?  // Email involucrado (si aplica)
+  userId    String?  // ID del usuario (si está autenticado)
+  ip        String?  // IP del cliente
+  userAgent String?  // User-Agent header
+  metadata  Json?    // Datos adicionales (motivo de fallo, acción admin, etc.)
+  createdAt DateTime @default(now())
+
+  @@index([event])
+  @@index([email])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("security_logs")
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -329,4 +367,34 @@ model ItemPhoto {
 
   @@index([itemId])
   @@map("item_photos")
+}
+
+// ─────────────────────────────────────────────────────────────
+// RESERVATION — Reservas para vender (módulo de promotores)
+// ─────────────────────────────────────────────────────────────
+
+model Reservation {
+  id              String            @id @default(uuid())
+  reservationCode String            @unique  // ej: RES-4821
+  status          ReservationStatus @default(PENDING_APPROVAL)
+  adminNote       String?
+  extensionCount  Int               @default(0)
+  expiresAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  itemId  String
+  item    Item   @relation(fields: [itemId], references: [id])
+
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id])
+
+  @@index([itemId])
+  @@index([userId])
+  @@index([status])
+  @@map("reservations")
 }

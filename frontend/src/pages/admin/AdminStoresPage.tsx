@@ -10,6 +10,7 @@ interface Store {
   email: string | null
   defaultCommission: number
   isActive: boolean
+  storeAttendantPhone: string | null
 }
 
 export function AdminStoresPage() {
@@ -43,6 +44,7 @@ export function AdminStoresPage() {
         email: editing.email,
         defaultCommission: Number(editing.defaultCommission),
         isActive: editing.isActive,
+        storeAttendantPhone: editing.storeAttendantPhone,
       })
       setStores(prev => prev.map(s => s.id === editing.id ? data.data : s))
       setEditing(null)
@@ -91,6 +93,10 @@ export function AdminStoresPage() {
                 {inp('Teléfono WhatsApp', editing.phone ?? '', v => setEditing(e => e && ({ ...e, phone: v })))}
                 <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '-0.5rem' }}>
                   Formato sin + ni espacios: 5491112345678
+                </p>
+                {inp('Teléfono encargado tienda', editing.storeAttendantPhone ?? '', v => setEditing(e => e && ({ ...e, storeAttendantPhone: v })))}
+                <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '-0.5rem' }}>
+                  Teléfono del encargado para consultas de reservas (formato: 5491112345678)
                 </p>
                 {inp('Email', editing.email ?? '', v => setEditing(e => e && ({ ...e, email: v })))}
                 <div>

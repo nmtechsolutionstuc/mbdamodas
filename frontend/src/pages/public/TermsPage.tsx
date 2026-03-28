@@ -64,6 +64,50 @@ export function TermsPage() {
           </div>
         ))}
 
+        {/* Módulo de Reservas */}
+        <div style={{ marginTop: '2.5rem', marginBottom: '1.75rem' }}>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', fontWeight: 700, color: '#1E1914', marginBottom: '1.25rem' }}>
+            Módulo de Reservas para Promotores
+          </h2>
+          {[
+            {
+              title: '¿Qué es el sistema de reservas?',
+              body: 'Los usuarios registrados pueden reservar productos propios de la tienda para venderlos a compradores y recibir una comisión por cada venta concretada. El promotor actúa como intermediario entre el comprador y la tienda.',
+            },
+            {
+              title: 'Requisitos para reservar',
+              body: 'Para utilizar el módulo de reservas, el usuario debe tener su DNI y número de WhatsApp cargados en su perfil. Estos datos son necesarios para la comunicación y verificación de identidad.',
+            },
+            {
+              title: 'Vigencia de la reserva',
+              body: 'Una vez aprobada por el equipo de MBDA Modas, la reserva tiene una vigencia de 24 horas para traer al comprador a la tienda. La vigencia puede extenderse a criterio de la tienda ante imprevistos debidamente comunicados.',
+            },
+            {
+              title: 'Comisión del promotor',
+              body: 'El porcentaje de comisión es informado al momento de realizar la reserva. La comisión se acredita únicamente si la venta se concreta en el plazo establecido. No se garantiza la disponibilidad del producto hasta que la reserva sea aprobada por el equipo.',
+            },
+            {
+              title: 'Responsabilidad del promotor',
+              body: 'El promotor es responsable de informar correctamente el precio de venta al comprador. No se garantiza disponibilidad del producto hasta la aprobación formal de la reserva. El promotor debe abstenerse de realizar promesas de venta antes de recibir la confirmación.',
+            },
+            {
+              title: 'Cancelación',
+              body: 'El promotor puede cancelar una reserva mientras esté en estado pendiente de aprobación. Una vez aprobada, solo el equipo de la tienda puede cancelarla. La cancelación reiterada sin motivo justificado puede resultar en la suspensión del acceso al módulo.',
+            },
+            {
+              title: 'Pago al promotor',
+              body: 'El pago de la comisión se realiza mediante el mismo método que aplica la tienda: efectivo (retiro en tienda) o transferencia bancaria al alias/CVU registrado en el perfil. El monto se acredita una vez verificada la venta por el equipo de MBDA Modas.',
+            },
+          ].map(({ title, body }) => (
+            <div key={title} style={{ marginBottom: '1.25rem' }}>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1rem', fontWeight: 700, color: '#1E1914', marginBottom: '0.5rem' }}>
+                {title}
+              </h3>
+              <p style={{ color: '#4b5563', lineHeight: 1.7, fontSize: '0.95rem', margin: 0 }}>{body}</p>
+            </div>
+          ))}
+        </div>
+
         <div style={{ marginTop: '3rem', padding: '1.25rem', background: '#E8E3D5', borderRadius: '1rem', fontSize: '0.875rem', color: '#6b7280' }}>
           Para consultas sobre estos términos, contactanos en{' '}
           <a href="mailto:contacto@mbdamodas.com" style={{ color: '#1E1914', fontWeight: 600 }}>

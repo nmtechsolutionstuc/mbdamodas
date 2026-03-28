@@ -24,9 +24,12 @@ import { AdminStoresPage } from './pages/admin/AdminStoresPage'
 import { AdminCatalogPage } from './pages/admin/AdminCatalogPage'
 import { AdminUsersPage } from './pages/admin/AdminUsersPage'
 import { AdminCatalogSettingsPage } from './pages/admin/AdminCatalogSettingsPage'
+import { AdminReservationsPage } from './pages/admin/AdminReservationsPage'
 import { TermsPage } from './pages/public/TermsPage'
 import { AboutPage } from './pages/public/AboutPage'
 import { NotFoundPage } from './pages/public/NotFoundPage'
+import { MyReservationsPage } from './pages/user/MyReservationsPage'
+import { VoucherPage } from './pages/public/VoucherPage'
 
 function App() {
   return (
@@ -45,6 +48,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/auth/callback" element={<GoogleCallbackPage />} />
+          <Route path="/comprobante/:code" element={<VoucherPage />} />
 
           {/* Usuario autenticado */}
           <Route path="/dashboard" element={<ProtectedRoute><UserDashboardPage /></ProtectedRoute>} />
@@ -52,6 +56,7 @@ function App() {
           <Route path="/dashboard/enviar" element={<ProtectedRoute><SubmitItemPage /></ProtectedRoute>} />
           <Route path="/dashboard/mis-solicitudes" element={<ProtectedRoute><MySubmissionsPage /></ProtectedRoute>} />
           <Route path="/dashboard/mis-solicitudes/:id" element={<ProtectedRoute><SubmissionDetailPage /></ProtectedRoute>} />
+          <Route path="/dashboard/mis-reservas" element={<ProtectedRoute><MyReservationsPage /></ProtectedRoute>} />
 
           {/* Admin */}
           <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
@@ -61,6 +66,7 @@ function App() {
           <Route path="/admin/usuarios" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
           <Route path="/admin/tiendas" element={<AdminRoute><AdminStoresPage /></AdminRoute>} />
           <Route path="/admin/configuracion" element={<AdminRoute><AdminCatalogSettingsPage /></AdminRoute>} />
+          <Route path="/admin/reservas" element={<AdminRoute><AdminReservationsPage /></AdminRoute>} />
 
           {/* 404 */}
           <Route path="*" element={<NotFoundPage />} />

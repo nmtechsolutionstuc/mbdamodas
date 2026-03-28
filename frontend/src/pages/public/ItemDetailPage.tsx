@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { fetchItemById } from '../../api/items'
+import { createReservation } from '../../api/reservations'
 import type { Item } from '../../types'
 import { CONDITION_LABELS } from '../../types'
+import { useAuthStore } from '../../store/authStore'
 
 function buildWhatsAppLink(phone: string, item: Item): string {
   const sizePart = item.size ? ` (Talle ${item.size.name})` : ''
@@ -13,10 +15,15 @@ function buildWhatsAppLink(phone: string, item: Item): string {
 
 export function ItemDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { user } = useAuthStore()
   const [item, setItem] = useState<Item | null>(null)
   const [loading, setLoading] = useState(true)
   const [photoIndex, setPhotoIndex] = useState(0)
   const [waHovered, setWaHovered] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [reserving, setReserving] = useState(false)
+  const [reservationSuccess, setReservationSuccess] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -62,6 +69,28 @@ export function ItemDetailPage() {
   }
 
   const storePhone = item.store?.phone
+  const isOwnProduct = item.isOwnProduct === true
+  const activeReservation = (item as any).reservations?.[0] ?? item.activeReservation ?? null
+  const isReserved = activeReservation !== null && activeReservation !== undefined
+  const earnings = item.promoterCommissionPct && item.price
+    ? Math.round(Number(item.price) * Number(item.promoterCommissionPct) / 100)
+    : null
+
+  async function handleConfirmReservation() {
+    if (!item) return
+    setReserving(true)
+    try {
+      const result = await createReservation(item.id)
+      setReservationSuccess(true)
+      if (result.whatsappToAttendant) {
+        window.open(result.whatsappToAttendant, '_blank')
+      }
+    } catch {
+      // ignore — user sees error state
+    } finally {
+      setReserving(false)
+    }
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F3' }}>
@@ -251,7 +280,98 @@ export function ItemDetailPage() {
               <p style={{ color: '#4b5563', marginBottom: '1.5rem', lineHeight: 1.7, fontFamily: "'Inter', sans-serif", fontSize: '0.95rem' }}>{item.description}</p>
             )}
 
-            {storePhone ? (
+            {isOwnProduct ? (
+              <>
+                {isReserved ? (
+                  <div style={{
+                    width: '100%',
+                    padding: '1rem',
+                    borderRadius: '0.875rem',
+                    background: '#E5E7EB',
+                    color: '#6b7280',
+                    textAlign: 'center',
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    fontFamily: "'Inter', sans-serif",
+                  }}>
+                    Reservado — no disponible
+                  </div>
+                ) : showConfirm ? (
+                  <div style={{
+                    background: '#fff',
+                    border: '1px solid #E8E3D5',
+                    borderRadius: '0.875rem',
+                    padding: '1.25rem',
+                  }}>
+                    {reservationSuccess ? (
+                      <p style={{ color: '#166534', fontWeight: 600, fontFamily: "'Inter', sans-serif", margin: 0 }}>
+                        Reserva enviada. El equipo de MBDA Modas te va a confirmar por WhatsApp.
+                      </p>
+                    ) : (
+                      <>
+                        <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem', fontWeight: 700, color: '#1E1914', marginTop: 0, marginBottom: '0.5rem' }}>
+                          Reservar para vender
+                        </h3>
+                        <p style={{ fontSize: '0.9rem', color: '#4b5563', marginBottom: '0.25rem', fontFamily: "'Inter', sans-serif" }}>
+                          {item.title}{item.code ? ` · ${item.code}` : ''}
+                        </p>
+                        {earnings !== null && (
+                          <p style={{ fontSize: '0.9rem', fontWeight: 600, color: '#166534', marginBottom: '0.75rem', fontFamily: "'Inter', sans-serif" }}>
+                            Tu ganancia estimada: ${earnings.toLocaleString('es-AR')}
+                          </p>
+                        )}
+                        <div style={{ background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: '0.5rem', padding: '0.625rem 0.875rem', marginBottom: '1rem', fontSize: '0.825rem', color: '#92400E', fontFamily: "'Inter', sans-serif" }}>
+                          ⚠ Tenés 24 horas desde la aprobación para traer al comprador a la tienda
+                        </div>
+                        <button
+                          onClick={handleConfirmReservation}
+                          disabled={reserving}
+                          style={{
+                            width: '100%',
+                            padding: '0.875rem',
+                            borderRadius: '0.875rem',
+                            background: reserving ? '#4b4540' : '#1E1914',
+                            color: '#E8E3D5',
+                            border: 'none',
+                            fontWeight: 600,
+                            fontSize: '0.95rem',
+                            fontFamily: "'Inter', sans-serif",
+                            cursor: reserving ? 'not-allowed' : 'pointer',
+                            marginBottom: '0.625rem',
+                          }}
+                        >
+                          {reserving ? 'Enviando...' : 'Confirmar reserva'}
+                        </button>
+                        <button
+                          onClick={() => setShowConfirm(false)}
+                          style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '0.875rem', fontFamily: "'Inter', sans-serif", display: 'block', margin: '0 auto' }}
+                        >
+                          Cancelar
+                        </button>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { if (user) { setShowConfirm(true) } else { navigate('/login') } }}
+                    style={{
+                      width: '100%',
+                      padding: '1rem',
+                      borderRadius: '0.875rem',
+                      background: '#1E1914',
+                      color: '#E8E3D5',
+                      border: 'none',
+                      fontWeight: 600,
+                      fontSize: '1.05rem',
+                      fontFamily: "'Inter', sans-serif",
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Reservar para vender
+                  </button>
+                )}
+              </>
+            ) : storePhone ? (
               <a
                 href={buildWhatsAppLink(storePhone, item)}
                 target="_blank"
