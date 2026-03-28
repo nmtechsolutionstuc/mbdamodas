@@ -23,13 +23,22 @@ export async function createSubmissionHandler(req: Request, res: Response): Prom
   // multer ya parseó los campos; las fotos llegan en req.files como { 'items[0][photos]': [...] }
   const rawItems = req.body.items
   if (!rawItems || !Array.isArray(rawItems)) {
-    badRequest(res, 'Se requiere al menos una prenda')
+    badRequest(res, 'Se requiere al menos un producto')
     return
+  }
+
+  // Normalizar tagIds: multer puede enviar un string en vez de array cuando hay un solo tag
+  for (const item of rawItems) {
+    if (item.tagIds && typeof item.tagIds === 'string') {
+      item.tagIds = [item.tagIds]
+    } else if (!item.tagIds) {
+      item.tagIds = []
+    }
   }
 
   const parsed = z.array(itemSchema).min(1).safeParse(rawItems)
   if (!parsed.success) {
-    badRequest(res, 'Datos de prendas inválidos', parsed.error.errors)
+    badRequest(res, 'Datos de productos inválidos', parsed.error.errors)
     return
   }
 
@@ -80,7 +89,7 @@ export async function getMySubmission(req: Request, res: Response): Promise<void
 export async function cancelMySubmission(req: Request, res: Response): Promise<void> {
   const success = await cancelSubmission(req.params.id!, req.user!.sub)
   if (!success) {
-    forbidden(res, 'No podés cancelar esta solicitud. Solo se pueden cancelar solicitudes con todas las prendas en estado pendiente.')
+    forbidden(res, 'No podés cancelar esta solicitud. Solo se pueden cancelar solicitudes con todos los productos en estado pendiente.')
     return
   }
   ok(res, { message: 'Solicitud cancelada' })
