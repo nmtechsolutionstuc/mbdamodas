@@ -80,6 +80,58 @@ export interface ItemPhoto {
   order: number
 }
 
+export type ReservationStatus =
+  | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED'
+  | 'COMPLETED' | 'CANCELLED' | 'EXPIRED'
+
+export const RESERVATION_STATUS_LABEL: Record<ReservationStatus, string> = {
+  PENDING_APPROVAL: 'Esperando confirmación',
+  APPROVED: 'Aprobada',
+  REJECTED: 'No aprobada',
+  COMPLETED: 'Completada',
+  CANCELLED: 'Cancelada',
+  EXPIRED: 'Vencida',
+}
+
+export const RESERVATION_STATUS_COLOR: Record<ReservationStatus, string> = {
+  PENDING_APPROVAL: '#FEF3C7',
+  APPROVED: '#D1FAE5',
+  REJECTED: '#FEE2E2',
+  COMPLETED: '#E5E7EB',
+  CANCELLED: '#E5E7EB',
+  EXPIRED: '#F3F4F6',
+}
+
+export interface Reservation {
+  id: string
+  reservationCode: string
+  status: ReservationStatus
+  adminNote: string | null
+  extensionCount: number
+  expiresAt: string | null
+  completedAt: string | null
+  createdAt: string
+  item: {
+    id: string
+    code: string | null
+    title: string
+    price: number
+    promoterCommissionPct: number | null
+    isOwnProduct: boolean
+    photos: { url: string; order: number }[]
+    store: { name: string; phone: string | null; storeAttendantPhone?: string | null }
+  }
+  user?: {
+    id: string
+    firstName: string
+    lastName: string
+    dni: string | null
+    phone: string | null
+    paymentMethod: string | null
+    bankAlias: string | null
+  }
+}
+
 export interface Item {
   id: string
   code?: string | null
@@ -96,6 +148,9 @@ export interface Item {
   isActive: boolean
   photos: ItemPhoto[]
   store?: { phone: string | null; name: string }
+  isOwnProduct?: boolean
+  promoterCommissionPct?: number | null
+  activeReservation?: { id: string; status: ReservationStatus } | null
 }
 
 export interface SubmissionItem {

@@ -88,6 +88,14 @@ export function UserDashboardPage() {
           </Link>
 
           <Link
+            to="/dashboard/mis-reservas"
+            style={{ display: 'block', padding: '1.25rem', borderRadius: '1rem', textDecoration: 'none', background: '#E8E3D5', color: '#1E1914' }}
+          >
+            <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>Mis reservas para vender</div>
+            <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>Reservá productos de la tienda y ganá una comisión</div>
+          </Link>
+
+          <Link
             to="/dashboard/perfil"
             style={{ display: 'block', padding: '1.25rem', borderRadius: '1rem', textDecoration: 'none', background: '#E8E3D5', color: '#1E1914' }}
           >

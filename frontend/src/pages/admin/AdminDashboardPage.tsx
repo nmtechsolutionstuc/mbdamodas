@@ -22,6 +22,7 @@ export function AdminDashboardPage() {
     { label: 'Usuarios', desc: 'Administrar vendedores y crear cuentas', to: '/admin/usuarios', dark: false, icon: '👥' },
     { label: 'Tiendas', desc: 'Configurar comisiones y datos de la tienda', to: '/admin/tiendas', dark: false, icon: '🏬' },
     { label: 'Configuracion', desc: 'Tipos de producto, talles y etiquetas', to: '/admin/configuracion', dark: false, icon: '⚙️' },
+    { label: 'Gestionar Reservas', desc: 'Aprobar, rechazar y completar reservas de promotores', to: '/admin/reservas', dark: false, icon: '🔖' },
   ]
 
   return (

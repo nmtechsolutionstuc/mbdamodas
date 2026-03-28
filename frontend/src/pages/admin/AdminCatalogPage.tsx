@@ -104,6 +104,8 @@ export function AdminCatalogPage() {
     quantity: '1',
     price: '',
     commission: '30',
+    isOwnProduct: false,
+    promoterCommissionPct: '',
   })
 
   useEffect(() => {
@@ -235,6 +237,8 @@ export function AdminCatalogPage() {
         price: parseFloat(newItem.price),
         commission: parseFloat(newItem.commission),
         storeId: 'store-mbda-modas',
+        isOwnProduct: newItem.isOwnProduct,
+        promoterCommissionPct: newItem.isOwnProduct && newItem.promoterCommissionPct ? parseFloat(newItem.promoterCommissionPct) : null,
       })
       toast('Producto creado correctamente', 'success')
       setShowCreateForm(false)
@@ -249,7 +253,7 @@ export function AdminCatalogPage() {
 
   function resetCreateForm() {
     setShowCreateForm(false)
-    setNewItem({ title: '', description: '', productTypeId: '', sizeId: '', tagIds: [], condition: 'BUEN_ESTADO', quantity: '1', price: '', commission: '30' })
+    setNewItem({ title: '', description: '', productTypeId: '', sizeId: '', tagIds: [], condition: 'BUEN_ESTADO', quantity: '1', price: '', commission: '30', isOwnProduct: false, promoterCommissionPct: '' })
   }
 
   const totalPages = Math.ceil(total / limit)
@@ -402,6 +406,32 @@ export function AdminCatalogPage() {
                   style={inputStyle}
                 />
               </div>
+              <div>
+                <label style={labelStyle}>Tipo de producto</label>
+                <select
+                  value={newItem.isOwnProduct ? 'own' : 'consignment'}
+                  onChange={e => setNewItem(p => ({ ...p, isOwnProduct: e.target.value === 'own', promoterCommissionPct: '' }))}
+                  style={{ ...inputStyle, cursor: 'pointer' }}
+                >
+                  <option value="consignment">Consignación</option>
+                  <option value="own">Stock propio - Reservable</option>
+                </select>
+              </div>
+              {newItem.isOwnProduct && (
+                <div>
+                  <label style={labelStyle}>Comisión promotor (%)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="0.01"
+                    value={newItem.promoterCommissionPct}
+                    onChange={e => setNewItem(p => ({ ...p, promoterCommissionPct: e.target.value }))}
+                    style={inputStyle}
+                    placeholder="Ej: 15"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Tags for create form */}
