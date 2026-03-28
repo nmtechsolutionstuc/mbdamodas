@@ -315,6 +315,27 @@ model Item {
 }
 
 // ─────────────────────────────────────────────────────────────
+// SECURITY AUDIT LOG — Registro de eventos de seguridad
+// ─────────────────────────────────────────────────────────────
+
+model SecurityLog {
+  id        String   @id @default(uuid())
+  event     String   // LOGIN_SUCCESS, LOGIN_FAILED, REGISTER, ADMIN_ACTION, etc.
+  email     String?  // Email involucrado (si aplica)
+  userId    String?  // ID del usuario (si está autenticado)
+  ip        String?  // IP del cliente
+  userAgent String?  // User-Agent header
+  metadata  Json?    // Datos adicionales (motivo de fallo, acción admin, etc.)
+  createdAt DateTime @default(now())
+
+  @@index([event])
+  @@index([email])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("security_logs")
+}
+
+// ─────────────────────────────────────────────────────────────
 // ITEM PHOTO — Fotos del item en catálogo (copiadas al aprobar)
 // ─────────────────────────────────────────────────────────────
 

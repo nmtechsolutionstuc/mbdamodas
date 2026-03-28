@@ -11,7 +11,11 @@ const schema = z.object({
   lastName: z.string().min(1, 'Requerido').max(50),
   dni: z.string().min(7, 'Mínimo 7 dígitos').max(10, 'Máximo 10 dígitos').regex(/^\d+$/, 'Solo números'),
   email: z.string().email('Email inválido'),
-  password: z.string().min(8, 'Mínimo 8 caracteres'),
+  password: z.string()
+    .min(8, 'Mínimo 8 caracteres')
+    .regex(/[A-Z]/, 'Debe contener al menos una mayúscula')
+    .regex(/[a-z]/, 'Debe contener al menos una minúscula')
+    .regex(/[0-9]/, 'Debe contener al menos un número'),
   confirmPassword: z.string(),
 }).refine(d => d.password === d.confirmPassword, {
   message: 'Las contraseñas no coinciden',
@@ -101,7 +105,7 @@ export function RegisterPage() {
 
           <div>
             <label style={lbl}>Contraseña</label>
-            <input {...register('password')} type="password" autoComplete="new-password" placeholder="Mínimo 8 caracteres" style={inp} />
+            <input {...register('password')} type="password" autoComplete="new-password" placeholder="Mín 8, mayúscula, minúscula y número" style={inp} />
             {errors.password && <p style={err}>{errors.password.message}</p>}
           </div>
 

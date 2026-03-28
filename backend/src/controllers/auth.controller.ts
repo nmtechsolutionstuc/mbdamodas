@@ -6,6 +6,8 @@ import {
 } from '../services/auth.service'
 import { ok, created, badRequest, unauthorized, conflict, serverError } from '../utils/apiResponse'
 import { env } from '../config/env'
+import { recordFailedLogin, clearFailedLogins } from '../middlewares/loginLimiter'
+import { logSecurityEvent } from '../services/securityLog.service'
 // Ensure Express.User augmentation from authenticate middleware is loaded
 import '../middlewares/authenticate'
 
@@ -25,6 +27,7 @@ export async function register(req: Request, res: Response): Promise<void> {
 
   try {
     const { user, accessToken, refreshToken } = await registerUser(parsed.data)
+    logSecurityEvent({ event: 'REGISTER', email: user.email, userId: user.id, req })
     res.cookie('refreshToken', refreshToken, COOKIE_OPTIONS)
     created(res, {
       user: {
@@ -63,10 +66,14 @@ export async function login(req: Request, res: Response): Promise<void> {
 
   const result = await loginUser(parsed.data.email, parsed.data.password)
   if (!result) {
+    recordFailedLogin(parsed.data.email)
+    logSecurityEvent({ event: 'LOGIN_FAILED', email: parsed.data.email, req })
     unauthorized(res, 'Email o contraseña incorrectos')
     return
   }
 
+  clearFailedLogins(parsed.data.email)
+  logSecurityEvent({ event: 'LOGIN_SUCCESS', email: result.user.email, userId: result.user.id, req })
   const { user, accessToken, refreshToken } = result
   res.cookie('refreshToken', refreshToken, COOKIE_OPTIONS)
   ok(res, {
@@ -108,6 +115,7 @@ export async function logout(req: Request, res: Response): Promise<void> {
   if (rawToken) {
     await revokeRefreshToken(rawToken)
   }
+  logSecurityEvent({ event: 'LOGOUT', userId: req.user?.sub, req })
   res.clearCookie('refreshToken')
   ok(res, { message: 'Sesión cerrada' })
 }
