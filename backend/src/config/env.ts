@@ -23,8 +23,11 @@ export const env = {
   googleClientSecret: process.env['GOOGLE_CLIENT_SECRET'] ?? '',
   googleCallbackUrl: process.env['GOOGLE_CALLBACK_URL'] ?? '',
   frontendUrl: optional('FRONTEND_URL', 'http://localhost:5173'),
-  storageProvider: optional('STORAGE_PROVIDER', 'local') as 'local' | 'cloudinary',
+  storageProvider: optional('STORAGE_PROVIDER', 'local') as 'local' | 'cloudinary' | 'supabase',
   cloudinaryCloudName: process.env['CLOUDINARY_CLOUD_NAME'],
   cloudinaryApiKey: process.env['CLOUDINARY_API_KEY'],
   cloudinaryApiSecret: process.env['CLOUDINARY_API_SECRET'],
+  supabaseUrl: process.env['SUPABASE_URL'] ?? '',
+  supabaseServiceKey: process.env['SUPABASE_SERVICE_ROLE_KEY'] ?? '',
+  supabaseStorageBucket: optional('SUPABASE_STORAGE_BUCKET', 'photos'),
 } as const

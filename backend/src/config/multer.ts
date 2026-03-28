@@ -15,7 +15,7 @@ const localStorage = multer.diskStorage({
 const memoryStorage = multer.memoryStorage()
 
 export const upload = multer({
-  storage: env.storageProvider === 'local' ? localStorage : memoryStorage,
+  storage: env.storageProvider === 'local' ? localStorage : memoryStorage, // cloudinary y supabase usan memoryStorage
   limits: { fileSize: 8 * 1024 * 1024 }, // 8 MB por foto
   fileFilter: (_req, file, cb) => {
     const allowed = ['image/jpeg', 'image/png', 'image/webp']
