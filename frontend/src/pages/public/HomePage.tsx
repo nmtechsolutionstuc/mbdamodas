@@ -127,7 +127,7 @@ export function HomePage() {
           </a>
         </div>
 
-        {/* Panel vendedor */}
+        {/* Panel vendedor / promotor */}
         <div
           style={{
             background: 'linear-gradient(160deg, #1E1914 0%, #2a2420 50%, #1E1914 100%)',
@@ -161,7 +161,7 @@ export function HomePage() {
             background: 'rgba(232, 227, 213, 0.04)',
           }} />
           <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: '0.75rem', position: 'relative' }}>
-            Para vendedores
+            Para vendedores y promotores
           </p>
           <h2
             style={{
@@ -174,46 +174,70 @@ export function HomePage() {
               position: 'relative',
             }}
           >
-            Converti tu ropa en dinero sin esfuerzo
+            Ganá dinero vendiendo nuestros productos
           </h2>
-          <p style={{ color: '#d1d5db', marginBottom: '2rem', maxWidth: '300px', lineHeight: 1.6, position: 'relative' }}>
-            Nosotros la vendemos por vos. Sin capital inicial, sin complicaciones.
+          <p style={{ color: '#d1d5db', marginBottom: '1.25rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
+            Reservá un producto del catálogo, conseguí un comprador y ganá una comisión por cada venta. Sin capital inicial, sin riesgo.
           </p>
-          <Link
-            to="/register"
-            onMouseEnter={() => setHoveredCta('vender')}
-            onMouseLeave={() => setHoveredCta(null)}
-            style={{
-              background: hoveredCta === 'vender' ? '#f5f0e6' : '#E8E3D5',
-              color: '#1E1914',
-              padding: '0.875rem 2rem',
-              borderRadius: '0.75rem',
-              textDecoration: 'none',
-              fontWeight: 600,
-              fontSize: '1rem',
-              letterSpacing: '0.02em',
-              transition: 'background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
-              transform: hoveredCta === 'vender' ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: hoveredCta === 'vender' ? '0 6px 20px rgba(0,0,0,0.4)' : '0 2px 8px rgba(0,0,0,0.2)',
-              position: 'relative',
-            }}
-          >
-            Quiero vender mis productos
-          </Link>
+          <p style={{ color: '#d1d5db', marginBottom: '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative', fontSize: '0.85rem', opacity: 0.8 }}>
+            También podés dejar tu ropa en consignación y nosotros la vendemos por vos.
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
+            <a
+              href="#catalogo"
+              onMouseEnter={() => setHoveredCta('reservar')}
+              onMouseLeave={() => setHoveredCta(null)}
+              style={{
+                background: hoveredCta === 'reservar' ? '#f5f0e6' : '#E8E3D5',
+                color: '#1E1914',
+                padding: '0.875rem 1.75rem',
+                borderRadius: '0.75rem',
+                textDecoration: 'none',
+                fontWeight: 600,
+                fontSize: '0.95rem',
+                letterSpacing: '0.02em',
+                transition: 'background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
+                transform: hoveredCta === 'reservar' ? 'translateY(-2px)' : 'translateY(0)',
+                boxShadow: hoveredCta === 'reservar' ? '0 6px 20px rgba(0,0,0,0.4)' : '0 2px 8px rgba(0,0,0,0.2)',
+              }}
+            >
+              💰 Reservar y ganar
+            </a>
+            <Link
+              to="/register"
+              onMouseEnter={() => setHoveredCta('vender')}
+              onMouseLeave={() => setHoveredCta(null)}
+              style={{
+                background: 'transparent',
+                color: '#E8E3D5',
+                padding: '0.875rem 1.75rem',
+                borderRadius: '0.75rem',
+                textDecoration: 'none',
+                fontWeight: 600,
+                fontSize: '0.95rem',
+                letterSpacing: '0.02em',
+                border: '1px solid rgba(232, 227, 213, 0.3)',
+                transition: 'background 0.2s ease, transform 0.2s ease',
+                transform: hoveredCta === 'vender' ? 'translateY(-2px)' : 'translateY(0)',
+              }}
+            >
+              Vender mi ropa
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* ── Propuesta de valor ──────────────────────────── */}
       <style>{`
-        .mbda-features { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
-        @media (max-width: 640px) { .mbda-features { grid-template-columns: 1fr; } }
+        .mbda-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        @media (max-width: 768px) { .mbda-features { grid-template-columns: 1fr; } }
       `}</style>
       <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 1.5rem 0' }}>
         <div className="mbda-features">
           {[
             { emoji: '\uD83D\uDC57', title: 'Ropa nueva', desc: 'Productos nuevos propios de MBDA Modas, con las últimas tendencias.' },
             { emoji: '\u267B\uFE0F', title: 'Ropa en consignación', desc: 'Productos seleccionados y cuidados, a precios accesibles.' },
-            { emoji: '\u2728', title: 'Calidad garantizada', desc: 'Cada producto es revisado por nuestro equipo antes de publicarse.' },
+            { emoji: '\uD83D\uDCB0', title: 'Ganá vendiendo', desc: 'Reservá un producto, conseguí un comprador y llevate una comisión. Sin inversión.' },
           ].map((card) => (
             <div
               key={card.title}

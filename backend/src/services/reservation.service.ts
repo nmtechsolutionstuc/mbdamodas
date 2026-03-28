@@ -1,6 +1,13 @@
 import { prisma } from '../config/prisma'
 import { generateReservationWALink, type ReservationWAContext } from './whatsapp.service'
 
+// Reusable include matching the shape the frontend expects
+const fullReservationInclude = {
+  item: { include: { photos: { orderBy: { order: 'asc' as const }, take: 1 } } },
+  user: { select: { id: true, firstName: true, lastName: true, dni: true, phone: true, paymentMethod: true, bankAlias: true } },
+  store: { select: { name: true, phone: true, storeAttendantPhone: true } },
+}
+
 // Lazy expiration helper — inlined to avoid circular imports
 async function expireStaleReservations(): Promise<void> {
   await prisma.reservation.updateMany({
@@ -174,10 +181,15 @@ export async function approveReservation(reservationId: string) {
   }
 
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
-  const updated = await prisma.reservation.update({
+  await prisma.reservation.update({
     where: { id: reservationId },
     data: { status: 'APPROVED', expiresAt },
-    include: { item: true, user: true },
+  })
+
+  // Re-fetch with full includes for the frontend
+  const updated = await prisma.reservation.findUniqueOrThrow({
+    where: { id: reservationId },
+    include: fullReservationInclude,
   })
 
   const earnings = reservation.item.price && reservation.item.promoterCommissionPct
@@ -215,9 +227,14 @@ export async function rejectReservation(reservationId: string, adminNote: string
     throw { status: 400, message: 'Solo se pueden rechazar reservas pendientes' }
   }
 
-  const updated = await prisma.reservation.update({
+  await prisma.reservation.update({
     where: { id: reservationId },
     data: { status: 'REJECTED', adminNote },
+  })
+
+  const updated = await prisma.reservation.findUniqueOrThrow({
+    where: { id: reservationId },
+    include: fullReservationInclude,
   })
 
   const ctx: ReservationWAContext = {
@@ -246,7 +263,7 @@ export async function completeReservation(reservationId: string) {
     throw { status: 400, message: 'Solo se pueden completar reservas aprobadas y vigentes' }
   }
 
-  const [updated] = await prisma.$transaction([
+  await prisma.$transaction([
     prisma.reservation.update({
       where: { id: reservationId },
       data: { status: 'COMPLETED', completedAt: new Date() },
@@ -256,6 +273,11 @@ export async function completeReservation(reservationId: string) {
       data: { isActive: false },
     }),
   ])
+
+  const updated = await prisma.reservation.findUniqueOrThrow({
+    where: { id: reservationId },
+    include: fullReservationInclude,
+  })
 
   const earnings = reservation.item.price && reservation.item.promoterCommissionPct
     ? Number(reservation.item.price) * Number(reservation.item.promoterCommissionPct) / 100
@@ -296,9 +318,14 @@ export async function extendReservation(reservationId: string) {
   const currentExpiry = reservation.expiresAt ?? new Date()
   const newExpiry = new Date(currentExpiry.getTime() + 24 * 60 * 60 * 1000)
 
-  const updated = await prisma.reservation.update({
+  await prisma.reservation.update({
     where: { id: reservationId },
     data: { expiresAt: newExpiry, extensionCount: { increment: 1 } },
+  })
+
+  const updated = await prisma.reservation.findUniqueOrThrow({
+    where: { id: reservationId },
+    include: fullReservationInclude,
   })
 
   const ctx: ReservationWAContext = {

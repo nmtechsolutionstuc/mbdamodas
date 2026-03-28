@@ -22,6 +22,10 @@ export async function getPublicItems(filters: ItemFilters) {
 
   const where: Prisma.ItemWhereInput = {
     isActive: true,
+    // Hide items that have an active reservation (PENDING_APPROVAL or APPROVED)
+    NOT: {
+      reservations: { some: { status: { in: ['PENDING_APPROVAL', 'APPROVED'] } } },
+    },
     ...(filters.productTypeId && { productTypeId: filters.productTypeId }),
     ...(filters.sizeId && { sizeId: filters.sizeId }),
     ...(filters.storeId && { storeId: filters.storeId }),
