@@ -62,11 +62,32 @@ export function SubmitItemPage() {
     setCurrentItem(Math.max(0, currentItem - 1))
   }
 
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+  const MAX_FILE_SIZE = 8 * 1024 * 1024 // 8MB (mismo límite que el backend)
+  const [photoError, setPhotoError] = useState<string | null>(null)
+
   function handlePhotos(files: FileList | null) {
     if (!files) return
-    const newFiles = Array.from(files).slice(0, 5 - item.photos.length)
-    const newPreviews = newFiles.map(f => URL.createObjectURL(f))
-    updateItem({ photos: [...item.photos, ...newFiles] })
+    setPhotoError(null)
+
+    const allFiles = Array.from(files).slice(0, 5 - item.photos.length)
+    const validFiles: File[] = []
+
+    for (const file of allFiles) {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        setPhotoError(`"${file.name}" no es válido. Solo se permiten JPG, PNG y WebP.`)
+        return
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        setPhotoError(`"${file.name}" supera los 8MB. Reducí el tamaño de la imagen.`)
+        return
+      }
+      validFiles.push(file)
+    }
+
+    if (validFiles.length === 0) return
+    const newPreviews = validFiles.map(f => URL.createObjectURL(f))
+    updateItem({ photos: [...item.photos, ...validFiles] })
     setPhotoPreviews(prev => prev.map((p, i) => i === currentItem ? [...p, ...newPreviews] : p))
   }
 
@@ -362,10 +383,13 @@ export function SubmitItemPage() {
                     transition: 'border-color 0.15s ease, background 0.15s ease',
                   }}>
                     +
-                    <input type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={e => handlePhotos(e.target.files)} />
+                    <input type="file" accept="image/jpeg,image/png,image/webp" multiple style={{ display: 'none' }} onChange={e => handlePhotos(e.target.files)} />
                   </label>
                 )}
               </div>
+              {photoError && (
+                <p style={{ fontSize: '0.8rem', color: '#dc2626', marginTop: '0.25rem', fontFamily: "'Inter', sans-serif" }}>{photoError}</p>
+              )}
             </div>
 
             <div style={{ display: 'flex', gap: '0.75rem' }}>
