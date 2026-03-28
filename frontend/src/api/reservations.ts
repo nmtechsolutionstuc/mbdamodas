@@ -1,8 +1,8 @@
 import axiosClient from './axiosClient'
 import type { Reservation } from '../types'
 
-export async function createReservation(itemId: string) {
-  const { data } = await axiosClient.post('/reservations', { itemId })
+export async function createReservation(itemId: string, quantity: number = 1) {
+  const { data } = await axiosClient.post('/reservations', { itemId, quantity })
   return data.data as { reservation: Reservation; whatsappToAttendant: string | null }
 }
 

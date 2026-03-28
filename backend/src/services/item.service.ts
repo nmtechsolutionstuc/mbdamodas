@@ -22,10 +22,6 @@ export async function getPublicItems(filters: ItemFilters) {
 
   const where: Prisma.ItemWhereInput = {
     isActive: true,
-    // Hide items that have an active reservation (PENDING_APPROVAL or APPROVED)
-    NOT: {
-      reservations: { some: { status: { in: ['PENDING_APPROVAL', 'APPROVED'] } } },
-    },
     ...(filters.productTypeId && { productTypeId: filters.productTypeId }),
     ...(filters.sizeId && { sizeId: filters.sizeId }),
     ...(filters.storeId && { storeId: filters.storeId }),
@@ -72,15 +68,24 @@ export async function getPublicItems(filters: ItemFilters) {
         promoterCommissionPct: true,
         reservations: {
           where: { status: { in: ['PENDING_APPROVAL', 'APPROVED'] } },
-          select: { id: true, status: true },
-          take: 1,
+          select: { id: true, status: true, quantity: true },
         },
       },
     }),
     prisma.item.count({ where }),
   ])
 
-  return { items, total, page, limit }
+  // Compute availableQuantity and filter out fully reserved items
+  const enriched = items.map(item => {
+    const reservedQty = item.reservations.reduce((sum, r) => sum + r.quantity, 0)
+    return {
+      ...item,
+      reservedQuantity: reservedQty,
+      availableQuantity: item.quantity - reservedQty,
+    }
+  }).filter(item => item.availableQuantity > 0)
+
+  return { items: enriched, total: enriched.length < limit ? skip + enriched.length : total, page, limit }
 }
 
 export async function getPublicItemById(id: string) {
@@ -89,7 +94,7 @@ export async function getPublicItemById(id: string) {
     data: { status: 'EXPIRED' },
   })
 
-  return prisma.item.findFirst({
+  const item = await prisma.item.findFirst({
     where: { id, isActive: true },
     select: {
       id: true,
@@ -118,9 +123,17 @@ export async function getPublicItemById(id: string) {
       promoterCommissionPct: true,
       reservations: {
         where: { status: { in: ['PENDING_APPROVAL', 'APPROVED'] } },
-        select: { id: true, status: true },
-        take: 1,
+        select: { id: true, status: true, quantity: true },
       },
     },
   })
+
+  if (!item) return null
+
+  const reservedQty = item.reservations.reduce((sum, r) => sum + r.quantity, 0)
+  return {
+    ...item,
+    reservedQuantity: reservedQty,
+    availableQuantity: item.quantity - reservedQty,
+  }
 }

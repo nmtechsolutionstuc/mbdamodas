@@ -118,6 +118,12 @@ export function VoucherPage() {
             <strong>Código de reserva:</strong> {reservation.reservationCode}
           </p>
 
+          {reservation.quantity > 1 && (
+            <p style={{ fontSize: '0.9rem', color: '#4b5563', margin: '0 0 0.375rem', fontFamily: "'Inter', sans-serif" }}>
+              <strong>Cantidad:</strong> {reservation.quantity} unidades
+            </p>
+          )}
+
           {expiresStr && (
             <p style={{ fontSize: '0.9rem', color: '#4b5563', margin: '0 0 1rem', fontFamily: "'Inter', sans-serif" }}>
               <strong>Válido hasta:</strong> {expiresStr}

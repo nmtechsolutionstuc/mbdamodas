@@ -24,6 +24,7 @@ export function ItemDetailPage() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [reserving, setReserving] = useState(false)
   const [reservationSuccess, setReservationSuccess] = useState(false)
+  const [reserveQty, setReserveQty] = useState(1)
 
   useEffect(() => {
     if (!id) return
@@ -70,17 +71,18 @@ export function ItemDetailPage() {
 
   const storePhone = item.store?.phone
   const isOwnProduct = item.isOwnProduct === true
-  const activeReservation = (item as any).reservations?.[0] ?? item.activeReservation ?? null
-  const isReserved = activeReservation !== null && activeReservation !== undefined
+  const available = item.availableQuantity ?? item.quantity
+  const isFullyReserved = isOwnProduct && available <= 0
   const earnings = item.promoterCommissionPct && item.price
     ? Math.round(Number(item.price) * Number(item.promoterCommissionPct) / 100)
     : null
+  const earningsForQty = earnings !== null ? earnings * reserveQty : null
 
   async function handleConfirmReservation() {
     if (!item) return
     setReserving(true)
     try {
-      const result = await createReservation(item.id)
+      const result = await createReservation(item.id, reserveQty)
       setReservationSuccess(true)
       if (result.whatsappToAttendant) {
         window.open(result.whatsappToAttendant, '_blank')
@@ -269,8 +271,10 @@ export function ItemDetailPage() {
                 </div>
                 {item.quantity > 1 && (
                   <div>
-                    <dt style={{ color: '#9ca3af', fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', marginBottom: '0.2rem' }}>Cantidad disponible</dt>
-                    <dd style={{ color: '#1E1914', fontWeight: 600, margin: 0, fontFamily: "'Inter', sans-serif" }}>{item.quantity}</dd>
+                    <dt style={{ color: '#9ca3af', fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', marginBottom: '0.2rem' }}>Disponibles</dt>
+                    <dd style={{ color: '#1E1914', fontWeight: 600, margin: 0, fontFamily: "'Inter', sans-serif" }}>
+                      {available} de {item.quantity}
+                    </dd>
                   </div>
                 )}
               </dl>
@@ -282,7 +286,7 @@ export function ItemDetailPage() {
 
             {isOwnProduct ? (
               <>
-                {isReserved ? (
+                {isFullyReserved ? (
                   <div style={{
                     width: '100%',
                     padding: '1rem',
@@ -294,7 +298,7 @@ export function ItemDetailPage() {
                     fontSize: '0.95rem',
                     fontFamily: "'Inter', sans-serif",
                   }}>
-                    Reservado — no disponible
+                    Sin stock disponible para reservar
                   </div>
                 ) : showConfirm ? (
                   <div style={{
@@ -312,12 +316,56 @@ export function ItemDetailPage() {
                         <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem', fontWeight: 700, color: '#1E1914', marginTop: 0, marginBottom: '0.5rem' }}>
                           Reservar para vender
                         </h3>
-                        <p style={{ fontSize: '0.9rem', color: '#4b5563', marginBottom: '0.25rem', fontFamily: "'Inter', sans-serif" }}>
+                        <p style={{ fontSize: '0.9rem', color: '#4b5563', marginBottom: '0.75rem', fontFamily: "'Inter', sans-serif" }}>
                           {item.title}{item.code ? ` · ${item.code}` : ''}
                         </p>
-                        {earnings !== null && (
+
+                        {/* Quantity selector (only if available > 1) */}
+                        {available > 1 && (
+                          <div style={{ marginBottom: '0.75rem' }}>
+                            <label style={{ display: 'block', fontSize: '0.85rem', color: '#4b5563', marginBottom: '0.375rem', fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
+                              Cantidad a reservar ({available} disponibles)
+                            </label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <button
+                                onClick={() => setReserveQty(q => Math.max(1, q - 1))}
+                                disabled={reserveQty <= 1}
+                                style={{
+                                  width: '36px', height: '36px', borderRadius: '0.5rem',
+                                  border: '1px solid #E8E3D5', background: '#FAF8F3',
+                                  fontSize: '1.2rem', cursor: reserveQty <= 1 ? 'not-allowed' : 'pointer',
+                                  color: '#1E1914', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  opacity: reserveQty <= 1 ? 0.4 : 1,
+                                }}
+                              >
+                                −
+                              </button>
+                              <span style={{
+                                fontSize: '1.1rem', fontWeight: 700, color: '#1E1914',
+                                fontFamily: "'Inter', sans-serif", minWidth: '2rem', textAlign: 'center',
+                              }}>
+                                {reserveQty}
+                              </span>
+                              <button
+                                onClick={() => setReserveQty(q => Math.min(available, q + 1))}
+                                disabled={reserveQty >= available}
+                                style={{
+                                  width: '36px', height: '36px', borderRadius: '0.5rem',
+                                  border: '1px solid #E8E3D5', background: '#FAF8F3',
+                                  fontSize: '1.2rem', cursor: reserveQty >= available ? 'not-allowed' : 'pointer',
+                                  color: '#1E1914', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  opacity: reserveQty >= available ? 0.4 : 1,
+                                }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {earningsForQty !== null && (
                           <p style={{ fontSize: '0.9rem', fontWeight: 600, color: '#166534', marginBottom: '0.75rem', fontFamily: "'Inter', sans-serif" }}>
-                            Tu ganancia estimada: ${earnings.toLocaleString('es-AR')}
+                            Tu ganancia estimada: ${earningsForQty.toLocaleString('es-AR')}{reserveQty > 1 ? ` (${reserveQty} x $${earnings!.toLocaleString('es-AR')})` : ''}
                           </p>
                         )}
                         <div style={{ background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: '0.5rem', padding: '0.625rem 0.875rem', marginBottom: '1rem', fontSize: '0.825rem', color: '#92400E', fontFamily: "'Inter', sans-serif" }}>
@@ -340,10 +388,10 @@ export function ItemDetailPage() {
                             marginBottom: '0.625rem',
                           }}
                         >
-                          {reserving ? 'Enviando...' : 'Confirmar reserva'}
+                          {reserving ? 'Enviando...' : `Confirmar reserva${reserveQty > 1 ? ` (${reserveQty} unidades)` : ''}`}
                         </button>
                         <button
-                          onClick={() => setShowConfirm(false)}
+                          onClick={() => { setShowConfirm(false); setReserveQty(1) }}
                           style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '0.875rem', fontFamily: "'Inter', sans-serif", display: 'block', margin: '0 auto' }}
                         >
                           Cancelar
@@ -367,7 +415,7 @@ export function ItemDetailPage() {
                       cursor: 'pointer',
                     }}
                   >
-                    Reservar para vender
+                    💰 Reservar para vender{available > 1 ? ` (${available} disponibles)` : ''}
                   </button>
                 )}
               </>

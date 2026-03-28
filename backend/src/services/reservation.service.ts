@@ -38,8 +38,10 @@ function buildVoucherUrl(reservationCode: string): string {
   return `${base}/comprobante/${reservationCode}`
 }
 
-export async function createReservation(itemId: string, userId: string) {
+export async function createReservation(itemId: string, userId: string, quantity: number = 1) {
   await expireStaleReservations()
+
+  if (quantity < 1) throw { status: 400, message: 'La cantidad debe ser al menos 1' }
 
   const [item, user] = await Promise.all([
     prisma.item.findUnique({
@@ -47,6 +49,10 @@ export async function createReservation(itemId: string, userId: string) {
       include: {
         store: true,
         photos: { orderBy: { order: 'asc' }, take: 1 },
+        reservations: {
+          where: { status: { in: ['PENDING_APPROVAL', 'APPROVED'] } },
+          select: { quantity: true },
+        },
       },
     }),
     prisma.user.findUnique({ where: { id: userId } }),
@@ -59,11 +65,14 @@ export async function createReservation(itemId: string, userId: string) {
     throw { status: 400, message: 'Necesitás cargar tu DNI y número de WhatsApp en tu perfil antes de reservar' }
   }
 
-  const activeReservation = await prisma.reservation.findFirst({
-    where: { itemId, status: { in: ['PENDING_APPROVAL', 'APPROVED'] } },
-  })
-  if (activeReservation) {
-    throw { status: 409, message: 'Este producto ya tiene una reserva activa' }
+  // Calculate available stock
+  const reservedQty = item.reservations.reduce((sum, r) => sum + r.quantity, 0)
+  const availableQty = item.quantity - reservedQty
+  if (quantity > availableQty) {
+    throw { status: 409, message: availableQty <= 0
+      ? 'Este producto ya está completamente reservado'
+      : `Solo hay ${availableQty} unidad${availableQty > 1 ? 'es' : ''} disponible${availableQty > 1 ? 's' : ''} para reservar`
+    }
   }
 
   const reservationCode = await getUniqueCode()
@@ -71,6 +80,7 @@ export async function createReservation(itemId: string, userId: string) {
   const reservation = await prisma.reservation.create({
     data: {
       reservationCode,
+      quantity,
       itemId,
       userId,
       storeId: item.storeId,

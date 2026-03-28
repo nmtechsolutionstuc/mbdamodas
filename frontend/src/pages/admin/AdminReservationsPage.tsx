@@ -329,6 +329,12 @@ function ReservationModal({
               <span style={infoLabel}>Precio</span>
               <span style={{ fontWeight: 700 }}>${Number(reservation.item.price).toLocaleString('es-AR')}</span>
             </div>
+            {reservation.quantity > 1 && (
+              <div style={infoRow}>
+                <span style={infoLabel}>Cantidad reservada</span>
+                <span style={{ fontWeight: 700 }}>{reservation.quantity} unidades</span>
+              </div>
+            )}
             {reservation.item.promoterCommissionPct != null && (
               <div style={infoRow}>
                 <span style={infoLabel}>Comisión promotor</span>

@@ -265,6 +265,12 @@ function ReservationModal({
               <span style={infoLabel}>Precio</span>
               <span style={{ fontWeight: 700 }}>${Number(reservation.item.price).toLocaleString('es-AR')}</span>
             </div>
+            {reservation.quantity > 1 && (
+              <div style={infoRow}>
+                <span style={infoLabel}>Cantidad reservada</span>
+                <span style={{ fontWeight: 700 }}>{reservation.quantity} unidades</span>
+              </div>
+            )}
             {reservation.item.promoterCommissionPct != null && (
               <div style={infoRow}>
                 <span style={infoLabel}>Comisión</span>
@@ -274,7 +280,10 @@ function ReservationModal({
             {earnings !== null && (
               <div style={infoRow}>
                 <span style={infoLabel}>Tu ganancia estimada</span>
-                <span style={{ fontWeight: 700, color: '#166534' }}>${earnings.toLocaleString('es-AR')}</span>
+                <span style={{ fontWeight: 700, color: '#166534' }}>
+                  ${(earnings * reservation.quantity).toLocaleString('es-AR')}
+                  {reservation.quantity > 1 ? ` (${reservation.quantity} x $${earnings.toLocaleString('es-AR')})` : ''}
+                </span>
               </div>
             )}
           </div>

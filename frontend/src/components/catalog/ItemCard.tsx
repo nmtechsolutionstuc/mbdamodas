@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import type { Item } from '../../types'
-import { useAuth } from '../../hooks/useAuth'
+import { useAuth } from '../../context/AuthContext'
 
 function buildWhatsAppLink(phone: string, item: Item): string {
   const sizePart = item.size ? ` (Talle ${item.size.name})` : ''
@@ -14,8 +14,8 @@ export function ItemCard({ item }: { item: Item }) {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const hasActiveReservation = item.activeReservation && ['PENDING_APPROVAL', 'APPROVED'].includes(item.activeReservation.status)
-  const canReserve = item.isOwnProduct && !hasActiveReservation
+  const available = item.availableQuantity ?? item.quantity
+  const canReserve = item.isOwnProduct && available > 0
 
   function handleReserve(e: React.MouseEvent) {
     e.preventDefault()
@@ -33,7 +33,7 @@ export function ItemCard({ item }: { item: Item }) {
       style={{ background: '#fff', border: '1px solid #E8E3D5' }}
     >
       {/* Foto */}
-      <Link to={`/item/${item.id}`} style={{ display: 'block', aspectRatio: '3/4', overflow: 'hidden', background: '#E8E3D5' }}>
+      <Link to={`/item/${item.id}`} style={{ display: 'block', aspectRatio: '3/4', overflow: 'hidden', background: '#E8E3D5', position: 'relative' }}>
         {coverPhoto ? (
           <img
             src={coverPhoto.url}
@@ -44,6 +44,23 @@ export function ItemCard({ item }: { item: Item }) {
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '0.875rem' }}>
             Sin foto
           </div>
+        )}
+        {/* Stock badge for items with quantity > 1 */}
+        {item.quantity > 1 && (
+          <span style={{
+            position: 'absolute',
+            top: '0.5rem',
+            right: '0.5rem',
+            background: available > 0 ? 'rgba(30, 25, 20, 0.85)' : 'rgba(220, 38, 38, 0.85)',
+            color: '#fff',
+            fontSize: '0.7rem',
+            fontWeight: 700,
+            padding: '0.2rem 0.5rem',
+            borderRadius: '0.375rem',
+            fontFamily: "'Inter', sans-serif",
+          }}>
+            {available > 0 ? `${available} disponible${available > 1 ? 's' : ''}` : 'Sin stock'}
+          </span>
         )}
       </Link>
 

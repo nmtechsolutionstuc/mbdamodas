@@ -106,6 +106,7 @@ export interface Reservation {
   id: string
   reservationCode: string
   status: ReservationStatus
+  quantity: number
   adminNote: string | null
   extensionCount: number
   expiresAt: string | null
@@ -156,6 +157,8 @@ export interface Item {
   isOwnProduct?: boolean
   promoterCommissionPct?: number | null
   activeReservation?: { id: string; status: ReservationStatus } | null
+  reservedQuantity?: number
+  availableQuantity?: number
 }
 
 export interface SubmissionItem {

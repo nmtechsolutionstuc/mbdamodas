@@ -377,6 +377,7 @@ model Reservation {
   id              String            @id @default(uuid())
   reservationCode String            @unique  // ej: RES-4821
   status          ReservationStatus @default(PENDING_APPROVAL)
+  quantity        Int               @default(1)  // cantidad de unidades reservadas
   adminNote       String?
   extensionCount  Int               @default(0)
   expiresAt       DateTime?
