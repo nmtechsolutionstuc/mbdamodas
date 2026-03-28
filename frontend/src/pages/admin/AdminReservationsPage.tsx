@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {
   fetchAdminReservations,
@@ -20,45 +20,126 @@ const tabs: { label: string; value: FilterTab }[] = [
 ]
 
 function useCountdown(expiresAt: string | null): string {
-  const compute = () => {
+  const compute = useCallback(() => {
     if (!expiresAt) return ''
     const ms = new Date(expiresAt).getTime() - Date.now()
     if (ms <= 0) return 'Vencida'
     const h = Math.floor(ms / 3_600_000)
     const m = Math.floor((ms % 3_600_000) / 60_000)
     return `${h}h ${m}m restantes`
-  }
+  }, [expiresAt])
   const [remaining, setRemaining] = useState(compute)
   useEffect(() => {
     if (!expiresAt) return
+    setRemaining(compute())
     const id = setInterval(() => setRemaining(compute()), 60_000)
     return () => clearInterval(id)
-  }, [expiresAt])
+  }, [expiresAt, compute])
   return remaining
 }
 
-function ReservationAdminCard({
+// ─── Compact card (list view) ───────────────────────────────────────────
+
+function ReservationCard({
   reservation,
+  onClick,
+}: {
+  reservation: Reservation
+  onClick: () => void
+}) {
+  const photo = reservation.item.photos[0]
+  const countdown = useCountdown(reservation.status === 'APPROVED' ? reservation.expiresAt : null)
+  const user = reservation.user
+
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        background: '#fff',
+        border: '1px solid #E8E3D5',
+        borderRadius: '1rem',
+        padding: '1rem 1.25rem',
+        cursor: 'pointer',
+        transition: 'box-shadow 0.15s',
+      }}
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)')}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
+    >
+      <div style={{ display: 'flex', gap: '0.875rem', alignItems: 'center' }}>
+        {photo ? (
+          <img src={photo.url} alt="" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '0.625rem', flexShrink: 0 }} />
+        ) : (
+          <div style={{ width: '60px', height: '60px', background: '#E8E3D5', borderRadius: '0.625rem', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>🏪</div>
+        )}
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.2rem' }}>
+            <span style={{ fontWeight: 600, color: '#1E1914', fontFamily: "'Inter', sans-serif", fontSize: '0.95rem' }}>
+              {reservation.item.title}
+            </span>
+            <span style={{
+              background: RESERVATION_STATUS_COLOR[reservation.status],
+              color: '#1E1914',
+              fontSize: '0.65rem',
+              fontWeight: 600,
+              padding: '0.125rem 0.5rem',
+              borderRadius: '999px',
+              fontFamily: "'Inter', sans-serif",
+            }}>
+              {RESERVATION_STATUS_LABEL[reservation.status]}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.8rem', color: '#6b7280', fontFamily: "'Inter', sans-serif" }}>
+            <span style={{ fontWeight: 600, color: '#0369a1' }}>{reservation.reservationCode}</span>
+            {user && <span>{user.firstName} {user.lastName}</span>}
+            {reservation.status === 'APPROVED' && countdown && (
+              <span style={{ color: '#92400e', fontWeight: 600 }}>⏱ {countdown}</span>
+            )}
+          </div>
+        </div>
+
+        <span style={{ color: '#9ca3af', fontSize: '1.25rem', flexShrink: 0 }}>›</span>
+      </div>
+    </div>
+  )
+}
+
+// ─── Detail modal ───────────────────────────────────────────────────────
+
+function ReservationModal({
+  reservation,
+  onClose,
   onUpdate,
 }: {
   reservation: Reservation
+  onClose: () => void
   onUpdate: (updated: Reservation) => void
 }) {
   const [busy, setBusy] = useState(false)
   const [showRejectForm, setShowRejectForm] = useState(false)
   const [rejectNote, setRejectNote] = useState('')
+  const [actionDone, setActionDone] = useState<string | null>(null)
   const countdown = useCountdown(reservation.status === 'APPROVED' ? reservation.expiresAt : null)
+
   const photo = reservation.item.photos[0]
+  const user = reservation.user
+  const store = reservation.store
   const earnings = reservation.item.promoterCommissionPct && reservation.item.price
     ? Math.round(Number(reservation.item.price) * Number(reservation.item.promoterCommissionPct) / 100)
     : null
-  const user = reservation.user
+
+  const attendantPhone = store?.storeAttendantPhone
+  const waAttendantLink = attendantPhone
+    ? `https://wa.me/${attendantPhone}?text=${encodeURIComponent(`Hola! Hay una reserva para el producto "${reservation.item.title}"${reservation.item.code ? ` (${reservation.item.code})` : ''}, código ${reservation.reservationCode}. ¿El producto está disponible? ¿La tienda abrirá en las próximas 24hs?`)}`
+    : null
 
   async function handleApprove() {
     setBusy(true)
     try {
       const result = await approveAdminReservation(reservation.id)
       onUpdate(result.reservation)
+      setActionDone('approved')
       if (result.whatsappToPromoter) window.open(result.whatsappToPromoter, '_blank')
     } catch { /* ignore */ } finally { setBusy(false) }
   }
@@ -69,8 +150,9 @@ function ReservationAdminCard({
     try {
       const result = await rejectAdminReservation(reservation.id, rejectNote)
       onUpdate(result.reservation)
+      setActionDone('rejected')
       if (result.whatsappToPromoter) window.open(result.whatsappToPromoter, '_blank')
-    } catch { /* ignore */ } finally { setBusy(false); setShowRejectForm(false) }
+    } catch { /* ignore */ } finally { setBusy(false) }
   }
 
   async function handleComplete() {
@@ -78,6 +160,7 @@ function ReservationAdminCard({
     try {
       const result = await completeAdminReservation(reservation.id)
       onUpdate(result.reservation)
+      setActionDone('completed')
       if (result.whatsappToPromoter) window.open(result.whatsappToPromoter, '_blank')
     } catch { /* ignore */ } finally { setBusy(false) }
   }
@@ -87,6 +170,7 @@ function ReservationAdminCard({
     try {
       const result = await extendAdminReservation(reservation.id)
       onUpdate(result.reservation)
+      setActionDone('extended')
       if (result.whatsappToPromoter) window.open(result.whatsappToPromoter, '_blank')
     } catch { /* ignore */ } finally { setBusy(false) }
   }
@@ -95,148 +179,380 @@ function ReservationAdminCard({
     if (!user?.phone) return
     const voucherUrl = `${window.location.origin}/comprobante/${reservation.reservationCode}`
     const text = `Hola ${user.firstName}! Aquí está tu comprobante de reserva.\nEntrá al link, sacá captura de pantalla y mandásela a tu comprador:\n${voucherUrl}`
-    const waLink = `https://wa.me/${user.phone}?text=${encodeURIComponent(text)}`
-    window.open(waLink, '_blank')
+    window.open(`https://wa.me/${user.phone}?text=${encodeURIComponent(text)}`, '_blank')
   }
 
-  const btnBase = {
+  const btnBase: React.CSSProperties = {
     border: 'none',
-    borderRadius: '0.5rem',
-    padding: '0.5rem 0.875rem',
-    fontSize: '0.8rem',
-    fontWeight: 600 as const,
-    cursor: busy ? 'not-allowed' as const : 'pointer' as const,
+    borderRadius: '0.625rem',
+    padding: '0.625rem 1rem',
+    fontSize: '0.85rem',
+    fontWeight: 600,
+    cursor: busy ? 'not-allowed' : 'pointer',
     fontFamily: "'Inter', sans-serif",
     opacity: busy ? 0.6 : 1,
+    width: '100%',
+    textAlign: 'center',
+    display: 'block',
+    textDecoration: 'none',
   }
 
+  const sectionTitle: React.CSSProperties = {
+    fontSize: '0.7rem',
+    fontWeight: 700,
+    color: '#9ca3af',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    margin: '1.25rem 0 0.5rem',
+    fontFamily: "'Inter', sans-serif",
+  }
+
+  const infoRow: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '0.375rem 0',
+    fontSize: '0.875rem',
+    fontFamily: "'Inter', sans-serif",
+    color: '#1E1914',
+  }
+
+  const infoLabel: React.CSSProperties = { color: '#6b7280' }
+
   return (
-    <div style={{ background: '#fff', border: '1px solid #E8E3D5', borderRadius: '1rem', padding: '1.25rem' }}>
-      <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.45)',
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: '#fff',
+          borderRadius: '1.25rem',
+          maxWidth: '480px',
+          width: '100%',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+        }}
+      >
+        {/* Header image */}
         {photo ? (
-          <img src={photo.url} alt={reservation.item.title} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '0.75rem', flexShrink: 0 }} />
+          <div style={{ position: 'relative' }}>
+            <img src={photo.url} alt="" style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '1.25rem 1.25rem 0 0' }} />
+            <button
+              onClick={onClose}
+              style={{
+                position: 'absolute', top: '0.75rem', right: '0.75rem',
+                background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none',
+                borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer',
+                fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              ✕
+            </button>
+          </div>
         ) : (
-          <div style={{ width: '80px', height: '80px', background: '#E8E3D5', borderRadius: '0.75rem', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>🏪</div>
+          <div style={{ textAlign: 'right', padding: '0.75rem 1rem 0' }}>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.25rem', color: '#6b7280' }}>✕</button>
+          </div>
         )}
 
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ padding: '1.25rem' }}>
+          {/* Title + status */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
             {reservation.item.code && (
               <span style={{ background: '#f0f9ff', color: '#0369a1', fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '0.375rem', fontFamily: "'Inter', sans-serif" }}>
                 {reservation.item.code}
               </span>
             )}
-            <span style={{ fontWeight: 600, color: '#1E1914', fontFamily: "'Inter', sans-serif" }}>{reservation.item.title}</span>
+            <span style={{ fontWeight: 700, color: '#1E1914', fontFamily: "'Playfair Display', serif", fontSize: '1.2rem' }}>
+              {reservation.item.title}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
             <span style={{
               background: RESERVATION_STATUS_COLOR[reservation.status],
               color: '#1E1914',
-              fontSize: '0.7rem',
+              fontSize: '0.75rem',
               fontWeight: 600,
-              padding: '0.15rem 0.5rem',
+              padding: '0.2rem 0.625rem',
               borderRadius: '999px',
               fontFamily: "'Inter', sans-serif",
             }}>
               {RESERVATION_STATUS_LABEL[reservation.status]}
             </span>
+            <span style={{ fontSize: '0.85rem', color: '#0369a1', fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
+              {reservation.reservationCode}
+            </span>
+            {reservation.status === 'APPROVED' && countdown && (
+              <span style={{ fontSize: '0.8rem', color: '#92400e', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+                ⏱ {countdown}
+              </span>
+            )}
           </div>
 
-          <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: '0 0 0.25rem', fontFamily: "'Inter', sans-serif" }}>
-            Código: {reservation.reservationCode}
-          </p>
+          {/* Action done success */}
+          {actionDone && (
+            <div style={{
+              background: actionDone === 'rejected' ? '#FEF2F2' : '#F0FDF4',
+              border: `1px solid ${actionDone === 'rejected' ? '#FECACA' : '#BBF7D0'}`,
+              borderRadius: '0.75rem',
+              padding: '0.75rem 1rem',
+              marginBottom: '1rem',
+              fontSize: '0.85rem',
+              fontFamily: "'Inter', sans-serif",
+              color: actionDone === 'rejected' ? '#991B1B' : '#166534',
+              fontWeight: 600,
+            }}>
+              {actionDone === 'approved' && '✅ Reserva aprobada — se abrió WhatsApp para notificar al promotor.'}
+              {actionDone === 'rejected' && '❌ Reserva rechazada — se abrió WhatsApp para notificar al promotor.'}
+              {actionDone === 'completed' && '🎉 Venta completada — se abrió WhatsApp con datos de pago.'}
+              {actionDone === 'extended' && '⏱ Vigencia extendida 24hs — se abrió WhatsApp para avisar al promotor.'}
+            </div>
+          )}
 
+          {/* ─── PRODUCT INFO ─── */}
+          <div style={sectionTitle}>Producto</div>
+          <div style={{ background: '#FAF8F3', borderRadius: '0.75rem', padding: '0.75rem 1rem' }}>
+            <div style={infoRow}>
+              <span style={infoLabel}>Precio</span>
+              <span style={{ fontWeight: 700 }}>${Number(reservation.item.price).toLocaleString('es-AR')}</span>
+            </div>
+            {reservation.item.promoterCommissionPct != null && (
+              <div style={infoRow}>
+                <span style={infoLabel}>Comisión promotor</span>
+                <span style={{ fontWeight: 600 }}>{reservation.item.promoterCommissionPct}%</span>
+              </div>
+            )}
+            {earnings !== null && (
+              <div style={infoRow}>
+                <span style={infoLabel}>Ganancia promotor</span>
+                <span style={{ fontWeight: 700, color: '#166534' }}>${earnings.toLocaleString('es-AR')}</span>
+              </div>
+            )}
+          </div>
+
+          {/* ─── PROMOTOR INFO ─── */}
           {user && (
-            <p style={{ fontSize: '0.8rem', color: '#4b5563', margin: '0 0 0.25rem', fontFamily: "'Inter', sans-serif" }}>
-              Promotor: {user.firstName} {user.lastName}
-              {user.dni && ` · DNI ${user.dni}`}
-              {user.phone && (
-                <>
-                  {' · '}
-                  <a href={`https://wa.me/${user.phone}`} target="_blank" rel="noopener noreferrer" style={{ color: '#25D366', textDecoration: 'none' }}>
-                    {user.phone}
-                  </a>
-                </>
-              )}
-            </p>
+            <>
+              <div style={sectionTitle}>Promotor</div>
+              <div style={{ background: '#FAF8F3', borderRadius: '0.75rem', padding: '0.75rem 1rem' }}>
+                <div style={infoRow}>
+                  <span style={infoLabel}>Nombre</span>
+                  <span style={{ fontWeight: 600 }}>{user.firstName} {user.lastName}</span>
+                </div>
+                {user.dni && (
+                  <div style={infoRow}>
+                    <span style={infoLabel}>DNI</span>
+                    <span style={{ fontWeight: 600 }}>{user.dni}</span>
+                  </div>
+                )}
+                {user.phone && (
+                  <div style={infoRow}>
+                    <span style={infoLabel}>WhatsApp</span>
+                    <a href={`https://wa.me/${user.phone}`} target="_blank" rel="noopener noreferrer" style={{ color: '#25D366', fontWeight: 600, textDecoration: 'none' }}>
+                      {user.phone}
+                    </a>
+                  </div>
+                )}
+                {user.paymentMethod && (
+                  <div style={infoRow}>
+                    <span style={infoLabel}>Método de pago</span>
+                    <span>{user.paymentMethod === 'TRANSFERENCIA' ? `Transferencia (${user.bankAlias ?? 'sin alias'})` : 'Efectivo'}</span>
+                  </div>
+                )}
+              </div>
+            </>
           )}
 
-          {earnings !== null && (
-            <p style={{ fontSize: '0.8rem', color: '#166534', fontWeight: 600, margin: '0 0 0.25rem', fontFamily: "'Inter', sans-serif" }}>
-              Ganancia promotor: ${earnings.toLocaleString('es-AR')} ({reservation.item.promoterCommissionPct}%)
-            </p>
-          )}
+          {/* ─── DATES ─── */}
+          <div style={sectionTitle}>Fechas</div>
+          <div style={{ background: '#FAF8F3', borderRadius: '0.75rem', padding: '0.75rem 1rem' }}>
+            <div style={infoRow}>
+              <span style={infoLabel}>Creada</span>
+              <span>{new Date(reservation.createdAt).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+            {reservation.expiresAt && (
+              <div style={infoRow}>
+                <span style={infoLabel}>Vence</span>
+                <span style={{ fontWeight: 600, color: '#92400e' }}>
+                  {new Date(reservation.expiresAt).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            )}
+            {reservation.extensionCount > 0 && (
+              <div style={infoRow}>
+                <span style={infoLabel}>Extensiones</span>
+                <span>{reservation.extensionCount} vez{reservation.extensionCount > 1 ? 'es' : ''}</span>
+              </div>
+            )}
+            {reservation.completedAt && (
+              <div style={infoRow}>
+                <span style={infoLabel}>Completada</span>
+                <span style={{ color: '#166534', fontWeight: 600 }}>
+                  {new Date(reservation.completedAt).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            )}
+          </div>
 
-          {reservation.status === 'APPROVED' && countdown && (
-            <p style={{ fontSize: '0.8rem', color: '#92400e', fontWeight: 600, margin: '0 0 0.5rem', fontFamily: "'Inter', sans-serif" }}>
-              ⏱ {countdown}
-            </p>
-          )}
-
+          {/* Admin note */}
           {reservation.adminNote && (
-            <p style={{ fontSize: '0.8rem', color: '#9ca3af', margin: '0 0 0.5rem', fontFamily: "'Inter', sans-serif" }}>
-              Nota: {reservation.adminNote}
-            </p>
+            <>
+              <div style={sectionTitle}>Nota del admin</div>
+              <div style={{ background: '#FEF2F2', borderRadius: '0.75rem', padding: '0.75rem 1rem', fontSize: '0.85rem', color: '#991B1B', fontFamily: "'Inter', sans-serif" }}>
+                {reservation.adminNote}
+              </div>
+            </>
           )}
 
-          {/* Action buttons */}
-          {reservation.status === 'PENDING_APPROVAL' && (
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
-              {reservation.store?.storeAttendantPhone && (
-                <a
-                  href={`https://wa.me/${reservation.store.storeAttendantPhone}?text=${encodeURIComponent(`Hola! Hay una reserva para el producto "${reservation.item.title}"${reservation.item.code ? ` (${reservation.item.code})` : ''}, código ${reservation.reservationCode}. ¿El producto está disponible? ¿La tienda abrirá en las próximas 24hs?`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ ...btnBase, background: '#E8E3D5', color: '#1E1914', textDecoration: 'none', display: 'inline-block' }}
-                >
-                  Consultar encargado
-                </a>
-              )}
-              <button onClick={handleApprove} disabled={busy} style={{ ...btnBase, background: '#166534', color: '#fff' }}>
-                Aprobar
-              </button>
-              <button
-                onClick={() => setShowRejectForm(p => !p)}
-                disabled={busy}
-                style={{ ...btnBase, background: 'transparent', border: '1px solid #dc2626', color: '#dc2626' }}
-              >
-                Rechazar
-              </button>
-            </div>
+          {/* ─── ACTIONS ─── */}
+          {(reservation.status === 'PENDING_APPROVAL' || reservation.status === 'APPROVED') && !actionDone && (
+            <>
+              <div style={sectionTitle}>Acciones</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+
+                {/* ── PENDING_APPROVAL ── */}
+                {reservation.status === 'PENDING_APPROVAL' && (
+                  <>
+                    {/* Consultar encargado — ALWAYS FIRST AND PROMINENT */}
+                    {waAttendantLink ? (
+                      <a
+                        href={waAttendantLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          ...btnBase,
+                          background: '#25D366',
+                          color: '#fff',
+                          fontSize: '0.9rem',
+                          padding: '0.75rem 1rem',
+                        }}
+                      >
+                        📱 Consultar encargado de la tienda
+                      </a>
+                    ) : (
+                      <div style={{
+                        background: '#FEF3C7',
+                        border: '1px solid #FDE68A',
+                        borderRadius: '0.625rem',
+                        padding: '0.625rem 1rem',
+                        fontSize: '0.8rem',
+                        color: '#92400E',
+                        fontFamily: "'Inter', sans-serif",
+                        textAlign: 'center',
+                      }}>
+                        ⚠ Para consultar al encargado, agregá su teléfono en{' '}
+                        <Link to="/admin/tiendas" style={{ color: '#92400E', fontWeight: 700 }}>Tiendas</Link>
+                      </div>
+                    )}
+
+                    <div style={{ borderTop: '1px solid #E8E3D5', margin: '0.25rem 0' }} />
+
+                    <button onClick={handleApprove} disabled={busy} style={{ ...btnBase, background: '#166534', color: '#fff' }}>
+                      ✅ Aprobar reserva
+                    </button>
+
+                    {!showRejectForm ? (
+                      <button
+                        onClick={() => setShowRejectForm(true)}
+                        disabled={busy}
+                        style={{ ...btnBase, background: 'transparent', border: '1px solid #dc2626', color: '#dc2626' }}
+                      >
+                        Rechazar
+                      </button>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <input
+                          value={rejectNote}
+                          onChange={e => setRejectNote(e.target.value)}
+                          placeholder="Motivo del rechazo..."
+                          autoFocus
+                          style={{
+                            border: '1px solid #E8E3D5',
+                            borderRadius: '0.625rem',
+                            padding: '0.625rem 0.875rem',
+                            fontSize: '0.85rem',
+                            fontFamily: "'Inter', sans-serif",
+                            width: '100%',
+                            boxSizing: 'border-box',
+                          }}
+                        />
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button
+                            onClick={() => { setShowRejectForm(false); setRejectNote('') }}
+                            style={{ ...btnBase, background: '#E8E3D5', color: '#1E1914', flex: 1 }}
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            onClick={handleReject}
+                            disabled={busy || !rejectNote.trim()}
+                            style={{ ...btnBase, background: '#dc2626', color: '#fff', flex: 1, opacity: (!rejectNote.trim() || busy) ? 0.5 : 1 }}
+                          >
+                            Confirmar rechazo
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* ── APPROVED ── */}
+                {reservation.status === 'APPROVED' && (
+                  <>
+                    <a
+                      href={`/comprobante/${reservation.reservationCode}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ ...btnBase, background: '#E8E3D5', color: '#1E1914' }}
+                    >
+                      🧾 Ver comprobante
+                    </a>
+
+                    <button onClick={handleSendVoucher} disabled={!user?.phone} style={{ ...btnBase, background: '#25D366', color: '#fff' }}>
+                      📱 Enviar comprobante al promotor
+                    </button>
+
+                    <div style={{ borderTop: '1px solid #E8E3D5', margin: '0.25rem 0' }} />
+
+                    <button onClick={handleExtend} disabled={busy} style={{ ...btnBase, background: 'transparent', border: '1px solid #1e40af', color: '#1e40af' }}>
+                      ⏱ Extender vigencia 24hs
+                    </button>
+
+                    <button onClick={handleComplete} disabled={busy} style={{ ...btnBase, background: '#1E1914', color: '#E8E3D5', fontSize: '0.9rem', padding: '0.75rem 1rem' }}>
+                      🎉 Completar venta
+                    </button>
+                  </>
+                )}
+              </div>
+            </>
           )}
 
-          {reservation.status === 'PENDING_APPROVAL' && showRejectForm && (
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              <input
-                value={rejectNote}
-                onChange={e => setRejectNote(e.target.value)}
-                placeholder="Motivo del rechazo..."
-                style={{ flex: 1, minWidth: '160px', border: '1px solid #E8E3D5', borderRadius: '0.5rem', padding: '0.5rem 0.75rem', fontSize: '0.85rem', fontFamily: "'Inter', sans-serif" }}
-              />
-              <button onClick={handleReject} disabled={busy || !rejectNote.trim()} style={{ ...btnBase, background: '#dc2626', color: '#fff' }}>
-                Confirmar rechazo
-              </button>
-            </div>
-          )}
-
-          {reservation.status === 'APPROVED' && (
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
-              <a
-                href={`/comprobante/${reservation.reservationCode}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ ...btnBase, background: 'transparent', border: '1px solid #E8E3D5', color: '#1E1914', textDecoration: 'none', display: 'inline-block' }}
-              >
-                Ver comprobante
-              </a>
-              <button onClick={handleSendVoucher} style={{ ...btnBase, background: '#25D366', color: '#fff' }}>
-                Enviar comprobante al promotor
-              </button>
-              <button onClick={handleExtend} disabled={busy} style={{ ...btnBase, background: 'transparent', border: '1px solid #1e40af', color: '#1e40af' }}>
-                Extender 24hs
-              </button>
-              <button onClick={handleComplete} disabled={busy} style={{ ...btnBase, background: '#1E1914', color: '#E8E3D5' }}>
-                Completar venta
-              </button>
-            </div>
+          {/* Close button at bottom for completed/rejected/etc */}
+          {(actionDone || reservation.status === 'COMPLETED' || reservation.status === 'REJECTED' || reservation.status === 'EXPIRED' || reservation.status === 'CANCELLED') && (
+            <button
+              onClick={onClose}
+              style={{
+                ...btnBase,
+                background: '#E8E3D5',
+                color: '#1E1914',
+                marginTop: '1.25rem',
+              }}
+            >
+              Cerrar
+            </button>
           )}
         </div>
       </div>
@@ -244,12 +560,15 @@ function ReservationAdminCard({
   )
 }
 
+// ─── Main page ──────────────────────────────────────────────────────────
+
 export function AdminReservationsPage() {
   const [activeTab, setActiveTab] = useState<FilterTab>('all')
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [meta, setMeta] = useState({ total: 0, pages: 1 })
+  const [selected, setSelected] = useState<Reservation | null>(null)
 
   useEffect(() => {
     setPage(1)
@@ -271,6 +590,7 @@ export function AdminReservationsPage() {
 
   function handleUpdate(updated: Reservation) {
     setReservations(prev => prev.map(r => r.id === updated.id ? updated : r))
+    setSelected(updated)
   }
 
   return (
@@ -320,9 +640,9 @@ export function AdminReservationsPage() {
             No hay reservas en esta categoría.
           </p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {reservations.map(r => (
-              <ReservationAdminCard key={r.id} reservation={r} onUpdate={handleUpdate} />
+              <ReservationCard key={r.id} reservation={r} onClick={() => setSelected(r)} />
             ))}
           </div>
         )}
@@ -349,6 +669,15 @@ export function AdminReservationsPage() {
           </div>
         )}
       </div>
+
+      {/* Modal overlay */}
+      {selected && (
+        <ReservationModal
+          reservation={selected}
+          onClose={() => setSelected(null)}
+          onUpdate={handleUpdate}
+        />
+      )}
     </div>
   )
 }

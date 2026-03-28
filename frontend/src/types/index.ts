@@ -130,6 +130,11 @@ export interface Reservation {
     paymentMethod: string | null
     bankAlias: string | null
   }
+  store?: {
+    name: string
+    phone: string | null
+    storeAttendantPhone?: string | null
+  }
 }
 
 export interface Item {
