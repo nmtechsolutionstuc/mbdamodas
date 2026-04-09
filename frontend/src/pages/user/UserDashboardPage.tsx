@@ -75,24 +75,24 @@ export function UserDashboardPage() {
             to="/dashboard/enviar"
             style={{ display: 'block', padding: '1.25rem', borderRadius: '1rem', textDecoration: 'none', background: '#1E1914', color: '#E8E3D5' }}
           >
-            <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>Enviar mis productos</div>
-            <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>Cargá tus productos para que los revisemos</div>
+            <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>Quiero vender</div>
+            <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>Carga lo que quieras vender, nosotros lo revisamos, lo aprobamos y lo vendemos por vos!</div>
           </Link>
 
           <Link
             to="/dashboard/mis-solicitudes"
             style={{ display: 'block', padding: '1.25rem', borderRadius: '1rem', textDecoration: 'none', background: '#E8E3D5', color: '#1E1914' }}
           >
-            <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>Mis solicitudes</div>
-            <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>Seguí el estado de tus productos</div>
+            <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>Mis solicitudes de venta</div>
+            <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>Seguí el estado de las solicitudes de venta que cargaste</div>
           </Link>
 
           <Link
             to="/dashboard/mis-reservas"
             style={{ display: 'block', padding: '1.25rem', borderRadius: '1rem', textDecoration: 'none', background: '#E8E3D5', color: '#1E1914' }}
           >
-            <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>Mis reservas para vender</div>
-            <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>Reservá productos de la tienda y ganá una comisión</div>
+            <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>Mis reservas para ganar comisiones</div>
+            <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>Reservá productos de la tienda y ganá una comisión luego de completar la venta</div>
           </Link>
 
           <Link

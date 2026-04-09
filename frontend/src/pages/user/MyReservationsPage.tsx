@@ -423,7 +423,7 @@ export function MyReservationsPage() {
           </h1>
         </div>
 
-        {/* CTA: ir al catálogo */}
+        {/* CTA: ganar comisiones */}
         <Link
           to="/#catalogo"
           style={{
@@ -445,7 +445,7 @@ export function MyReservationsPage() {
           onMouseEnter={e => (e.currentTarget.style.background = '#352e28')}
           onMouseLeave={e => (e.currentTarget.style.background = '#1E1914')}
         >
-          💰 Ir al catálogo para reservar otro producto y ganar comisión
+          💰 Ganar comisiones — Ver catálogo de productos
         </Link>
 
         {loading ? (

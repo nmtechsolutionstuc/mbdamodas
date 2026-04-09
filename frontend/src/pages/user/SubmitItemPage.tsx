@@ -135,7 +135,7 @@ export function SubmitItemPage() {
       `}</style>
       <div style={{ maxWidth: '560px', margin: '0 auto' }}>
         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.75rem', fontWeight: 700, color: '#1E1914', marginBottom: '0.5rem' }}>
-          Enviar productos
+          Crear solicitud para vender
         </h1>
 
         {/* Tabs de productos */}

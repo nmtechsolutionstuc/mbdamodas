@@ -9,21 +9,24 @@ export function Footer() {
           <p style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem', fontWeight: 700, color: '#E8E3D5', marginBottom: '0.5rem' }}>
             MBDA Modas
           </p>
-          <p style={{ fontSize: '0.8rem', lineHeight: 1.6 }}>
-            Tienda de consignación en Buenos Aires. Ropa con historia a precios accesibles.
+          <p style={{ fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '0.5rem' }}>
+            Tienda de ropa en Concepcion, Tucuman. Productos nuevos, consignacion y comisiones para promotores.
+          </p>
+          <p style={{ fontSize: '0.8rem', lineHeight: 1.6, opacity: 0.7 }}>
+            Calle Espana 1356, Concepcion, Tucuman
           </p>
         </div>
 
         {/* Links */}
         <div>
           <p style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#E8E3D5', marginBottom: '0.75rem', fontWeight: 600 }}>
-            Navegación
+            Navegacion
           </p>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {[
-              { label: 'Catálogo', to: '/' },
+              { label: 'Catalogo', to: '/' },
               { label: 'Nosotros', to: '/nosotros' },
-              { label: 'Vender mis productos', to: '/register' },
+              { label: 'Quiero vender', to: '/register' },
             ].map(l => (
               <Link key={l.to} to={l.to} style={{ color: 'rgba(232,227,213,0.7)', textDecoration: 'none', fontSize: '0.875rem', transition: 'color 0.15s' }}
                 onMouseEnter={e => (e.currentTarget.style.color = '#E8E3D5')}
@@ -45,7 +48,7 @@ export function Footer() {
               onMouseEnter={e => (e.currentTarget.style.color = '#E8E3D5')}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(232,227,213,0.7)')}
             >
-              Términos y Condiciones
+              Terminos y Condiciones
             </Link>
           </nav>
         </div>
@@ -65,10 +68,10 @@ export function Footer() {
           >
             Nahuel Martinez
           </a>
-          {' '}— Ing. en Sistemas · Tucumán, Argentina
+          {' '}— Ing. en Sistemas · Tucuman, Argentina
         </p>
         <p style={{ fontSize: '0.7rem', color: 'rgba(232,227,213,0.35)' }}>
-          ¿Querés una app como esta para tu negocio?{' '}
+          Queres una app como esta para tu negocio?{' '}
           <a
             href="https://wa.me/543865468239?text=Hola%20Nahuel!%20Me%20interesa%20que%20desarrolles%20una%20app%20para%20mi%20negocio."
             target="_blank"
