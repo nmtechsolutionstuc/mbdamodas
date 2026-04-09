@@ -13,8 +13,9 @@ async function main() {
     create: {
       id: 'store-mbda-modas',
       name: 'MBDA Modas',
-      address: 'Buenos Aires, Argentina',
-      phone: '5491112345678',
+      address: 'Calle España 1356, Concepción, Tucumán',
+      phone: '543865412034',
+      storeAttendantPhone: '543865412034',
       email: 'contacto@mbdamodas.com',
       description:
         'Tienda de ropa consignada. Vendé tu ropa sin esfuerzo y encontrá prendas únicas a precios accesibles.',
@@ -152,7 +153,7 @@ async function main() {
       password: adminPassword,
       firstName: 'Admin',
       lastName: 'MBDA Modas',
-      phone: '5491112345678',
+      phone: '543865412034',
       role: Role.ADMIN,
       storeId: store.id,
       isActive: true,

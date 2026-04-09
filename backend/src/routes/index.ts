@@ -5,6 +5,8 @@ import itemRoutes from './item.routes'
 import submissionRoutes from './submission.routes'
 import adminRoutes from './admin.routes'
 import reservationRoutes from './reservation.routes'
+import { getAnnouncement, getHomeBanners, getAboutContent, getTermsContent } from '../controllers/store.controller'
+import { asyncHandler } from '../utils/asyncHandler'
 
 const router = Router()
 
@@ -14,5 +16,11 @@ router.use('/items', itemRoutes)
 router.use('/submissions', submissionRoutes)
 router.use('/admin', adminRoutes)
 router.use('/reservations', reservationRoutes)
+
+// Public endpoints
+router.get('/announcement', asyncHandler(getAnnouncement))
+router.get('/home-banners', asyncHandler(getHomeBanners))
+router.get('/about-content', asyncHandler(getAboutContent))
+router.get('/terms-content', asyncHandler(getTermsContent))
 
 export default router

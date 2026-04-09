@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { z } from 'zod'
 import { prisma } from '../config/prisma'
 import { ok, created, notFound, badRequest } from '../utils/apiResponse'
+import { stripHtml } from '../utils/sanitize'
 
 const storeSchema = z.object({
   name: z.string().min(1).max(200),
@@ -13,17 +14,95 @@ const storeSchema = z.object({
   defaultCommission: z.number().min(0).max(100).optional(),
   isActive: z.boolean().optional(),
   storeAttendantPhone: z.string().max(30).optional().nullable(),
+  announcementText: z.string().max(500).optional().nullable(),
+  announcementActive: z.boolean().optional(),
+  // Banners editables de la homepage
+  bannerBuyerSubtitle: z.string().max(200).optional().nullable(),
+  bannerBuyerTitle: z.string().max(300).optional().nullable(),
+  bannerBuyerDescription: z.string().max(500).optional().nullable(),
+  bannerSellerSubtitle: z.string().max(200).optional().nullable(),
+  bannerSellerTitle: z.string().max(300).optional().nullable(),
+  bannerSellerDescription: z.string().max(500).optional().nullable(),
+  // Contenido de páginas
+  aboutContent: z.string().max(10000).optional().nullable(),
+  termsContent: z.string().max(20000).optional().nullable(),
 })
+
+export async function getAnnouncement(_req: Request, res: Response): Promise<void> {
+  const store = await prisma.store.findFirst({
+    where: { isActive: true, announcementActive: true },
+    select: { announcementText: true },
+  })
+  ok(res, { text: store?.announcementText ?? null })
+}
+
+export async function getHomeBanners(_req: Request, res: Response): Promise<void> {
+  const store = await prisma.store.findFirst({
+    where: { isActive: true },
+    select: {
+      bannerBuyerSubtitle: true,
+      bannerBuyerTitle: true,
+      bannerBuyerDescription: true,
+      bannerSellerSubtitle: true,
+      bannerSellerTitle: true,
+      bannerSellerDescription: true,
+    },
+  })
+  ok(res, {
+    buyer: {
+      subtitle: store?.bannerBuyerSubtitle ?? null,
+      title: store?.bannerBuyerTitle ?? null,
+      description: store?.bannerBuyerDescription ?? null,
+    },
+    seller: {
+      subtitle: store?.bannerSellerSubtitle ?? null,
+      title: store?.bannerSellerTitle ?? null,
+      description: store?.bannerSellerDescription ?? null,
+    },
+  })
+}
+
+export async function getAboutContent(_req: Request, res: Response): Promise<void> {
+  const store = await prisma.store.findFirst({
+    where: { isActive: true },
+    select: { aboutContent: true },
+  })
+  ok(res, { content: store?.aboutContent ?? null })
+}
+
+export async function getTermsContent(_req: Request, res: Response): Promise<void> {
+  const store = await prisma.store.findFirst({
+    where: { isActive: true },
+    select: { termsContent: true },
+  })
+  ok(res, { content: store?.termsContent ?? null })
+}
 
 export async function listStores(_req: Request, res: Response): Promise<void> {
   const stores = await prisma.store.findMany({ orderBy: { createdAt: 'asc' } })
   ok(res, stores)
 }
 
+function sanitizeStoreData(data: Record<string, any>): Record<string, any> {
+  const textFields = [
+    'name', 'address', 'description', 'announcementText',
+    'bannerBuyerTitle', 'bannerBuyerSubtitle', 'bannerBuyerDescription',
+    'bannerSellerTitle', 'bannerSellerSubtitle', 'bannerSellerDescription',
+    'aboutContent', 'termsContent',
+  ]
+  const sanitized = { ...data }
+  for (const field of textFields) {
+    if (typeof sanitized[field] === 'string') {
+      sanitized[field] = stripHtml(sanitized[field])
+    }
+  }
+  return sanitized
+}
+
 export async function createStore(req: Request, res: Response): Promise<void> {
   const parsed = storeSchema.safeParse(req.body)
   if (!parsed.success) { badRequest(res, 'Datos inválidos', parsed.error.errors); return }
-  const store = await prisma.store.create({ data: parsed.data as Parameters<typeof prisma.store.create>[0]['data'] })
+  const store = await prisma.store.create({ data: sanitizeStoreData(parsed.data) as Parameters<typeof prisma.store.create>[0]['data'] })
   created(res, store)
 }
 
@@ -31,7 +110,7 @@ export async function updateStore(req: Request, res: Response): Promise<void> {
   const parsed = storeSchema.partial().safeParse(req.body)
   if (!parsed.success) { badRequest(res, 'Datos inválidos', parsed.error.errors); return }
   try {
-    const store = await prisma.store.update({ where: { id: req.params.id! }, data: parsed.data })
+    const store = await prisma.store.update({ where: { id: req.params.id! }, data: sanitizeStoreData(parsed.data) })
     ok(res, store)
   } catch {
     notFound(res, 'Tienda no encontrada')

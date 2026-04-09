@@ -143,6 +143,21 @@ model Store {
   description       String?
   logoUrl           String?
   defaultCommission Decimal  @db.Decimal(5, 2) @default(30) // % comisión por defecto
+  announcementText   String?  // Texto del banner de anuncios (editable por admin)
+  announcementActive Boolean  @default(false) // Mostrar o no el banner
+
+  // ── Banners editables de la homepage ──
+  bannerBuyerSubtitle    String?  // Subtítulo del panel comprador (ej: "Para compradores")
+  bannerBuyerTitle       String?  // Título principal del panel comprador
+  bannerBuyerDescription String?  // Descripción del panel comprador
+  bannerSellerSubtitle    String?  // Subtítulo del panel vendedor/promotor
+  bannerSellerTitle       String?  // Título principal del panel vendedor/promotor
+  bannerSellerDescription String?  // Descripción del panel vendedor/promotor
+
+  // ── Contenido editable de páginas ──
+  aboutContent      String?  @db.Text // Contenido de la página Nosotros (formato markdown simple)
+  termsContent      String?  @db.Text // Contenido de la página Términos y Condiciones
+
   isActive          Boolean  @default(true)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt

@@ -16,6 +16,7 @@ import {
   listAdminReservations, approveReservationHandler, rejectReservationHandler,
   completeReservationHandler, extendReservationHandler,
 } from '../controllers/reservation.controller'
+import { asyncHandler } from '../utils/asyncHandler'
 
 const router = Router()
 
@@ -23,48 +24,48 @@ const router = Router()
 router.use(authenticate, authorize('ADMIN'))
 
 // Dashboard
-router.get('/stats', getDashboardStats)
+router.get('/stats', asyncHandler(getDashboardStats))
 
 // Solicitudes
-router.get('/submissions', listSubmissions)
-router.get('/submissions/:id', getSubmission)
+router.get('/submissions', asyncHandler(listSubmissions))
+router.get('/submissions/:id', asyncHandler(getSubmission))
 
 // Acciones sobre SubmissionItems
-router.patch('/items/:itemId/approve', approve)
-router.patch('/items/:itemId/reject', reject)
-router.patch('/items/:itemId/mark-in-store', markInStore)
-router.patch('/items/:itemId/mark-sold', markSold)
-router.patch('/items/:itemId/mark-returned', markReturned)
+router.patch('/items/:itemId/approve', asyncHandler(approve))
+router.patch('/items/:itemId/reject', asyncHandler(reject))
+router.patch('/items/:itemId/mark-in-store', asyncHandler(markInStore))
+router.patch('/items/:itemId/mark-sold', asyncHandler(markSold))
+router.patch('/items/:itemId/mark-returned', asyncHandler(markReturned))
 
 // Catálogo (Items aprobados)
-router.get('/catalog', listCatalog)
-router.post('/catalog', createCatalogItem)
-router.patch('/catalog/:id', editCatalogItem)
-router.delete('/catalog/:id', softDeleteCatalogItem)
+router.get('/catalog', asyncHandler(listCatalog))
+router.post('/catalog', asyncHandler(createCatalogItem))
+router.patch('/catalog/:id', asyncHandler(editCatalogItem))
+router.delete('/catalog/:id', asyncHandler(softDeleteCatalogItem))
 
 // Product Types / Sizes / Tags
-router.get('/product-types', listProductTypes)
-router.patch('/product-types/:id/toggle', toggleProductType)
-router.post('/sizes', createSize)
-router.patch('/sizes/:id/toggle', toggleSize)
-router.post('/tags', createTag)
-router.patch('/tags/:id/toggle', toggleTag)
+router.get('/product-types', asyncHandler(listProductTypes))
+router.patch('/product-types/:id/toggle', asyncHandler(toggleProductType))
+router.post('/sizes', asyncHandler(createSize))
+router.patch('/sizes/:id/toggle', asyncHandler(toggleSize))
+router.post('/tags', asyncHandler(createTag))
+router.patch('/tags/:id/toggle', asyncHandler(toggleTag))
 
 // Usuarios
-router.get('/users', listUsers)
-router.post('/users', createUser)
-router.patch('/users/:id/deactivate', deactivateUser)
+router.get('/users', asyncHandler(listUsers))
+router.post('/users', asyncHandler(createUser))
+router.patch('/users/:id/deactivate', asyncHandler(deactivateUser))
 
 // Tiendas
-router.get('/stores', listStores)
-router.post('/stores', createStore)
-router.patch('/stores/:id', updateStore)
+router.get('/stores', asyncHandler(listStores))
+router.post('/stores', asyncHandler(createStore))
+router.patch('/stores/:id', asyncHandler(updateStore))
 
 // Reservas
-router.get('/reservations', listAdminReservations)
-router.patch('/reservations/:id/approve', approveReservationHandler)
-router.patch('/reservations/:id/reject', rejectReservationHandler)
-router.patch('/reservations/:id/complete', completeReservationHandler)
-router.patch('/reservations/:id/extend', extendReservationHandler)
+router.get('/reservations', asyncHandler(listAdminReservations))
+router.patch('/reservations/:id/approve', asyncHandler(approveReservationHandler))
+router.patch('/reservations/:id/reject', asyncHandler(rejectReservationHandler))
+router.patch('/reservations/:id/complete', asyncHandler(completeReservationHandler))
+router.patch('/reservations/:id/extend', asyncHandler(extendReservationHandler))
 
 export default router

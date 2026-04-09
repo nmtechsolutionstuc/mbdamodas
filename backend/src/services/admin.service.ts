@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import { prisma } from '../config/prisma'
 import { generateWhatsAppLink } from './whatsapp.service'
 import { calculateCommission } from '../utils/commission'
+import { stripHtml } from '../utils/sanitize'
 
 export async function createUser(input: {
   email: string
@@ -24,8 +25,8 @@ export async function createUser(input: {
   const user = await prisma.user.create({
     data: {
       email: input.email,
-      firstName: input.firstName,
-      lastName: input.lastName,
+      firstName: stripHtml(input.firstName),
+      lastName: stripHtml(input.lastName),
       phone: input.phone,
       password: hash,
       role: input.role,
@@ -333,8 +334,8 @@ export async function createCatalogItem(input: {
   const item = await prisma.item.create({
     data: {
       code,
-      title: input.title,
-      description: input.description,
+      title: stripHtml(input.title),
+      description: input.description ? stripHtml(input.description) : undefined,
       condition: input.condition,
       productTypeId: input.productTypeId,
       sizeId: input.sizeId ?? null,

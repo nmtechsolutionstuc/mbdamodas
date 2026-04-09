@@ -4,10 +4,18 @@ import { ItemCard } from '../../components/catalog/ItemCard'
 import { ItemCardSkeleton } from '../../components/ui/Skeleton'
 import { fetchItems } from '../../api/items'
 import { useProductTypes } from '../../hooks/useProductTypes'
+import { useAuthStore } from '../../store/authStore'
+import axiosClient from '../../api/axiosClient'
 import type { Item } from '../../types'
+
+interface BannerData {
+  buyer: { subtitle: string | null; title: string | null; description: string | null }
+  seller: { subtitle: string | null; title: string | null; description: string | null }
+}
 
 export function HomePage() {
   const { productTypes } = useProductTypes()
+  const { user } = useAuthStore()
   const [items, setItems] = useState<Item[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -17,8 +25,23 @@ export function HomePage() {
   const [tagId, setTagId] = useState('')
   const [page, setPage] = useState(1)
   const [hoveredCta, setHoveredCta] = useState<string | null>(null)
+  const [banners, setBanners] = useState<BannerData | null>(null)
 
   const selectedProductType = productTypes.find(pt => pt.id === productTypeId)
+
+  useEffect(() => {
+    axiosClient.get<{ data: BannerData }>('/home-banners')
+      .then(r => setBanners(r.data.data))
+      .catch(() => {})
+  }, [])
+
+  // Banner text with fallbacks
+  const buyerSubtitle = banners?.buyer?.subtitle || 'Para compradores'
+  const buyerTitle = banners?.buyer?.title || 'Ropa nueva y con historia a precios que sorprenden'
+  const buyerDesc = banners?.buyer?.description || 'Encontra productos nuevos de la tienda y ropa seleccionada en consignacion. Calidad garantizada.'
+  const sellerSubtitle = banners?.seller?.subtitle || 'Para vendedores y promotores'
+  const sellerTitle = banners?.seller?.title || 'Gana dinero vendiendo nuestros productos'
+  const sellerDesc = banners?.seller?.description || 'Reserva un producto del catalogo, consegiu un comprador y gana una comision por cada venta. Sin capital inicial, sin riesgo.'
 
   useEffect(() => {
     setLoading(true)
@@ -86,7 +109,7 @@ export function HomePage() {
             background: 'rgba(30, 25, 20, 0.03)',
           }} />
           <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#6b7280', marginBottom: '0.75rem', position: 'relative' }}>
-            Para compradores
+            {buyerSubtitle}
           </p>
           <h2
             style={{
@@ -99,10 +122,10 @@ export function HomePage() {
               position: 'relative',
             }}
           >
-            Ropa nueva y con historia a precios que sorprenden
+            {buyerTitle}
           </h2>
           <p style={{ color: '#4b5563', marginBottom: '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
-            Encontrá productos nuevos de la tienda y ropa seleccionada en consignación. Calidad garantizada.
+            {buyerDesc}
           </p>
           <a
             href="#catalogo"
@@ -161,7 +184,7 @@ export function HomePage() {
             background: 'rgba(232, 227, 213, 0.04)',
           }} />
           <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: '0.75rem', position: 'relative' }}>
-            Para vendedores y promotores
+            {sellerSubtitle}
           </p>
           <h2
             style={{
@@ -174,10 +197,10 @@ export function HomePage() {
               position: 'relative',
             }}
           >
-            Ganá dinero vendiendo nuestros productos
+            {sellerTitle}
           </h2>
           <p style={{ color: '#d1d5db', marginBottom: '1.25rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
-            Reservá un producto del catálogo, conseguí un comprador y ganá una comisión por cada venta. Sin capital inicial, sin riesgo.
+            {sellerDesc}
           </p>
           <p style={{ color: '#d1d5db', marginBottom: '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative', fontSize: '0.85rem', opacity: 0.8 }}>
             También podés dejar tu ropa en consignación y nosotros la vendemos por vos.
@@ -204,7 +227,7 @@ export function HomePage() {
               💰 Reservar y ganar
             </a>
             <Link
-              to="/register"
+              to={user ? '/dashboard/enviar' : '/register'}
               onMouseEnter={() => setHoveredCta('vender')}
               onMouseLeave={() => setHoveredCta(null)}
               style={{
@@ -221,7 +244,7 @@ export function HomePage() {
                 transform: hoveredCta === 'vender' ? 'translateY(-2px)' : 'translateY(0)',
               }}
             >
-              Vender mi ropa
+              Quiero vender
             </Link>
           </div>
         </div>
