@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { AccessTokenPayload } from '../utils/jwt'
 
-declare global {
-  namespace Express {
-    interface User extends AccessTokenPayload {}
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: AccessTokenPayload
   }
 }

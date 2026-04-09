@@ -31,7 +31,23 @@ app.use(
 )
 app.use(
   cors({
-    origin: env.frontendUrl,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true)
+      // Allow localhost and any private network IP on the frontend port
+      const allowed = [
+        env.frontendUrl,
+        /^https?:\/\/localhost(:\d+)?$/,
+        /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
+        /^https?:\/\/192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$/,
+        /^https?:\/\/10\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/,
+        /^https?:\/\/172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}(:\d+)?$/,
+      ]
+      const isAllowed = allowed.some(a =>
+        typeof a === 'string' ? a === origin : a.test(origin)
+      )
+      callback(null, isAllowed)
+    },
     credentials: true,
   }),
 )

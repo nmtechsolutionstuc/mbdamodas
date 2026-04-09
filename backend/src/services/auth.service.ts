@@ -5,6 +5,7 @@ import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/
 import { env } from '../config/env'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
+import { stripHtml } from '../utils/sanitize'
 
 const REFRESH_TOKEN_EXPIRES_MS = parseDurationToMs(env.jwtRefreshExpiresIn)
 
@@ -92,8 +93,8 @@ export async function registerUser(
   const user = await prisma.user.create({
     data: {
       email: input.email,
-      firstName: input.firstName,
-      lastName: input.lastName,
+      firstName: stripHtml(input.firstName),
+      lastName: stripHtml(input.lastName),
       dni: input.dni,
       password: hash,
     },

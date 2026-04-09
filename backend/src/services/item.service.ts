@@ -85,7 +85,7 @@ export async function getPublicItems(filters: ItemFilters) {
     }
   }).filter(item => item.availableQuantity > 0)
 
-  return { items: enriched, total: enriched.length < limit ? skip + enriched.length : total, page, limit }
+  return { items: enriched, total, page, limit }
 }
 
 export async function getPublicItemById(id: string) {

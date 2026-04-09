@@ -1,11 +1,20 @@
 import { prisma } from '../config/prisma'
 import { generateReservationWALink, type ReservationWAContext } from './whatsapp.service'
 
+// Safe user select — never leak password or sensitive fields
+const safeUserSelect = { id: true, firstName: true, lastName: true, dni: true, phone: true, paymentMethod: true, bankAlias: true } as const
+
 // Reusable include matching the shape the frontend expects
 const fullReservationInclude = {
   item: { include: { photos: { orderBy: { order: 'asc' as const }, take: 1 } } },
-  user: { select: { id: true, firstName: true, lastName: true, dni: true, phone: true, paymentMethod: true, bankAlias: true } },
+  user: { select: safeUserSelect },
   store: { select: { name: true, phone: true, storeAttendantPhone: true } },
+}
+
+// Include for internal use (needs store details for WA links)
+const internalReservationInclude = {
+  item: { include: { photos: { take: 1, orderBy: { order: 'asc' as const } }, store: true } },
+  user: { select: { ...safeUserSelect, email: true } },
 }
 
 // Lazy expiration helper — inlined to avoid circular imports
@@ -85,7 +94,7 @@ export async function createReservation(itemId: string, userId: string, quantity
       userId,
       storeId: item.storeId,
     },
-    include: { item: { include: { photos: { take: 1, orderBy: { order: 'asc' } }, store: true } }, user: true },
+    include: fullReservationInclude,
   })
 
   const ctx: ReservationWAContext = {
@@ -180,10 +189,7 @@ export async function approveReservation(reservationId: string) {
   await expireStaleReservations()
   const reservation = await prisma.reservation.findUnique({
     where: { id: reservationId },
-    include: {
-      item: { include: { photos: { take: 1, orderBy: { order: 'asc' } }, store: true } },
-      user: true,
-    },
+    include: internalReservationInclude,
   })
   if (!reservation) throw { status: 404, message: 'Reserva no encontrada' }
   if (reservation.status !== 'PENDING_APPROVAL') {
@@ -230,7 +236,7 @@ export async function approveReservation(reservationId: string) {
 export async function rejectReservation(reservationId: string, adminNote: string) {
   const reservation = await prisma.reservation.findUnique({
     where: { id: reservationId },
-    include: { item: { include: { store: true } }, user: true },
+    include: internalReservationInclude,
   })
   if (!reservation) throw { status: 404, message: 'Reserva no encontrada' }
   if (reservation.status !== 'PENDING_APPROVAL') {
@@ -266,7 +272,7 @@ export async function completeReservation(reservationId: string) {
   await expireStaleReservations()
   const reservation = await prisma.reservation.findUnique({
     where: { id: reservationId },
-    include: { item: { include: { store: true } }, user: true },
+    include: internalReservationInclude,
   })
   if (!reservation) throw { status: 404, message: 'Reserva no encontrada' }
   if (reservation.status !== 'APPROVED') {
@@ -318,7 +324,7 @@ export async function extendReservation(reservationId: string) {
   await expireStaleReservations()
   const reservation = await prisma.reservation.findUnique({
     where: { id: reservationId },
-    include: { item: { include: { store: true } }, user: true },
+    include: internalReservationInclude,
   })
   if (!reservation) throw { status: 404, message: 'Reserva no encontrada' }
   if (reservation.status !== 'APPROVED') {

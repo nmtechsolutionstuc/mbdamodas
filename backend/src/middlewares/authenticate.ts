@@ -1,14 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import { verifyAccessToken, AccessTokenPayload } from '../utils/jwt'
+import { verifyAccessToken } from '../utils/jwt'
 import { unauthorized } from '../utils/apiResponse'
-
-declare global {
-  namespace Express {
-    // Passport declara req.user como Express.User — extendemos esa interface
-    // para que req.user sea compatible con AccessTokenPayload
-    interface User extends AccessTokenPayload {}
-  }
-}
 
 export function authenticate(req: Request, res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization

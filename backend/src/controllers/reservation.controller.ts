@@ -16,7 +16,7 @@ export async function createReservationHandler(req: Request, res: Response) {
   try {
     const { itemId, quantity } = req.body
     if (!itemId) return badRequest(res, 'itemId es requerido')
-    const qty = quantity ? parseInt(quantity) : 1
+    const qty = quantity != null ? parseInt(quantity) : 1
     if (isNaN(qty) || qty < 1) return badRequest(res, 'La cantidad debe ser al menos 1')
     const result = await reservationService.createReservation(itemId, req.user!.sub, qty)
     return created(res, result)

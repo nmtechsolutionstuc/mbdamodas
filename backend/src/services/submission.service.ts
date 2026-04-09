@@ -1,5 +1,6 @@
 import { prisma } from '../config/prisma'
 import { ItemCondition } from '@prisma/client'
+import { stripHtml } from '../utils/sanitize'
 
 export interface SubmissionItemInput {
   title: string
@@ -34,8 +35,8 @@ export async function createSubmission(
       storeId,
       items: {
         create: items.map(item => ({
-          title: item.title,
-          description: item.description,
+          title: stripHtml(item.title),
+          description: item.description ? stripHtml(item.description) : undefined,
           condition: item.condition,
           productTypeId: item.productTypeId,
           sizeId: item.sizeId ?? null,
@@ -104,16 +105,16 @@ export async function getSellerSubmissionById(id: string, sellerId: string) {
   })
 }
 
-export async function cancelSubmission(id: string, sellerId: string): Promise<boolean> {
+export async function cancelSubmission(id: string, sellerId: string): Promise<'ok' | 'not_found' | 'not_cancellable'> {
   const submission = await prisma.submission.findFirst({
     where: { id, sellerId },
     include: { items: { select: { status: true } } },
   })
-  if (!submission) return false
+  if (!submission) return 'not_found'
 
   const allPending = submission.items.every(item => item.status === 'PENDING')
-  if (!allPending) return false
+  if (!allPending) return 'not_cancellable'
 
   await prisma.submission.delete({ where: { id } })
-  return true
+  return 'ok'
 }

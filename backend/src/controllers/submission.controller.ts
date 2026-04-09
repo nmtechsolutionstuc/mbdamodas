@@ -87,8 +87,12 @@ export async function getMySubmission(req: Request, res: Response): Promise<void
 }
 
 export async function cancelMySubmission(req: Request, res: Response): Promise<void> {
-  const success = await cancelSubmission(req.params.id!, req.user!.sub)
-  if (!success) {
+  const result = await cancelSubmission(req.params.id!, req.user!.sub)
+  if (result === 'not_found') {
+    notFound(res, 'Solicitud no encontrada')
+    return
+  }
+  if (result === 'not_cancellable') {
     forbidden(res, 'No podés cancelar esta solicitud. Solo se pueden cancelar solicitudes con todos los productos en estado pendiente.')
     return
   }

@@ -3,6 +3,13 @@ import { getPublicItems, getPublicItemById } from '../services/item.service'
 import { prisma } from '../config/prisma'
 import { ok, notFound } from '../utils/apiResponse'
 
+function safeInt(val: unknown, fallback: number, min = 1, max = 1000): number {
+  if (val === undefined || val === null || val === '') return fallback
+  const n = parseInt(val as string, 10)
+  if (isNaN(n) || n < min) return fallback
+  return Math.min(n, max)
+}
+
 export async function listItems(req: Request, res: Response): Promise<void> {
   const { productTypeId, sizeId, search, storeId, page, limit } = req.query
 
@@ -11,8 +18,8 @@ export async function listItems(req: Request, res: Response): Promise<void> {
     sizeId: sizeId as string | undefined,
     search: search as string | undefined,
     storeId: storeId as string | undefined,
-    page: page ? parseInt(page as string, 10) : undefined,
-    limit: limit ? parseInt(limit as string, 10) : undefined,
+    page: safeInt(page, 1, 1, 10000),
+    limit: safeInt(limit, 20, 1, 50),
   })
 
   ok(res, items.items, {
