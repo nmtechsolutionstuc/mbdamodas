@@ -3,6 +3,7 @@ import { rateLimit } from 'express-rate-limit'
 import { register, login, refresh, logout, me } from '../controllers/auth.controller'
 import { authenticate } from '../middlewares/authenticate'
 import { loginLimiter } from '../middlewares/loginLimiter'
+import { asyncHandler } from '../utils/asyncHandler'
 
 const router = Router()
 
@@ -25,18 +26,18 @@ const loginRateLimiter = rateLimit({
 })
 
 // Registro con email + contraseña
-router.post('/register', registerLimiter, register)
+router.post('/register', registerLimiter, asyncHandler(register))
 
 // Login con email + contraseña (doble protección: IP rate limit + email brute force)
-router.post('/login', loginRateLimiter, loginLimiter, login)
+router.post('/login', loginRateLimiter, loginLimiter, asyncHandler(login))
 
 // Renueva el access token usando el refresh token (httpOnly cookie)
-router.post('/refresh', refresh)
+router.post('/refresh', asyncHandler(refresh))
 
 // Revoca el refresh token y limpia la cookie
-router.post('/logout', authenticate, logout)
+router.post('/logout', authenticate, asyncHandler(logout))
 
 // Devuelve los datos del usuario autenticado
-router.get('/me', authenticate, me)
+router.get('/me', authenticate, asyncHandler(me))
 
 export default router

@@ -14,6 +14,7 @@ import {
 } from '../services/admin.service'
 import { prisma } from '../config/prisma'
 import { ok, created, notFound, badRequest, conflict, serverError } from '../utils/apiResponse'
+import { stripHtml } from '../utils/sanitize'
 
 export async function listSubmissions(req: Request, res: Response): Promise<void> {
   const page = req.query.page ? parseInt(req.query.page as string, 10) : 1
@@ -83,7 +84,10 @@ export async function editCatalogItem(req: Request, res: Response): Promise<void
   if (!parsed.success) { badRequest(res, 'Datos inválidos'); return }
 
   try {
-    const item = await prisma.item.update({ where: { id: req.params.id! }, data: parsed.data })
+    const sanitized = { ...parsed.data } as Record<string, any>
+    if (typeof sanitized.title === 'string') sanitized.title = stripHtml(sanitized.title)
+    if (typeof sanitized.description === 'string') sanitized.description = stripHtml(sanitized.description)
+    const item = await prisma.item.update({ where: { id: req.params.id! }, data: sanitized })
     ok(res, item)
   } catch {
     notFound(res, 'Item no encontrado')
@@ -119,7 +123,10 @@ export async function createCatalogItem(req: Request, res: Response): Promise<vo
   if (!parsed.success) { badRequest(res, parsed.error.errors[0]?.message ?? 'Datos inválidos'); return }
 
   try {
-    const item = await createCatalogItemService(parsed.data)
+    const sanitized = { ...parsed.data }
+    sanitized.title = stripHtml(sanitized.title)
+    if (sanitized.description) sanitized.description = stripHtml(sanitized.description)
+    const item = await createCatalogItemService(sanitized)
     created(res, item)
   } catch {
     serverError(res)
@@ -201,7 +208,10 @@ export async function createUser(req: Request, res: Response): Promise<void> {
   if (!parsed.success) { badRequest(res, parsed.error.errors[0]?.message ?? 'Datos inválidos'); return }
 
   try {
-    const user = await createUserService(parsed.data)
+    const sanitized = { ...parsed.data }
+    sanitized.firstName = stripHtml(sanitized.firstName)
+    sanitized.lastName = stripHtml(sanitized.lastName)
+    const user = await createUserService(sanitized)
     created(res, user)
   } catch (err: unknown) {
     if ((err as NodeJS.ErrnoException).code === 'EMAIL_IN_USE') {
