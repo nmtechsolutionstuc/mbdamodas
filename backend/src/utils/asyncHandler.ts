@@ -5,9 +5,11 @@ import { Request, Response, NextFunction, RequestHandler } from 'express'
  * and forward them to Express error handler instead of crashing the server.
  */
 export function asyncHandler(
-  fn: (req: Request, res: Response, next: NextFunction) => Promise<void>,
+  fn: (req: Request, res: Response, next: NextFunction) => Promise<unknown>,
 ): RequestHandler {
   return (req, res, next) => {
-    Promise.resolve(fn(req, res, next)).catch(next)
+    Promise.resolve(fn(req, res, next))
+      .then(() => undefined)
+      .catch(next)
   }
 }
