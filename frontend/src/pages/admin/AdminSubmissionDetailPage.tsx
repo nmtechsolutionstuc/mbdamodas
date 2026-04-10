@@ -48,13 +48,13 @@ export function AdminSubmissionDetailPage() {
     fetchAdminSubmissionById(id).then(setSubmission).catch(() => {}).finally(() => setLoading(false))
   }, [id])
 
-  async function doAction(itemId: string, action: () => Promise<{ whatsappLink?: string; commission?: { salePrice: number; commissionAmount: number; sellerAmount: number } }>) {
+  async function doAction(itemId: string, action: () => Promise<{ whatsappLink?: string; commission?: { salePrice: number; commissionAmount: number; sellerAmount: number }; item?: { code?: string } }>) {
     setActionLoading(itemId)
     try {
       const result = await action()
       if (result.whatsappLink) setWhatsappLinks(prev => ({ ...prev, [itemId]: result.whatsappLink ?? null }))
       if (result.commission) setCommissionResult(prev => ({ ...prev, [itemId]: result.commission! }))
-      if (result.item?.code) setItemCodes(prev => ({ ...prev, [itemId]: result.item.code }))
+      if (result.item?.code) setItemCodes(prev => ({ ...prev, [itemId]: result.item!.code! }))
       // Recargar la solicitud para ver el estado actualizado
       const updated = await fetchAdminSubmissionById(id!)
       setSubmission(updated)

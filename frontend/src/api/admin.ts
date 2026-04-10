@@ -53,6 +53,8 @@ export async function createCatalogItem(body: {
   minimumPrice?: number
   commission: number
   storeId: string
+  isOwnProduct?: boolean
+  promoterCommissionPct?: number | null
 }): Promise<import('../types').Item> {
   const { data } = await axiosClient.post<import('../types').ApiResponse<import('../types').Item>>('/admin/catalog', body)
   return data.data

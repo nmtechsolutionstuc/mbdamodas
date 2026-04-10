@@ -12,7 +12,7 @@ export function ItemCard({ item }: { item: Item }) {
   const coverPhoto = item.photos?.[0]
   const storePhone = item.store?.phone
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { isAuthenticated } = useAuth()
 
   const available = item.availableQuantity ?? item.quantity
   const canReserve = item.isOwnProduct && available > 0
@@ -20,7 +20,7 @@ export function ItemCard({ item }: { item: Item }) {
   function handleReserve(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
-    if (!user) {
+    if (!isAuthenticated) {
       navigate('/login')
       return
     }

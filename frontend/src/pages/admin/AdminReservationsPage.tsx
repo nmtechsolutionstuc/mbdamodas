@@ -7,7 +7,7 @@ import {
   completeAdminReservation,
   extendAdminReservation,
 } from '../../api/reservations'
-import type { Reservation, ReservationStatus } from '../../types'
+import type { Reservation } from '../../types'
 import { RESERVATION_STATUS_LABEL, RESERVATION_STATUS_COLOR } from '../../types'
 
 type FilterTab = 'all' | 'PENDING_APPROVAL' | 'APPROVED' | 'COMPLETED'

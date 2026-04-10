@@ -242,7 +242,7 @@ export function AdminCatalogPage() {
       })
       toast('Producto creado correctamente', 'success')
       setShowCreateForm(false)
-      setNewItem({ title: '', description: '', productTypeId: '', sizeId: '', tagIds: [], condition: 'BUEN_ESTADO', quantity: '1', price: '', commission: '30' })
+      setNewItem({ title: '', description: '', productTypeId: '', sizeId: '', tagIds: [], condition: 'BUEN_ESTADO', quantity: '1', price: '', commission: '30', isOwnProduct: false, promoterCommissionPct: '' })
       loadItems()
     } catch {
       toast('No se pudo crear el producto', 'error')
