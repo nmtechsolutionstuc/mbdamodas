@@ -20,12 +20,18 @@ const storeSchema = z.object({
   bannerBuyerSubtitle: z.string().max(200).optional().nullable(),
   bannerBuyerTitle: z.string().max(300).optional().nullable(),
   bannerBuyerDescription: z.string().max(500).optional().nullable(),
+  bannerBuyerButtonActive: z.boolean().optional(),
   bannerSellerSubtitle: z.string().max(200).optional().nullable(),
   bannerSellerTitle: z.string().max(300).optional().nullable(),
   bannerSellerDescription: z.string().max(500).optional().nullable(),
+  bannerSellerButtonActive: z.boolean().optional(),
   // Contenido de páginas
   aboutContent: z.string().max(10000).optional().nullable(),
   termsContent: z.string().max(20000).optional().nullable(),
+  // Configuración del menú
+  menuConfig: z.record(z.any()).optional().nullable(),
+  // Cards de propuesta de valor (homepage)
+  featureCards: z.record(z.any()).optional().nullable(),
 })
 
 export async function getAnnouncement(_req: Request, res: Response): Promise<void> {
@@ -43,9 +49,11 @@ export async function getHomeBanners(_req: Request, res: Response): Promise<void
       bannerBuyerSubtitle: true,
       bannerBuyerTitle: true,
       bannerBuyerDescription: true,
+      bannerBuyerButtonActive: true,
       bannerSellerSubtitle: true,
       bannerSellerTitle: true,
       bannerSellerDescription: true,
+      bannerSellerButtonActive: true,
     },
   })
   ok(res, {
@@ -53,13 +61,31 @@ export async function getHomeBanners(_req: Request, res: Response): Promise<void
       subtitle: store?.bannerBuyerSubtitle ?? null,
       title: store?.bannerBuyerTitle ?? null,
       description: store?.bannerBuyerDescription ?? null,
+      buttonActive: store?.bannerBuyerButtonActive ?? true,
     },
     seller: {
       subtitle: store?.bannerSellerSubtitle ?? null,
       title: store?.bannerSellerTitle ?? null,
       description: store?.bannerSellerDescription ?? null,
+      buttonActive: store?.bannerSellerButtonActive ?? true,
     },
   })
+}
+
+export async function getMenuConfig(_req: Request, res: Response): Promise<void> {
+  const store = await prisma.store.findFirst({
+    where: { isActive: true },
+    select: { menuConfig: true },
+  })
+  ok(res, { menuConfig: store?.menuConfig ?? null })
+}
+
+export async function getFeatureCards(_req: Request, res: Response): Promise<void> {
+  const store = await prisma.store.findFirst({
+    where: { isActive: true },
+    select: { featureCards: true },
+  })
+  ok(res, { featureCards: store?.featureCards ?? null })
 }
 
 export async function getAboutContent(_req: Request, res: Response): Promise<void> {

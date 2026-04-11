@@ -147,12 +147,18 @@ model Store {
   announcementActive Boolean  @default(false) // Mostrar o no el banner
 
   // ── Banners editables de la homepage ──
-  bannerBuyerSubtitle    String?  // Subtítulo del panel comprador (ej: "Para compradores")
-  bannerBuyerTitle       String?  // Título principal del panel comprador
-  bannerBuyerDescription String?  // Descripción del panel comprador
-  bannerSellerSubtitle    String?  // Subtítulo del panel vendedor/promotor
-  bannerSellerTitle       String?  // Título principal del panel vendedor/promotor
-  bannerSellerDescription String?  // Descripción del panel vendedor/promotor
+  bannerBuyerSubtitle      String?  // Subtítulo del panel comprador
+  bannerBuyerTitle         String?  // Título principal del panel comprador
+  bannerBuyerDescription   String?  // Descripción del panel comprador
+  bannerBuyerButtonActive  Boolean  @default(true)  // Mostrar botón del panel comprador
+  bannerSellerSubtitle     String?  // Subtítulo del panel vendedor/promotor
+  bannerSellerTitle        String?  // Título principal del panel vendedor/promotor
+  bannerSellerDescription  String?  // Descripción del panel vendedor/promotor
+  bannerSellerButtonActive Boolean  @default(true)  // Mostrar botón del panel vendedor
+  // ── Menú configurable de usuarios ──
+  menuConfig               Json?    // Configuración de visibilidad y títulos del menú
+  // ── Cards de propuesta de valor (homepage) ──
+  featureCards             Json?    // Configuración de las 3 cards de propuesta de valor
 
   // ── Contenido editable de páginas ──
   aboutContent      String?  @db.Text // Contenido de la página Nosotros (formato markdown simple)
