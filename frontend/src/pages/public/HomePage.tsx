@@ -10,7 +10,7 @@ import type { Item } from '../../types'
 
 interface BannerData {
   buyer: { subtitle: string | null; title: string | null; description: string | null; buttonActive: boolean }
-  seller: { subtitle: string | null; title: string | null; description: string | null; buttonActive: boolean }
+  seller: { subtitle: string | null; title: string | null; description: string | null; buttonActive: boolean; reservarButtonActive: boolean }
 }
 
 interface FeatureCardConfig {
@@ -47,7 +47,7 @@ export function HomePage() {
   const [banners, setBanners] = useState<BannerData | null>(null)
   const [featureCardsData, setFeatureCardsData] = useState<FeatureCardsData>({})
 
-  const selectedProductType = productTypes.find(pt => pt.id === productTypeId)
+  const selectedProductType = (productTypes ?? []).find(pt => pt.id === productTypeId)
 
   useEffect(() => {
     axiosClient.get<{ data: BannerData }>('/home-banners')
@@ -67,6 +67,7 @@ export function HomePage() {
   const sellerTitle = banners?.seller?.title || 'Gana dinero vendiendo nuestros productos'
   const sellerDesc = banners?.seller?.description || 'Reserva un producto del catalogo, consegiu un comprador y gana una comision por cada venta. Sin capital inicial, sin riesgo.'
   const sellerButtonActive = banners?.seller?.buttonActive ?? true
+  const reservarButtonActive = banners?.seller?.reservarButtonActive ?? true
 
   useEffect(() => {
     setLoading(true)
@@ -229,8 +230,8 @@ export function HomePage() {
           <p style={{ color: '#d1d5db', marginBottom: sellerDesc ? '1.25rem' : '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
             {sellerDesc}
           </p>
-          {sellerButtonActive && (
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
+            {reservarButtonActive && (
               <a
                 href="#catalogo"
                 onMouseEnter={() => setHoveredCta('reservar')}
@@ -251,6 +252,8 @@ export function HomePage() {
               >
                 💰 Reservar y ganar
               </a>
+            )}
+            {sellerButtonActive && (
               <Link
                 to={user ? '/dashboard/enviar' : '/register'}
                 onMouseEnter={() => setHoveredCta('vender')}
@@ -271,8 +274,8 @@ export function HomePage() {
               >
                 Quiero vender
               </Link>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </section>
 

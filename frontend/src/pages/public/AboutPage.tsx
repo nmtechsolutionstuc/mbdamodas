@@ -3,16 +3,39 @@ import { Link } from 'react-router-dom'
 import axiosClient from '../../api/axiosClient'
 import { renderContent } from '../../utils/renderContent'
 
+interface SocialLink { active: boolean; url: string }
+interface StoreInfo {
+  name: string | null
+  phone: string | null
+  email: string | null
+  address: string | null
+  socialLinks: { whatsappGroup?: SocialLink; tiktok?: SocialLink; instagram?: SocialLink; facebook?: SocialLink } | null
+  aboutConfig: { showCatalogButton?: boolean; showVenderButton?: boolean; showWhatsappButton?: boolean; showEmailButton?: boolean } | null
+}
+
 export function AboutPage() {
   const [content, setContent] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null)
 
   useEffect(() => {
     axiosClient.get('/about-content')
       .then(r => setContent(r.data.data.content))
       .catch(() => {})
       .finally(() => setLoading(false))
+    axiosClient.get<{ data: { store: StoreInfo | null } }>('/store-info')
+      .then(r => setStoreInfo(r.data.data.store))
+      .catch(() => {})
   }, [])
+
+  const waLink = `https://wa.me/${storeInfo?.phone ?? ''}?text=Hola!%20Quiero%20consultar%20sobre%20MBDA%20Modas.`
+  const emailDisplay = storeInfo?.email ?? 'contacto@mbdamodas.com'
+  const showCatalogButton = storeInfo?.aboutConfig?.showCatalogButton ?? true
+  const showVenderButton = storeInfo?.aboutConfig?.showVenderButton ?? true
+  const showWhatsappButton = storeInfo?.aboutConfig?.showWhatsappButton ?? true
+  const showEmailButton = storeInfo?.aboutConfig?.showEmailButton ?? true
+  const social = storeInfo?.socialLinks ?? {}
+  const hasSocialLinks = social.whatsappGroup?.active || social.tiktok?.active || social.instagram?.active || social.facebook?.active
 
   if (loading) {
     return (
@@ -46,44 +69,88 @@ export function AboutPage() {
           {renderContent(removeFirstSection(content))}
 
           {/* CTA buttons */}
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '2rem', marginBottom: '2rem' }}>
-            <Link
-              to="/"
-              style={{ display: 'inline-block', background: '#1E1914', color: '#E8E3D5', padding: '0.75rem 1.5rem', borderRadius: '0.875rem', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}
-            >
-              Ver catalogo
-            </Link>
-            <Link
-              to="/register"
-              style={{ display: 'inline-block', background: '#E8E3D5', color: '#1E1914', padding: '0.75rem 1.5rem', borderRadius: '0.875rem', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', border: '1px solid #d1cdc0' }}
-            >
-              Empezar a vender
-            </Link>
-          </div>
+          {(showCatalogButton || showVenderButton) && (
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '2rem', marginBottom: '2rem' }}>
+              {showCatalogButton && (
+                <Link
+                  to="/"
+                  style={{ display: 'inline-block', background: '#1E1914', color: '#E8E3D5', padding: '0.75rem 1.5rem', borderRadius: '0.875rem', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}
+                >
+                  Ver catalogo
+                </Link>
+              )}
+              {showVenderButton && (
+                <Link
+                  to="/register"
+                  style={{ display: 'inline-block', background: '#E8E3D5', color: '#1E1914', padding: '0.75rem 1.5rem', borderRadius: '0.875rem', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', border: '1px solid #d1cdc0' }}
+                >
+                  Empezar a vender
+                </Link>
+              )}
+            </div>
+          )}
 
           {/* Contact */}
-          <section style={{ textAlign: 'center', marginTop: '2rem', marginBottom: '2rem' }}>
-            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', fontWeight: 700, color: '#1E1914', marginBottom: '0.5rem' }}>
-              Tenes preguntas?
-            </h2>
-            <p style={{ color: '#6b7280', marginBottom: '1rem' }}>Escribinos por WhatsApp o por email.</p>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <a
-                href="https://wa.me/543865412034?text=Hola!%20Quiero%20consultar%20sobre%20MBDA%20Modas."
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#25D366', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', padding: '0.625rem 1.25rem', borderRadius: '0.75rem' }}
-              >
-                WhatsApp
-              </a>
-              <a
-                href="mailto:contacto@mbdamodas.com"
-                style={{ color: '#1E1914', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', border: '1px solid #E8E3D5', padding: '0.625rem 1.25rem', borderRadius: '0.75rem' }}
-              >
-                contacto@mbdamodas.com
-              </a>
-            </div>
-          </section>
+          {(showWhatsappButton || showEmailButton) && (
+            <section style={{ textAlign: 'center', marginTop: '2rem', marginBottom: '2rem' }}>
+              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', fontWeight: 700, color: '#1E1914', marginBottom: '0.5rem' }}>
+                Tenes preguntas?
+              </h2>
+              <p style={{ color: '#6b7280', marginBottom: '1rem' }}>Escribinos por WhatsApp o por email.</p>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                {showWhatsappButton && (
+                  <a
+                    href={waLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#25D366', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', padding: '0.625rem 1.25rem', borderRadius: '0.75rem' }}
+                  >
+                    WhatsApp
+                  </a>
+                )}
+                {showEmailButton && (
+                  <a
+                    href={`mailto:${emailDisplay}`}
+                    style={{ color: '#1E1914', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', border: '1px solid #E8E3D5', padding: '0.625rem 1.25rem', borderRadius: '0.75rem' }}
+                  >
+                    {emailDisplay}
+                  </a>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Social media links */}
+          {hasSocialLinks && (
+            <section style={{ textAlign: 'center', marginTop: '1.5rem', marginBottom: '2rem' }}>
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                {social.whatsappGroup?.active && social.whatsappGroup.url && (
+                  <a href={social.whatsappGroup.url} target="_blank" rel="noopener noreferrer"
+                    style={{ background: '#25D366', color: '#fff', padding: '0.5rem 1rem', borderRadius: '0.625rem', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600 }}>
+                    💬 Grupo de WhatsApp
+                  </a>
+                )}
+                {social.instagram?.active && social.instagram.url && (
+                  <a href={social.instagram.url} target="_blank" rel="noopener noreferrer"
+                    style={{ background: '#E1306C', color: '#fff', padding: '0.5rem 1rem', borderRadius: '0.625rem', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600 }}>
+                    📸 Instagram
+                  </a>
+                )}
+                {social.tiktok?.active && social.tiktok.url && (
+                  <a href={social.tiktok.url} target="_blank" rel="noopener noreferrer"
+                    style={{ background: '#010101', color: '#fff', padding: '0.5rem 1rem', borderRadius: '0.625rem', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600 }}>
+                    🎵 TikTok
+                  </a>
+                )}
+                {social.facebook?.active && social.facebook.url && (
+                  <a href={social.facebook.url} target="_blank" rel="noopener noreferrer"
+                    style={{ background: '#1877F2', color: '#fff', padding: '0.5rem 1rem', borderRadius: '0.625rem', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600 }}>
+                    👍 Facebook
+                  </a>
+                )}
+              </div>
+            </section>
+          )}
 
           {/* Developer section */}
           <section style={{ marginTop: '3rem', borderTop: '1px solid #E8E3D5', paddingTop: '2rem' }}>
