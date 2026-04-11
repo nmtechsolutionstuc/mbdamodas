@@ -107,6 +107,7 @@ export async function createReservation(itemId: string, userId: string, quantity
     itemCode: item.code,
     reservationCode,
     voucherUrl: buildVoucherUrl(reservationCode),
+    itemPrice: item.price != null ? Number(item.price) : undefined,
   }
 
   const whatsappToAttendant = generateReservationWALink('QUERY_ATTENDANT', ctx)
@@ -224,6 +225,7 @@ export async function approveReservation(reservationId: string) {
     earnings,
     expiresAt,
     voucherUrl: buildVoucherUrl(reservation.reservationCode),
+    itemPrice: reservation.item.price != null ? Number(reservation.item.price) : undefined,
   }
 
   const whatsappToPromoter = generateReservationWALink('APPROVED_TO_PROMOTER', ctx)
@@ -279,6 +281,10 @@ export async function completeReservation(reservationId: string) {
     throw { status: 400, message: 'Solo se pueden completar reservas aprobadas y vigentes' }
   }
 
+  const item = reservation.item
+  const newQuantity = item.quantity - reservation.quantity
+  const willBeInactive = newQuantity <= 0
+
   await prisma.$transaction([
     prisma.reservation.update({
       where: { id: reservationId },
@@ -286,7 +292,11 @@ export async function completeReservation(reservationId: string) {
     }),
     prisma.item.update({
       where: { id: reservation.itemId },
-      data: { isActive: false },
+      data: {
+        quantity: { decrement: reservation.quantity },
+        isActive: !willBeInactive,
+        ...(willBeInactive && { soldAt: new Date() }),
+      },
     }),
   ])
 

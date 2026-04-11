@@ -69,6 +69,7 @@ export interface ReservationWAContext {
   paymentMethod?: string | null
   bankAlias?: string | null
   voucherUrl?: string
+  itemPrice?: number
 }
 
 export function generateReservationWALink(
@@ -88,11 +89,14 @@ export function generateReservationWALink(
   let text: string
 
   switch (type) {
-    case 'QUERY_ATTENDANT':
+    case 'QUERY_ATTENDANT': {
       if (!ctx.storeAttendantPhone) return null
       phone = ctx.storeAttendantPhone
-      text = `Hola! Hay una reserva para el producto "${ctx.itemTitle}"${codePart}, código ${ctx.reservationCode}. ¿El producto está disponible? ¿La tienda abrirá en las próximas 24hs?`
+      const formatPrice = ctx.itemPrice != null ? ctx.itemPrice.toLocaleString('es-AR') : null
+      const pricePart = formatPrice != null ? `, precio de venta $${formatPrice}` : ''
+      text = `Hola! Hay una reserva para el producto "${ctx.itemTitle}"${codePart}, código ${ctx.reservationCode}${pricePart}. ¿El producto está disponible? ¿La tienda abrirá en las próximas 24hs?`
       break
+    }
 
     case 'APPROVED_TO_PROMOTER':
       phone = ctx.promoterPhone

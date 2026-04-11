@@ -240,40 +240,71 @@ export async function markItemInStore(submissionItemId: string) {
   return { submissionItem: updated, whatsappLink }
 }
 
-export async function markItemSold(submissionItemId: string) {
-  const submissionItem = await prisma.submissionItem.findUnique({
-    where: { id: submissionItemId },
+export async function markItemSold(itemId: string) {
+  const item = await prisma.item.findUnique({
+    where: { id: itemId },
     include: {
-      item: true,
-      submission: {
+      submissionItem: {
         include: {
-          seller: { select: { firstName: true, phone: true, paymentMethod: true, bankAlias: true } },
-          store: { select: { name: true } },
+          submission: {
+            include: {
+              seller: { select: { firstName: true, phone: true, paymentMethod: true, bankAlias: true } },
+              store: { select: { name: true } },
+            },
+          },
+        },
+      },
+      reservations: {
+        where: { status: { in: ['COMPLETED', 'APPROVED'] } },
+        orderBy: { updatedAt: 'desc' },
+        take: 1,
+        include: {
+          user: { select: { firstName: true, phone: true, paymentMethod: true, bankAlias: true } },
         },
       },
     },
   })
-  if (!submissionItem || !submissionItem.item) return null
+  if (!item) return null
 
-  const item = submissionItem.item
-  const commission = calculateCommission(Number(item.price), Number(item.commission))
+  const commission = item.price && item.commission
+    ? calculateCommission(Number(item.price), Number(item.commission))
+    : null
 
-  await prisma.$transaction([
-    prisma.submissionItem.update({ where: { id: submissionItemId }, data: { status: SubmissionItemStatus.SOLD } }),
+  const updates: import('@prisma/client').Prisma.PrismaPromise<unknown>[] = [
     prisma.item.update({ where: { id: item.id }, data: { isActive: false, soldAt: new Date() } }),
-  ])
+  ]
 
-  const seller = submissionItem.submission.seller
-  const whatsappLink = generateWhatsAppLink(SubmissionItemStatus.SOLD, {
-    sellerPhone: seller.phone ?? '',
-    sellerName: seller.firstName,
-    itemTitle: submissionItem.title,
-    itemCode: item.code ?? undefined,
-    storeName: submissionItem.submission.store.name,
-    sellerAmount: commission.sellerAmount,
-    paymentMethod: seller.paymentMethod,
-    bankAlias: seller.bankAlias,
-  })
+  if (item.submissionItem) {
+    updates.push(
+      prisma.submissionItem.update({
+        where: { id: item.submissionItem.id },
+        data: { status: SubmissionItemStatus.SOLD },
+      })
+    )
+  }
+
+  await prisma.$transaction(updates)
+
+  let whatsappLink: string | null = null
+
+  if (item.submissionItem) {
+    // Submission item — notify the original seller
+    const seller = item.submissionItem.submission.seller
+    whatsappLink = generateWhatsAppLink(SubmissionItemStatus.SOLD, {
+      sellerPhone: seller.phone ?? '',
+      sellerName: seller.firstName,
+      itemTitle: item.title,
+      itemCode: item.code ?? undefined,
+      storeName: item.submissionItem.submission.store.name,
+      sellerAmount: commission?.sellerAmount,
+      paymentMethod: seller.paymentMethod,
+      bankAlias: seller.bankAlias,
+    })
+  } else if (item.reservations.length > 0) {
+    // Catalog item with a promoter reservation — no submission WA, but build promoter link if needed
+    // (promoter payment is handled by completeReservation; here we just return null)
+    whatsappLink = null
+  }
 
   return { commission, whatsappLink }
 }
@@ -355,6 +386,50 @@ export async function createCatalogItem(input: {
   })
 
   return item
+}
+
+// ─── User management ────────────────────────────────────────
+
+export async function updateUser(id: string, input: {
+  firstName?: string
+  lastName?: string
+  email?: string
+  phone?: string | null
+  dni?: string | null
+  role?: Role
+  isActive?: boolean
+  password?: string
+}) {
+  const data: Record<string, unknown> = {}
+  if (input.firstName !== undefined) data.firstName = stripHtml(input.firstName)
+  if (input.lastName !== undefined) data.lastName = stripHtml(input.lastName)
+  if (input.email !== undefined) data.email = input.email.toLowerCase().trim()
+  if (input.phone !== undefined) data.phone = input.phone
+  if (input.dni !== undefined) data.dni = input.dni
+  if (input.role !== undefined) data.role = input.role
+  if (input.isActive !== undefined) data.isActive = input.isActive
+  if (input.password) data.password = await bcrypt.hash(input.password, 12)
+
+  return prisma.user.update({
+    where: { id },
+    data,
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      phone: true,
+      dni: true,
+      role: true,
+      isActive: true,
+      createdAt: true,
+      _count: { select: { submissions: true } },
+    },
+  })
+}
+
+export async function deleteUser(id: string) {
+  return prisma.user.delete({ where: { id } })
 }
 
 // ─── Product Type / Size / Tag management ───────────────────
