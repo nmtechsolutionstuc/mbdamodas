@@ -4,6 +4,8 @@ import {
   getAdminSubmissions, getAdminSubmissionById,
   approveItem, rejectItem, markItemInStore, markItemSold, markItemReturned,
   createUser as createUserService,
+  updateUser as updateUserService,
+  deleteUser as deleteUserService,
   createCatalogItem as createCatalogItemService,
   listProductTypes as listProductTypesService,
   toggleProductType as toggleProductTypeService,
@@ -12,6 +14,7 @@ import {
   createTag as createTagService,
   toggleTag as toggleTagService,
 } from '../services/admin.service'
+import { getPhotoUrls } from '../services/upload.service'
 import { prisma } from '../config/prisma'
 import { ok, created, notFound, badRequest, conflict, serverError } from '../utils/apiResponse'
 import { stripHtml } from '../utils/sanitize'
@@ -191,6 +194,68 @@ export async function deactivateUser(req: Request, res: Response): Promise<void>
     ok(res, { message: 'Usuario desactivado' })
   } catch {
     notFound(res, 'Usuario no encontrado')
+  }
+}
+
+export async function updateUser(req: Request, res: Response): Promise<void> {
+  const schema = z.object({
+    firstName: z.string().min(1).optional(),
+    lastName: z.string().min(1).optional(),
+    email: z.string().email('Email inválido').optional(),
+    phone: z.string().optional().nullable(),
+    dni: z.string().optional().nullable(),
+    role: z.enum(['USER', 'ADMIN']).optional(),
+    isActive: z.boolean().optional(),
+    password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres').optional(),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) { badRequest(res, parsed.error.errors[0]?.message ?? 'Datos inválidos'); return }
+
+  try {
+    const user = await updateUserService(req.params.id!, parsed.data)
+    ok(res, user)
+  } catch (err: unknown) {
+    const e = err as NodeJS.ErrnoException & { code?: string; meta?: { target?: string[] } }
+    if (e.code === 'P2002') {
+      conflict(res, 'El email ya está en uso')
+      return
+    }
+    if (e.code === 'P2025') {
+      notFound(res, 'Usuario no encontrado')
+      return
+    }
+    serverError(res)
+  }
+}
+
+export async function deleteUser(req: Request, res: Response): Promise<void> {
+  try {
+    await deleteUserService(req.params.id!)
+    ok(res, { message: 'Usuario eliminado' })
+  } catch {
+    notFound(res, 'Usuario no encontrado')
+  }
+}
+
+export async function uploadCatalogItemPhotos(req: Request, res: Response): Promise<void> {
+  const files = req.files as Express.Multer.File[] | undefined
+  if (!files || files.length === 0) { badRequest(res, 'No se enviaron fotos'); return }
+  if (files.length > 5) { badRequest(res, 'Máximo 5 fotos permitidas'); return }
+
+  try {
+    const item = await prisma.item.findUnique({ where: { id: req.params.id! }, select: { id: true } })
+    if (!item) { notFound(res, 'Item no encontrado'); return }
+
+    const urls = await getPhotoUrls(files)
+    const existingCount = await prisma.itemPhoto.count({ where: { itemId: item.id } })
+    const photos = await prisma.$transaction(
+      urls.map((url, i) =>
+        prisma.itemPhoto.create({ data: { itemId: item.id, url, order: existingCount + i } })
+      )
+    )
+    ok(res, photos)
+  } catch {
+    serverError(res)
   }
 }
 

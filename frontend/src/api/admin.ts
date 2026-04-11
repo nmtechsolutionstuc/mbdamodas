@@ -65,13 +65,22 @@ export async function fetchAdminCatalog(page = 1) {
   return data
 }
 
-export async function updateCatalogItem(id: string, body: { title?: string; description?: string; price?: number; commission?: number; productTypeId?: string; sizeId?: string | null; condition?: string; quantity?: number }) {
+export async function updateCatalogItem(id: string, body: { title?: string; description?: string; price?: number; commission?: number; productTypeId?: string; sizeId?: string | null; condition?: string; quantity?: number; isActive?: boolean }) {
   const { data } = await axiosClient.patch(`/admin/catalog/${id}`, body)
   return data.data
 }
 
 export async function deleteCatalogItem(id: string) {
   const { data } = await axiosClient.delete(`/admin/catalog/${id}`)
+  return data.data
+}
+
+export async function uploadItemPhotos(itemId: string, files: File[]) {
+  const formData = new FormData()
+  files.forEach(f => formData.append('photos', f))
+  const { data } = await axiosClient.post(`/admin/catalog/${itemId}/photos`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
   return data.data
 }
 
@@ -83,6 +92,16 @@ export async function fetchAdminUsers(page = 1, search?: string) {
 export async function deactivateUser(id: string) {
   const { data } = await axiosClient.patch(`/admin/users/${id}/deactivate`)
   return data.data
+}
+
+export async function updateAdminUser(id: string, body: Partial<{ firstName: string; lastName: string; email: string; phone: string | null; dni: string | null; password: string; role: 'USER' | 'ADMIN'; isActive: boolean }>) {
+  const { data } = await axiosClient.patch(`/admin/users/${id}`, body)
+  return data.data
+}
+
+export async function deleteAdminUser(id: string) {
+  const { data } = await axiosClient.delete(`/admin/users/${id}`)
+  return data
 }
 
 export async function createUser(body: {

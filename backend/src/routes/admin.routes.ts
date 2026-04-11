@@ -4,13 +4,14 @@ import { authorize } from '../middlewares/authorize'
 import {
   listSubmissions, getSubmission,
   approve, reject, markInStore, markSold, markReturned,
-  listCatalog, createCatalogItem, editCatalogItem, softDeleteCatalogItem,
-  listUsers, createUser, deactivateUser,
+  listCatalog, createCatalogItem, editCatalogItem, softDeleteCatalogItem, uploadCatalogItemPhotos,
+  listUsers, createUser, deactivateUser, updateUser, deleteUser,
   getDashboardStats,
   listProductTypes, toggleProductType,
   createSize, toggleSize,
   createTag, toggleTag,
 } from '../controllers/admin.controller'
+import { upload } from '../config/multer'
 import { listStores, createStore, updateStore } from '../controllers/store.controller'
 import {
   listAdminReservations, approveReservationHandler, rejectReservationHandler,
@@ -42,6 +43,7 @@ router.get('/catalog', asyncHandler(listCatalog))
 router.post('/catalog', asyncHandler(createCatalogItem))
 router.patch('/catalog/:id', asyncHandler(editCatalogItem))
 router.delete('/catalog/:id', asyncHandler(softDeleteCatalogItem))
+router.post('/catalog/:id/photos', upload.array('photos', 5), asyncHandler(uploadCatalogItemPhotos))
 
 // Product Types / Sizes / Tags
 router.get('/product-types', asyncHandler(listProductTypes))
@@ -55,6 +57,8 @@ router.patch('/tags/:id/toggle', asyncHandler(toggleTag))
 router.get('/users', asyncHandler(listUsers))
 router.post('/users', asyncHandler(createUser))
 router.patch('/users/:id/deactivate', asyncHandler(deactivateUser))
+router.patch('/users/:id', asyncHandler(updateUser))
+router.delete('/users/:id', asyncHandler(deleteUser))
 
 // Tiendas
 router.get('/stores', asyncHandler(listStores))
