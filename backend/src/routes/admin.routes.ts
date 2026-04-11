@@ -16,6 +16,7 @@ import { listStores, createStore, updateStore } from '../controllers/store.contr
 import {
   listAdminReservations, approveReservationHandler, rejectReservationHandler,
   completeReservationHandler, extendReservationHandler,
+  deleteAdminReservation, resendReservationWhatsapp,
 } from '../controllers/reservation.controller'
 import { asyncHandler } from '../utils/asyncHandler'
 
@@ -71,5 +72,7 @@ router.patch('/reservations/:id/approve', asyncHandler(approveReservationHandler
 router.patch('/reservations/:id/reject', asyncHandler(rejectReservationHandler))
 router.patch('/reservations/:id/complete', asyncHandler(completeReservationHandler))
 router.patch('/reservations/:id/extend', asyncHandler(extendReservationHandler))
+router.delete('/reservations/:id', asyncHandler(deleteAdminReservation))
+router.get('/reservations/:id/resend-whatsapp', asyncHandler(resendReservationWhatsapp))
 
 export default router

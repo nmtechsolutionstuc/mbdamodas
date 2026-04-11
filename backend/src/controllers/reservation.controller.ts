@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express'
 import { ok, created, notFound, badRequest, conflict, serverError } from '../utils/apiResponse'
 import * as reservationService from '../services/reservation.service'
+import { prisma } from '../config/prisma'
 
 function handleError(res: Response, err: any) {
   if (err.status === 404) return notFound(res, err.message)
@@ -103,4 +104,58 @@ export async function extendReservationHandler(req: Request, res: Response) {
   } catch (err) {
     return handleError(res, err)
   }
+}
+
+export async function deleteAdminReservation(req: Request, res: Response): Promise<void> {
+  const { id } = req.params
+  const reservation = await prisma.reservation.findUnique({ where: { id } })
+  if (!reservation) { notFound(res, 'Reserva no encontrada'); return }
+  const allowedStatuses = ['COMPLETED', 'REJECTED', 'EXPIRED', 'CANCELLED']
+  if (!allowedStatuses.includes(reservation.status)) {
+    badRequest(res, 'Solo se pueden eliminar reservas completadas, rechazadas, expiradas o canceladas')
+    return
+  }
+  await prisma.reservation.delete({ where: { id } })
+  ok(res, { deleted: true })
+}
+
+export async function resendReservationWhatsapp(req: Request, res: Response): Promise<void> {
+  const { id } = req.params
+  const reservation = await prisma.reservation.findUnique({
+    where: { id },
+    include: {
+      item: { select: { title: true, price: true, promoterCommissionPct: true } },
+      user: { select: { firstName: true, phone: true, paymentMethod: true, bankAlias: true } },
+    },
+  })
+  if (!reservation) { notFound(res, 'Reserva no encontrada'); return }
+  if (reservation.status !== 'COMPLETED') {
+    badRequest(res, 'Solo se puede reenviar WA de reservas completadas')
+    return
+  }
+
+  const { generateReservationWALink } = await import('../services/whatsapp.service')
+  const commissionPct = Number(reservation.item.promoterCommissionPct ?? 10)
+  const salePrice = Number(reservation.item.price)
+  const commissionAmount = Math.round(salePrice * commissionPct / 100)
+
+  const isTransfer = reservation.user.paymentMethod === 'TRANSFERENCIA'
+
+  const whatsappLink = reservation.user.phone
+    ? generateReservationWALink(
+        isTransfer ? 'COMPLETED_TRANSFER' : 'COMPLETED_CASH',
+        {
+          storeName: '',
+          promoterPhone: reservation.user.phone,
+          promoterName: reservation.user.firstName,
+          itemTitle: reservation.item.title,
+          reservationCode: reservation.reservationCode,
+          earnings: commissionAmount,
+          bankAlias: reservation.user.bankAlias ?? undefined,
+          paymentMethod: reservation.user.paymentMethod ?? undefined,
+        }
+      )
+    : null
+
+  ok(res, { whatsappLink })
 }
