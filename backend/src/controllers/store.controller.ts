@@ -32,6 +32,10 @@ const storeSchema = z.object({
   menuConfig: z.record(z.any()).optional().nullable(),
   // Cards de propuesta de valor (homepage)
   featureCards: z.record(z.any()).optional().nullable(),
+  bannerReservarButtonActive: z.boolean().optional(),
+  socialLinks: z.record(z.any()).optional().nullable(),
+  footerConfig: z.record(z.any()).optional().nullable(),
+  aboutConfig: z.record(z.any()).optional().nullable(),
 })
 
 export async function getAnnouncement(_req: Request, res: Response): Promise<void> {
@@ -54,6 +58,7 @@ export async function getHomeBanners(_req: Request, res: Response): Promise<void
       bannerSellerTitle: true,
       bannerSellerDescription: true,
       bannerSellerButtonActive: true,
+      bannerReservarButtonActive: true,
     },
   })
   ok(res, {
@@ -68,6 +73,7 @@ export async function getHomeBanners(_req: Request, res: Response): Promise<void
       title: store?.bannerSellerTitle ?? null,
       description: store?.bannerSellerDescription ?? null,
       buttonActive: store?.bannerSellerButtonActive ?? true,
+      reservarButtonActive: store?.bannerReservarButtonActive ?? true,
     },
   })
 }
@@ -141,4 +147,12 @@ export async function updateStore(req: Request, res: Response): Promise<void> {
   } catch {
     notFound(res, 'Tienda no encontrada')
   }
+}
+
+export async function getStoreInfo(_req: Request, res: Response): Promise<void> {
+  const store = await prisma.store.findFirst({
+    where: { isActive: true },
+    select: { name: true, phone: true, email: true, address: true, socialLinks: true, footerConfig: true, aboutConfig: true },
+  })
+  ok(res, { store: store ?? null })
 }
