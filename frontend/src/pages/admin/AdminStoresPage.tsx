@@ -2,6 +2,20 @@ import { useState, useEffect } from 'react'
 import axiosClient from '../../api/axiosClient'
 import { useToast } from '../../context/ToastContext'
 
+interface SocialLinkConfig { active: boolean; url: string }
+interface SocialLinksConfig {
+  whatsappGroup?: SocialLinkConfig
+  tiktok?: SocialLinkConfig
+  instagram?: SocialLinkConfig
+  facebook?: SocialLinkConfig
+}
+const DEFAULT_SOCIAL: Record<keyof SocialLinksConfig, SocialLinkConfig> = {
+  whatsappGroup: { active: false, url: '' },
+  tiktok: { active: false, url: '' },
+  instagram: { active: false, url: '' },
+  facebook: { active: false, url: '' },
+}
+
 interface MenuItemConfig {
   active: boolean
   title: string
@@ -60,10 +74,14 @@ interface Store {
   bannerSellerTitle: string | null
   bannerSellerDescription: string | null
   bannerSellerButtonActive: boolean
+  bannerReservarButtonActive: boolean
   aboutContent: string | null
   termsContent: string | null
   menuConfig: MenuConfig | null
   featureCards: FeatureCardsConfig | null
+  socialLinks: SocialLinksConfig | null
+  footerConfig: { tagline?: string; address?: string; showDeveloper?: boolean } | null
+  aboutConfig: { showCatalogButton?: boolean; showVenderButton?: boolean; showWhatsappButton?: boolean; showEmailButton?: boolean } | null
 }
 
 export function AdminStoresPage() {
@@ -82,8 +100,28 @@ export function AdminStoresPage() {
   }, [])
 
   function startEdit(store: Store) {
-    setEditing({ ...store, menuConfig: store.menuConfig ?? {}, featureCards: store.featureCards ?? {} })
+    setEditing({
+      ...store,
+      menuConfig: store.menuConfig ?? {},
+      featureCards: store.featureCards ?? {},
+      socialLinks: store.socialLinks ?? {},
+      footerConfig: store.footerConfig ?? {},
+      aboutConfig: store.aboutConfig ?? {},
+      bannerReservarButtonActive: store.bannerReservarButtonActive ?? true,
+    })
     setSaved(false)
+  }
+
+  function getSocialLink(key: keyof SocialLinksConfig): SocialLinkConfig {
+    return { ...DEFAULT_SOCIAL[key], ...(editing?.socialLinks?.[key] ?? {}) }
+  }
+
+  function setSocialLink(key: keyof SocialLinksConfig, patch: Partial<SocialLinkConfig>) {
+    setEditing(prev => {
+      if (!prev) return prev
+      const current = { ...DEFAULT_SOCIAL[key], ...(prev.socialLinks?.[key] ?? {}) }
+      return { ...prev, socialLinks: { ...(prev.socialLinks ?? {}), [key]: { ...current, ...patch } } }
+    })
   }
 
   function getFeatureCardEdit(key: keyof FeatureCardsConfig): FeatureCardConfig {
@@ -132,10 +170,14 @@ export function AdminStoresPage() {
         bannerSellerTitle: editing.bannerSellerTitle,
         bannerSellerDescription: editing.bannerSellerDescription,
         bannerSellerButtonActive: editing.bannerSellerButtonActive,
+        bannerReservarButtonActive: editing.bannerReservarButtonActive,
         aboutContent: editing.aboutContent,
         termsContent: editing.termsContent,
         menuConfig: editing.menuConfig ?? {},
         featureCards: editing.featureCards ?? {},
+        socialLinks: editing.socialLinks ?? {},
+        footerConfig: editing.footerConfig ?? {},
+        aboutConfig: editing.aboutConfig ?? {},
       })
       setStores(prev => prev.map(s => s.id === editing.id ? data.data : s))
       setEditing(null)
@@ -263,8 +305,12 @@ export function AdminStoresPage() {
                 </p>
                 {txtArea('Descripcion', editing.bannerSellerDescription ?? '', v => setEditing(e => e && ({ ...e, bannerSellerDescription: v })))}
                 <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914' }}>
+                  <input type="checkbox" checked={editing.bannerReservarButtonActive ?? true} onChange={e => setEditing(prev => prev && ({ ...prev, bannerReservarButtonActive: e.target.checked }))} />
+                  Mostrar botón 'Reservar y ganar'
+                </label>
+                <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914' }}>
                   <input type="checkbox" checked={editing.bannerSellerButtonActive ?? false} onChange={e => setEditing(prev => prev && ({ ...prev, bannerSellerButtonActive: e.target.checked }))} />
-                  Mostrar botón del panel vendedor
+                  Mostrar botón 'Quiero vender'
                 </label>
 
                 {/* ── Pagina Nosotros ── */}
@@ -376,6 +422,90 @@ export function AdminStoresPage() {
                     </div>
                   )
                 })}
+
+                {/* ── Redes sociales ── */}
+                {sectionTitle('Redes sociales')}
+                <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '-0.25rem' }}>
+                  Configurá los links a tus redes. Solo se muestran los que están activos.
+                </p>
+                {([
+                  { key: 'whatsappGroup' as keyof SocialLinksConfig, label: 'Grupo de WhatsApp' },
+                  { key: 'tiktok' as keyof SocialLinksConfig, label: 'TikTok' },
+                  { key: 'instagram' as keyof SocialLinksConfig, label: 'Instagram' },
+                  { key: 'facebook' as keyof SocialLinksConfig, label: 'Facebook' },
+                ]).map(({ key, label }) => {
+                  const link = getSocialLink(key)
+                  return (
+                    <div key={key} style={{ background: '#FAF8F3', border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600, color: '#1E1914' }}>
+                        <input
+                          type="checkbox"
+                          checked={link.active}
+                          onChange={e => setSocialLink(key, { active: e.target.checked })}
+                        />
+                        {label}
+                      </label>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>URL / Link</label>
+                        <input
+                          type="text"
+                          value={link.url}
+                          onChange={e => setSocialLink(key, { url: e.target.value })}
+                          placeholder="https://..."
+                          style={{ width: '100%', padding: '0.5rem 0.625rem', borderRadius: '0.5rem', border: '1px solid #E8E3D5', fontSize: '0.875rem', color: '#1E1914', boxSizing: 'border-box' as const }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {/* ── Configuración del footer ── */}
+                {sectionTitle('Configuración del footer')}
+                {txtArea('Descripción/tagline de la tienda', editing.footerConfig?.tagline ?? '', v => setEditing(e => e && ({ ...e, footerConfig: { ...(e.footerConfig ?? {}), tagline: v } })))}
+                {inp('Dirección en footer', editing.footerConfig?.address ?? '', v => setEditing(e => e && ({ ...e, footerConfig: { ...(e.footerConfig ?? {}), address: v } })))}
+                <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914' }}>
+                  <input
+                    type="checkbox"
+                    checked={editing.footerConfig?.showDeveloper ?? true}
+                    onChange={e => setEditing(prev => prev && ({ ...prev, footerConfig: { ...(prev.footerConfig ?? {}), showDeveloper: e.target.checked } }))}
+                  />
+                  Mostrar sección del desarrollador
+                </label>
+
+                {/* ── Página Nosotros - botones ── */}
+                {sectionTitle('Página Nosotros - botones')}
+                <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914' }}>
+                  <input
+                    type="checkbox"
+                    checked={editing.aboutConfig?.showCatalogButton ?? true}
+                    onChange={e => setEditing(prev => prev && ({ ...prev, aboutConfig: { ...(prev.aboutConfig ?? {}), showCatalogButton: e.target.checked } }))}
+                  />
+                  Mostrar botón 'Ver catálogo'
+                </label>
+                <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914' }}>
+                  <input
+                    type="checkbox"
+                    checked={editing.aboutConfig?.showVenderButton ?? true}
+                    onChange={e => setEditing(prev => prev && ({ ...prev, aboutConfig: { ...(prev.aboutConfig ?? {}), showVenderButton: e.target.checked } }))}
+                  />
+                  Mostrar botón 'Empezar a vender'
+                </label>
+                <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914' }}>
+                  <input
+                    type="checkbox"
+                    checked={editing.aboutConfig?.showWhatsappButton ?? true}
+                    onChange={e => setEditing(prev => prev && ({ ...prev, aboutConfig: { ...(prev.aboutConfig ?? {}), showWhatsappButton: e.target.checked } }))}
+                  />
+                  Mostrar botón WhatsApp de contacto
+                </label>
+                <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914' }}>
+                  <input
+                    type="checkbox"
+                    checked={editing.aboutConfig?.showEmailButton ?? true}
+                    onChange={e => setEditing(prev => prev && ({ ...prev, aboutConfig: { ...(prev.aboutConfig ?? {}), showEmailButton: e.target.checked } }))}
+                  />
+                  Mostrar botón Email de contacto
+                </label>
 
                 <div style={{ display: 'flex', gap: '0.625rem', marginTop: '0.5rem' }}>
                   <button onClick={() => setEditing(null)} style={{ flex: 1, padding: '0.625rem', borderRadius: '0.75rem', border: '1px solid #E8E3D5', background: '#fff', cursor: 'pointer', fontSize: '0.875rem' }}>

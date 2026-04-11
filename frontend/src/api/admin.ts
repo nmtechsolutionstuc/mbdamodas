@@ -151,3 +151,12 @@ export async function toggleTag(id: string): Promise<Tag> {
   const { data } = await axiosClient.patch<ApiResponse<Tag>>(`/admin/tags/${id}/toggle`)
   return data.data
 }
+
+export async function deleteAdminReservation(id: string): Promise<void> {
+  await axiosClient.delete(`/admin/reservations/${id}`)
+}
+
+export async function resendReservationWhatsapp(id: string): Promise<{ whatsappLink: string | null }> {
+  const { data } = await axiosClient.get<{ data: { whatsappLink: string | null } }>(`/admin/reservations/${id}/resend-whatsapp`)
+  return data.data
+}

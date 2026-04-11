@@ -7,6 +7,7 @@ import {
   completeAdminReservation,
   extendAdminReservation,
 } from '../../api/reservations'
+import { deleteAdminReservation, resendReservationWhatsapp } from '../../api/admin'
 import type { Reservation } from '../../types'
 import { RESERVATION_STATUS_LABEL, RESERVATION_STATUS_COLOR } from '../../types'
 
@@ -643,6 +644,8 @@ export function AdminReservationsPage() {
   const [page, setPage] = useState(1)
   const [meta, setMeta] = useState({ total: 0, pages: 1 })
   const [selected, setSelected] = useState<Reservation | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [resendLinks, setResendLinks] = useState<Record<string, string>>({})
 
   useEffect(() => {
     setPage(1)
@@ -665,6 +668,23 @@ export function AdminReservationsPage() {
   function handleUpdate(updated: Reservation) {
     setReservations(prev => prev.map(r => r.id === updated.id ? updated : r))
     setSelected(updated)
+  }
+
+  async function handleDelete(id: string) {
+    try {
+      await deleteAdminReservation(id)
+      setReservations(prev => prev.filter(r => r.id !== id))
+      setDeletingId(null)
+    } catch { /* ignore */ }
+  }
+
+  async function handleResendWhatsapp(id: string) {
+    try {
+      const result = await resendReservationWhatsapp(id)
+      if (result.whatsappLink) {
+        setResendLinks(prev => ({ ...prev, [id]: result.whatsappLink! }))
+      }
+    } catch { /* ignore */ }
   }
 
   return (
@@ -715,9 +735,65 @@ export function AdminReservationsPage() {
           </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {reservations.map(r => (
-              <ReservationCard key={r.id} reservation={r} onClick={() => setSelected(r)} />
-            ))}
+            {reservations.map(r => {
+              const isDeletable = r.status === 'COMPLETED' || r.status === 'REJECTED' || r.status === 'EXPIRED' || r.status === 'CANCELLED'
+              const isCompleted = r.status === 'COMPLETED'
+              const resendLink = resendLinks[r.id]
+              return (
+                <div key={r.id}>
+                  <ReservationCard reservation={r} onClick={() => setSelected(r)} />
+                  {(isDeletable || isCompleted) && (
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.375rem', paddingLeft: '0.25rem', flexWrap: 'wrap' }}>
+                      {isCompleted && (
+                        resendLink ? (
+                          <a
+                            href={resendLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ display: 'inline-block', background: '#25D366', color: '#fff', padding: '0.375rem 0.75rem', borderRadius: '0.5rem', textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600 }}
+                          >
+                            📲 Abrir WhatsApp
+                          </a>
+                        ) : (
+                          <button
+                            onClick={() => handleResendWhatsapp(r.id)}
+                            style={{ background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0', borderRadius: '0.5rem', padding: '0.375rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                          >
+                            📲 Notificar pago
+                          </button>
+                        )
+                      )}
+                      {isDeletable && (
+                        deletingId === r.id ? (
+                          <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 600 }}>¿Eliminar?</span>
+                            <button
+                              onClick={() => handleDelete(r.id)}
+                              style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.375rem 0.625rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                            >
+                              Confirmar
+                            </button>
+                            <button
+                              onClick={() => setDeletingId(null)}
+                              style={{ background: '#E8E3D5', color: '#1E1914', border: 'none', borderRadius: '0.5rem', padding: '0.375rem 0.625rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setDeletingId(r.id)}
+                            style={{ background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: '0.5rem', padding: '0.375rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                          >
+                            🗑 Eliminar
+                          </button>
+                        )
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
 
