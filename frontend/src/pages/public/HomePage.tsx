@@ -9,8 +9,27 @@ import axiosClient from '../../api/axiosClient'
 import type { Item } from '../../types'
 
 interface BannerData {
-  buyer: { subtitle: string | null; title: string | null; description: string | null }
-  seller: { subtitle: string | null; title: string | null; description: string | null }
+  buyer: { subtitle: string | null; title: string | null; description: string | null; buttonActive: boolean }
+  seller: { subtitle: string | null; title: string | null; description: string | null; buttonActive: boolean }
+}
+
+interface FeatureCardConfig {
+  active: boolean
+  emoji: string
+  title: string
+  desc: string
+}
+
+interface FeatureCardsData {
+  card1?: FeatureCardConfig
+  card2?: FeatureCardConfig
+  card3?: FeatureCardConfig
+}
+
+const DEFAULT_FEATURE_CARDS: Required<FeatureCardsData> = {
+  card1: { active: true, emoji: '\uD83D\uDC57', title: 'Ropa nueva', desc: 'Productos nuevos propios de MBDA Modas, con las últimas tendencias.' },
+  card2: { active: true, emoji: '\u267B\uFE0F', title: 'Ropa en consignación', desc: 'Productos seleccionados y cuidados, a precios accesibles.' },
+  card3: { active: true, emoji: '\uD83D\uDCB0', title: 'Ganá vendiendo', desc: 'Reservá un producto, conseguí un comprador y llevate una comisión. Sin inversión.' },
 }
 
 export function HomePage() {
@@ -26,6 +45,7 @@ export function HomePage() {
   const [page, setPage] = useState(1)
   const [hoveredCta, setHoveredCta] = useState<string | null>(null)
   const [banners, setBanners] = useState<BannerData | null>(null)
+  const [featureCardsData, setFeatureCardsData] = useState<FeatureCardsData>({})
 
   const selectedProductType = productTypes.find(pt => pt.id === productTypeId)
 
@@ -33,15 +53,20 @@ export function HomePage() {
     axiosClient.get<{ data: BannerData }>('/home-banners')
       .then(r => setBanners(r.data.data))
       .catch(() => {})
+    axiosClient.get<{ data: { featureCards: FeatureCardsData | null } }>('/feature-cards')
+      .then(r => setFeatureCardsData(r.data.data.featureCards ?? {}))
+      .catch(() => {})
   }, [])
 
   // Banner text with fallbacks
   const buyerSubtitle = banners?.buyer?.subtitle || 'Para compradores'
   const buyerTitle = banners?.buyer?.title || 'Ropa nueva y con historia a precios que sorprenden'
   const buyerDesc = banners?.buyer?.description || 'Encontra productos nuevos de la tienda y ropa seleccionada en consignacion. Calidad garantizada.'
+  const buyerButtonActive = banners?.buyer?.buttonActive ?? true
   const sellerSubtitle = banners?.seller?.subtitle || 'Para vendedores y promotores'
   const sellerTitle = banners?.seller?.title || 'Gana dinero vendiendo nuestros productos'
   const sellerDesc = banners?.seller?.description || 'Reserva un producto del catalogo, consegiu un comprador y gana una comision por cada venta. Sin capital inicial, sin riesgo.'
+  const sellerButtonActive = banners?.seller?.buttonActive ?? true
 
   useEffect(() => {
     setLoading(true)
@@ -127,27 +152,29 @@ export function HomePage() {
           <p style={{ color: '#4b5563', marginBottom: '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
             {buyerDesc}
           </p>
-          <a
-            href="#catalogo"
-            onMouseEnter={() => setHoveredCta('catalogo')}
-            onMouseLeave={() => setHoveredCta(null)}
-            style={{
-              background: hoveredCta === 'catalogo' ? '#352e28' : '#1E1914',
-              color: '#E8E3D5',
-              padding: '0.875rem 2rem',
-              borderRadius: '0.75rem',
-              textDecoration: 'none',
-              fontWeight: 600,
-              fontSize: '1rem',
-              letterSpacing: '0.02em',
-              transition: 'background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
-              transform: hoveredCta === 'catalogo' ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: hoveredCta === 'catalogo' ? '0 6px 20px rgba(30,25,20,0.3)' : '0 2px 8px rgba(30,25,20,0.15)',
-              position: 'relative',
-            }}
-          >
-            Ver catalogo
-          </a>
+          {buyerButtonActive && (
+            <a
+              href="#catalogo"
+              onMouseEnter={() => setHoveredCta('catalogo')}
+              onMouseLeave={() => setHoveredCta(null)}
+              style={{
+                background: hoveredCta === 'catalogo' ? '#352e28' : '#1E1914',
+                color: '#E8E3D5',
+                padding: '0.875rem 2rem',
+                borderRadius: '0.75rem',
+                textDecoration: 'none',
+                fontWeight: 600,
+                fontSize: '1rem',
+                letterSpacing: '0.02em',
+                transition: 'background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
+                transform: hoveredCta === 'catalogo' ? 'translateY(-2px)' : 'translateY(0)',
+                boxShadow: hoveredCta === 'catalogo' ? '0 6px 20px rgba(30,25,20,0.3)' : '0 2px 8px rgba(30,25,20,0.15)',
+                position: 'relative',
+              }}
+            >
+              Ver catalogo
+            </a>
+          )}
         </div>
 
         {/* Panel vendedor / promotor */}
@@ -199,54 +226,53 @@ export function HomePage() {
           >
             {sellerTitle}
           </h2>
-          <p style={{ color: '#d1d5db', marginBottom: '1.25rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
+          <p style={{ color: '#d1d5db', marginBottom: sellerDesc ? '1.25rem' : '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
             {sellerDesc}
           </p>
-          <p style={{ color: '#d1d5db', marginBottom: '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative', fontSize: '0.85rem', opacity: 0.8 }}>
-            También podés dejar tu ropa en consignación y nosotros la vendemos por vos.
-          </p>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
-            <a
-              href="#catalogo"
-              onMouseEnter={() => setHoveredCta('reservar')}
-              onMouseLeave={() => setHoveredCta(null)}
-              style={{
-                background: hoveredCta === 'reservar' ? '#f5f0e6' : '#E8E3D5',
-                color: '#1E1914',
-                padding: '0.875rem 1.75rem',
-                borderRadius: '0.75rem',
-                textDecoration: 'none',
-                fontWeight: 600,
-                fontSize: '0.95rem',
-                letterSpacing: '0.02em',
-                transition: 'background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
-                transform: hoveredCta === 'reservar' ? 'translateY(-2px)' : 'translateY(0)',
-                boxShadow: hoveredCta === 'reservar' ? '0 6px 20px rgba(0,0,0,0.4)' : '0 2px 8px rgba(0,0,0,0.2)',
-              }}
-            >
-              💰 Reservar y ganar
-            </a>
-            <Link
-              to={user ? '/dashboard/enviar' : '/register'}
-              onMouseEnter={() => setHoveredCta('vender')}
-              onMouseLeave={() => setHoveredCta(null)}
-              style={{
-                background: 'transparent',
-                color: '#E8E3D5',
-                padding: '0.875rem 1.75rem',
-                borderRadius: '0.75rem',
-                textDecoration: 'none',
-                fontWeight: 600,
-                fontSize: '0.95rem',
-                letterSpacing: '0.02em',
-                border: '1px solid rgba(232, 227, 213, 0.3)',
-                transition: 'background 0.2s ease, transform 0.2s ease',
-                transform: hoveredCta === 'vender' ? 'translateY(-2px)' : 'translateY(0)',
-              }}
-            >
-              Quiero vender
-            </Link>
-          </div>
+          {sellerButtonActive && (
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
+              <a
+                href="#catalogo"
+                onMouseEnter={() => setHoveredCta('reservar')}
+                onMouseLeave={() => setHoveredCta(null)}
+                style={{
+                  background: hoveredCta === 'reservar' ? '#f5f0e6' : '#E8E3D5',
+                  color: '#1E1914',
+                  padding: '0.875rem 1.75rem',
+                  borderRadius: '0.75rem',
+                  textDecoration: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  letterSpacing: '0.02em',
+                  transition: 'background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
+                  transform: hoveredCta === 'reservar' ? 'translateY(-2px)' : 'translateY(0)',
+                  boxShadow: hoveredCta === 'reservar' ? '0 6px 20px rgba(0,0,0,0.4)' : '0 2px 8px rgba(0,0,0,0.2)',
+                }}
+              >
+                💰 Reservar y ganar
+              </a>
+              <Link
+                to={user ? '/dashboard/enviar' : '/register'}
+                onMouseEnter={() => setHoveredCta('vender')}
+                onMouseLeave={() => setHoveredCta(null)}
+                style={{
+                  background: 'transparent',
+                  color: '#E8E3D5',
+                  padding: '0.875rem 1.75rem',
+                  borderRadius: '0.75rem',
+                  textDecoration: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  letterSpacing: '0.02em',
+                  border: '1px solid rgba(232, 227, 213, 0.3)',
+                  transition: 'background 0.2s ease, transform 0.2s ease',
+                  transform: hoveredCta === 'vender' ? 'translateY(-2px)' : 'translateY(0)',
+                }}
+              >
+                Quiero vender
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -257,41 +283,40 @@ export function HomePage() {
       `}</style>
       <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 1.5rem 0' }}>
         <div className="mbda-features">
-          {[
-            { emoji: '\uD83D\uDC57', title: 'Ropa nueva', desc: 'Productos nuevos propios de MBDA Modas, con las últimas tendencias.' },
-            { emoji: '\u267B\uFE0F', title: 'Ropa en consignación', desc: 'Productos seleccionados y cuidados, a precios accesibles.' },
-            { emoji: '\uD83D\uDCB0', title: 'Ganá vendiendo', desc: 'Reservá un producto, conseguí un comprador y llevate una comisión. Sin inversión.' },
-          ].map((card) => (
-            <div
-              key={card.title}
-              style={{
-                background: '#fff',
-                border: '1px solid #E8E3D5',
-                borderRadius: '1rem',
-                padding: '2rem 1.5rem',
-                textAlign: 'center',
-              }}
-            >
-              <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>{card.emoji}</div>
-              <h3 style={{
-                fontFamily: "'Playfair Display', serif",
-                fontSize: '1.15rem',
-                fontWeight: 700,
-                color: '#1E1914',
-                marginBottom: '0.5rem',
-              }}>
-                {card.title}
-              </h3>
-              <p style={{
-                color: '#4b5563',
-                fontSize: '0.95rem',
-                lineHeight: 1.6,
-                margin: 0,
-              }}>
-                {card.desc}
-              </p>
-            </div>
-          ))}
+          {(['card1', 'card2', 'card3'] as (keyof FeatureCardsData)[])
+            .map(key => ({ ...DEFAULT_FEATURE_CARDS[key], ...featureCardsData[key] }))
+            .filter(card => card.active)
+            .map((card) => (
+              <div
+                key={card.title}
+                style={{
+                  background: '#fff',
+                  border: '1px solid #E8E3D5',
+                  borderRadius: '1rem',
+                  padding: '2rem 1.5rem',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>{card.emoji}</div>
+                <h3 style={{
+                  fontFamily: "'Playfair Display', serif",
+                  fontSize: '1.15rem',
+                  fontWeight: 700,
+                  color: '#1E1914',
+                  marginBottom: '0.5rem',
+                }}>
+                  {card.title}
+                </h3>
+                <p style={{
+                  color: '#4b5563',
+                  fontSize: '0.95rem',
+                  lineHeight: 1.6,
+                  margin: 0,
+                }}>
+                  {card.desc}
+                </p>
+              </div>
+            ))}
         </div>
       </section>
 

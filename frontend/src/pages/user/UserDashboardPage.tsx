@@ -12,15 +12,43 @@ interface Stats {
   RETURNED: number
 }
 
+interface MenuItemConfig {
+  active: boolean
+  title: string
+  description: string
+}
+
+interface MenuConfig {
+  enviar?: MenuItemConfig
+  solicitudes?: MenuItemConfig
+  reservas?: MenuItemConfig
+  perfil?: MenuItemConfig
+}
+
+const DEFAULT_MENU: Required<MenuConfig> = {
+  enviar: { active: true, title: 'Quiero vender', description: 'Carga lo que quieras vender, nosotros lo revisamos, lo aprobamos y lo vendemos por vos!' },
+  solicitudes: { active: true, title: 'Mis solicitudes de venta', description: 'Seguí el estado de las solicitudes de venta que cargaste' },
+  reservas: { active: true, title: 'Mis reservas para ganar comisiones', description: 'Reservá productos de la tienda y ganá una comisión luego de completar la venta' },
+  perfil: { active: true, title: 'Mi perfil', description: 'Actualizá tus datos y número de WhatsApp' },
+}
+
 export function UserDashboardPage() {
   const { user } = useAuthStore()
   const [stats, setStats] = useState<Stats | null>(null)
+  const [menuConfig, setMenuConfig] = useState<MenuConfig>({})
 
   useEffect(() => {
     axiosClient.get<{ data: Stats }>('/submissions/mine/stats')
       .then(r => setStats(r.data.data))
       .catch(() => {})
+    axiosClient.get<{ data: { menuConfig: MenuConfig | null } }>('/menu-config')
+      .then(r => setMenuConfig(r.data.data.menuConfig ?? {}))
+      .catch(() => {})
   }, [])
+
+  function getMenuItem(key: keyof MenuConfig): MenuItemConfig {
+    return { ...DEFAULT_MENU[key], ...menuConfig[key] }
+  }
 
   const hasActivity = stats && (stats.PENDING + stats.APPROVED + stats.IN_STORE + stats.SOLD + stats.REJECTED + stats.RETURNED) > 0
 
@@ -71,37 +99,30 @@ export function UserDashboardPage() {
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-          <Link
-            to="/dashboard/enviar"
-            style={{ display: 'block', padding: '1.25rem', borderRadius: '1rem', textDecoration: 'none', background: '#1E1914', color: '#E8E3D5' }}
-          >
-            <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>Quiero vender</div>
-            <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>Carga lo que quieras vender, nosotros lo revisamos, lo aprobamos y lo vendemos por vos!</div>
-          </Link>
-
-          <Link
-            to="/dashboard/mis-solicitudes"
-            style={{ display: 'block', padding: '1.25rem', borderRadius: '1rem', textDecoration: 'none', background: '#E8E3D5', color: '#1E1914' }}
-          >
-            <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>Mis solicitudes de venta</div>
-            <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>Seguí el estado de las solicitudes de venta que cargaste</div>
-          </Link>
-
-          <Link
-            to="/dashboard/mis-reservas"
-            style={{ display: 'block', padding: '1.25rem', borderRadius: '1rem', textDecoration: 'none', background: '#E8E3D5', color: '#1E1914' }}
-          >
-            <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>Mis reservas para ganar comisiones</div>
-            <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>Reservá productos de la tienda y ganá una comisión luego de completar la venta</div>
-          </Link>
-
-          <Link
-            to="/dashboard/perfil"
-            style={{ display: 'block', padding: '1.25rem', borderRadius: '1rem', textDecoration: 'none', background: '#E8E3D5', color: '#1E1914' }}
-          >
-            <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>Mi perfil</div>
-            <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>Actualizá tus datos y número de WhatsApp</div>
-          </Link>
+          {getMenuItem('enviar').active && (
+            <Link to="/dashboard/enviar" style={{ display: 'block', padding: '1.25rem', borderRadius: '1rem', textDecoration: 'none', background: '#1E1914', color: '#E8E3D5' }}>
+              <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>{getMenuItem('enviar').title}</div>
+              <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>{getMenuItem('enviar').description}</div>
+            </Link>
+          )}
+          {getMenuItem('solicitudes').active && (
+            <Link to="/dashboard/mis-solicitudes" style={{ display: 'block', padding: '1.25rem', borderRadius: '1rem', textDecoration: 'none', background: '#E8E3D5', color: '#1E1914' }}>
+              <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>{getMenuItem('solicitudes').title}</div>
+              <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>{getMenuItem('solicitudes').description}</div>
+            </Link>
+          )}
+          {getMenuItem('reservas').active && (
+            <Link to="/dashboard/mis-reservas" style={{ display: 'block', padding: '1.25rem', borderRadius: '1rem', textDecoration: 'none', background: '#E8E3D5', color: '#1E1914' }}>
+              <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>{getMenuItem('reservas').title}</div>
+              <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>{getMenuItem('reservas').description}</div>
+            </Link>
+          )}
+          {getMenuItem('perfil').active && (
+            <Link to="/dashboard/perfil" style={{ display: 'block', padding: '1.25rem', borderRadius: '1rem', textDecoration: 'none', background: '#E8E3D5', color: '#1E1914' }}>
+              <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>{getMenuItem('perfil').title}</div>
+              <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>{getMenuItem('perfil').description}</div>
+            </Link>
+          )}
         </div>
       </div>
     </div>
