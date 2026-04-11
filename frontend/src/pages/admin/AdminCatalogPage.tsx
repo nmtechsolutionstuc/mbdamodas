@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchAdminCatalog, updateCatalogItem, deleteCatalogItem, markSold, markReturned, createCatalogItem, fetchProductTypes } from '../../api/admin'
+import { fetchAdminCatalog, updateCatalogItem, deleteCatalogItem, markSold, markReturned, createCatalogItem, fetchProductTypes, uploadItemPhotos } from '../../api/admin'
 import { StatusBadge } from '../../components/catalog/StatusBadge'
 import { useToast } from '../../context/ToastContext'
 import { ListRowSkeleton } from '../../components/ui/Skeleton'
@@ -43,6 +43,7 @@ interface EditForm {
   sizeId: string
   condition: ItemCondition
   quantity: string
+  isActive: boolean
 }
 
 const inputStyle = {
@@ -81,7 +82,10 @@ export function AdminCatalogPage() {
   const [items, setItems] = useState<CatalogItem[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState<EditForm>({ title: '', description: '', price: '', commission: '', productTypeId: '', sizeId: '', condition: 'BUEN_ESTADO', quantity: '1' })
+  const [editForm, setEditForm] = useState<EditForm>({ title: '', description: '', price: '', commission: '', productTypeId: '', sizeId: '', condition: 'BUEN_ESTADO', quantity: '1', isActive: true })
+  // Create form photo state
+  const [newItemPhotos, setNewItemPhotos] = useState<File[]>([])
+  const [newItemPhotoPreviews, setNewItemPhotoPreviews] = useState<string[]>([])
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [confirmingDeactivateId, setConfirmingDeactivateId] = useState<string | null>(null)
   const [page, setPage] = useState(1)
@@ -143,6 +147,7 @@ export function AdminCatalogPage() {
       sizeId: item.sizeId ?? '',
       condition: item.condition,
       quantity: String(item.quantity ?? 1),
+      isActive: item.isActive,
     })
   }
 
@@ -158,6 +163,7 @@ export function AdminCatalogPage() {
         sizeId: editForm.sizeId || null,
         condition: editForm.condition,
         quantity: parseInt(editForm.quantity, 10),
+        isActive: editForm.isActive,
       })
       setItems(prev => prev.map(it => it.id === id ? { ...it, ...updated } : it))
       setEditingId(null)
@@ -222,11 +228,18 @@ export function AdminCatalogPage() {
     }))
   }
 
+  function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []).slice(0, 5)
+    setNewItemPhotos(files)
+    const previews = files.map(f => URL.createObjectURL(f))
+    setNewItemPhotoPreviews(previews)
+  }
+
   async function handleCreateItem(e: React.FormEvent) {
     e.preventDefault()
     setCreateLoading(true)
     try {
-      await createCatalogItem({
+      const created = await createCatalogItem({
         title: newItem.title.trim(),
         description: newItem.description.trim() || undefined,
         productTypeId: newItem.productTypeId,
@@ -240,9 +253,18 @@ export function AdminCatalogPage() {
         isOwnProduct: newItem.isOwnProduct,
         promoterCommissionPct: newItem.isOwnProduct && newItem.promoterCommissionPct ? parseFloat(newItem.promoterCommissionPct) : null,
       })
+      if (newItemPhotos.length > 0) {
+        try {
+          await uploadItemPhotos(created.id, newItemPhotos)
+        } catch {
+          toast('Producto creado pero no se pudieron subir las fotos', 'error')
+        }
+      }
       toast('Producto creado correctamente', 'success')
       setShowCreateForm(false)
       setNewItem({ title: '', description: '', productTypeId: '', sizeId: '', tagIds: [], condition: 'BUEN_ESTADO', quantity: '1', price: '', commission: '30', isOwnProduct: false, promoterCommissionPct: '' })
+      setNewItemPhotos([])
+      setNewItemPhotoPreviews([])
       loadItems()
     } catch {
       toast('No se pudo crear el producto', 'error')
@@ -254,6 +276,8 @@ export function AdminCatalogPage() {
   function resetCreateForm() {
     setShowCreateForm(false)
     setNewItem({ title: '', description: '', productTypeId: '', sizeId: '', tagIds: [], condition: 'BUEN_ESTADO', quantity: '1', price: '', commission: '30', isOwnProduct: false, promoterCommissionPct: '' })
+    setNewItemPhotos([])
+    setNewItemPhotoPreviews([])
   }
 
   const totalPages = Math.ceil(total / limit)
@@ -394,18 +418,20 @@ export function AdminCatalogPage() {
                   placeholder="0.00"
                 />
               </div>
-              <div>
-                <label style={labelStyle}>Comisión tienda (%)</label>
-                <input
-                  required
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={newItem.commission}
-                  onChange={e => setNewItem(p => ({ ...p, commission: e.target.value }))}
-                  style={inputStyle}
-                />
-              </div>
+              {!newItem.isOwnProduct && (
+                <div>
+                  <label style={labelStyle}>Comisión tienda (%)</label>
+                  <input
+                    required
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={newItem.commission}
+                    onChange={e => setNewItem(p => ({ ...p, commission: e.target.value }))}
+                    style={inputStyle}
+                  />
+                </div>
+              )}
               <div>
                 <label style={labelStyle}>Tipo de producto</label>
                 <select
@@ -466,6 +492,30 @@ export function AdminCatalogPage() {
                 </div>
               </div>
             )}
+
+            {/* Photo upload */}
+            <div style={{ marginTop: '1rem' }}>
+              <label style={labelStyle}>Fotos (opcional, máx. 5)</label>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handlePhotoSelect}
+                style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.85rem', fontFamily: "'Inter', sans-serif" }}
+              />
+              {newItemPhotoPreviews.length > 0 && (
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {newItemPhotoPreviews.map((src, i) => (
+                    <img
+                      key={i}
+                      src={src}
+                      alt={`preview-${i}`}
+                      style={{ width: '72px', height: '72px', objectFit: 'cover', borderRadius: '0.5rem', border: '1px solid #E8E3D5' }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem', justifyContent: 'flex-end' }}>
               <button
@@ -637,6 +687,18 @@ export function AdminCatalogPage() {
                               />
                             </div>
                           </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                            <input
+                              type="checkbox"
+                              id={`isActive-${item.id}`}
+                              checked={editForm.isActive}
+                              onChange={e => setEditForm(f => ({ ...f, isActive: e.target.checked }))}
+                              style={{ cursor: 'pointer' }}
+                            />
+                            <label htmlFor={`isActive-${item.id}`} style={{ fontSize: '0.8rem', color: '#1E1914', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
+                              Activo (visible en catálogo)
+                            </label>
+                          </div>
                         </div>
                       ) : (
                         <>
@@ -723,15 +785,15 @@ export function AdminCatalogPage() {
                               </button>
                             </>
                           )}
-                          {item.isActive && (
-                            <>
-                              <button
-                                onClick={() => startEdit(item)}
-                                style={{ background: '#E8E3D5', color: '#1E1914', border: 'none', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.8rem' }}
-                              >
-                                Editar
-                              </button>
-                              {confirmingDeactivateId === item.id ? (
+                          <>
+                            <button
+                              onClick={() => startEdit(item)}
+                              style={{ background: '#E8E3D5', color: '#1E1914', border: 'none', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.8rem' }}
+                            >
+                              Editar
+                            </button>
+                            {item.isActive && (
+                              confirmingDeactivateId === item.id ? (
                                 <div style={{ display: 'flex', gap: '0.375rem' }}>
                                   <button
                                     onClick={() => handleDelete(item.id)}
@@ -755,9 +817,9 @@ export function AdminCatalogPage() {
                                 >
                                   Desactivar
                                 </button>
-                              )}
-                            </>
-                          )}
+                              )
+                            )}
+                          </>
                         </>
                       )}
                     </div>

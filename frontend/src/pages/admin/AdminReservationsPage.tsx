@@ -120,6 +120,11 @@ function ReservationModal({
   const [showRejectForm, setShowRejectForm] = useState(false)
   const [rejectNote, setRejectNote] = useState('')
   const [actionDone, setActionDone] = useState<string | null>(null)
+  const [whatsappLinks, setWhatsappLinks] = useState<{
+    toPromoter?: string
+    toAttendant?: string
+    sendVoucher?: string
+  } | null>(null)
   const countdown = useCountdown(reservation.status === 'APPROVED' ? reservation.expiresAt : null)
 
   const photo = reservation.item.photos[0]
@@ -140,7 +145,15 @@ function ReservationModal({
       const result = await approveAdminReservation(reservation.id)
       onUpdate(result.reservation)
       setActionDone('approved')
-      if (result.whatsappToPromoter) window.open(result.whatsappToPromoter, '_blank')
+      const links: typeof whatsappLinks = {}
+      if (result.whatsappToPromoter) links.toPromoter = result.whatsappToPromoter
+      if (result.whatsappToAttendant) links.toAttendant = result.whatsappToAttendant
+      if (user?.phone) {
+        const voucherUrl = `${window.location.origin}/comprobante/${reservation.reservationCode}`
+        const text = `Hola ${user.firstName}! Aquí está tu comprobante de reserva.\nEntrá al link, sacá captura de pantalla y mandásela a tu comprador:\n${voucherUrl}`
+        links.sendVoucher = `https://wa.me/${user.phone}?text=${encodeURIComponent(text)}`
+      }
+      setWhatsappLinks(links)
     } catch { /* ignore */ } finally { setBusy(false) }
   }
 
@@ -151,7 +164,7 @@ function ReservationModal({
       const result = await rejectAdminReservation(reservation.id, rejectNote)
       onUpdate(result.reservation)
       setActionDone('rejected')
-      if (result.whatsappToPromoter) window.open(result.whatsappToPromoter, '_blank')
+      if (result.whatsappToPromoter) setWhatsappLinks({ toPromoter: result.whatsappToPromoter })
     } catch { /* ignore */ } finally { setBusy(false) }
   }
 
@@ -161,7 +174,7 @@ function ReservationModal({
       const result = await completeAdminReservation(reservation.id)
       onUpdate(result.reservation)
       setActionDone('completed')
-      if (result.whatsappToPromoter) window.open(result.whatsappToPromoter, '_blank')
+      if (result.whatsappToPromoter) setWhatsappLinks({ toPromoter: result.whatsappToPromoter })
     } catch { /* ignore */ } finally { setBusy(false) }
   }
 
@@ -171,15 +184,8 @@ function ReservationModal({
       const result = await extendAdminReservation(reservation.id)
       onUpdate(result.reservation)
       setActionDone('extended')
-      if (result.whatsappToPromoter) window.open(result.whatsappToPromoter, '_blank')
+      if (result.whatsappToPromoter) setWhatsappLinks({ toPromoter: result.whatsappToPromoter })
     } catch { /* ignore */ } finally { setBusy(false) }
-  }
-
-  function handleSendVoucher() {
-    if (!user?.phone) return
-    const voucherUrl = `${window.location.origin}/comprobante/${reservation.reservationCode}`
-    const text = `Hola ${user.firstName}! Aquí está tu comprobante de reserva.\nEntrá al link, sacá captura de pantalla y mandásela a tu comprador:\n${voucherUrl}`
-    window.open(`https://wa.me/${user.phone}?text=${encodeURIComponent(text)}`, '_blank')
   }
 
   const btnBase: React.CSSProperties = {
@@ -309,16 +315,67 @@ function ReservationModal({
               border: `1px solid ${actionDone === 'rejected' ? '#FECACA' : '#BBF7D0'}`,
               borderRadius: '0.75rem',
               padding: '0.75rem 1rem',
-              marginBottom: '1rem',
+              marginBottom: whatsappLinks ? '0.5rem' : '1rem',
               fontSize: '0.85rem',
               fontFamily: "'Inter', sans-serif",
               color: actionDone === 'rejected' ? '#991B1B' : '#166534',
               fontWeight: 600,
             }}>
-              {actionDone === 'approved' && '✅ Reserva aprobada — se abrió WhatsApp para notificar al promotor.'}
-              {actionDone === 'rejected' && '❌ Reserva rechazada — se abrió WhatsApp para notificar al promotor.'}
-              {actionDone === 'completed' && '🎉 Venta completada — se abrió WhatsApp con datos de pago.'}
-              {actionDone === 'extended' && '⏱ Vigencia extendida 24hs — se abrió WhatsApp para avisar al promotor.'}
+              {actionDone === 'approved' && '✅ Reserva aprobada. Usá los botones de abajo para notificar por WhatsApp.'}
+              {actionDone === 'rejected' && '❌ Reserva rechazada. Usá el botón de abajo para notificar al promotor.'}
+              {actionDone === 'completed' && '🎉 Venta completada. Usá el botón de abajo para enviar los datos de pago.'}
+              {actionDone === 'extended' && '⏱ Vigencia extendida 24hs. Usá el botón de abajo para avisar al promotor.'}
+            </div>
+          )}
+
+          {/* WhatsApp link buttons (shown after action) */}
+          {whatsappLinks && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+              {whatsappLinks.toPromoter && (
+                <a
+                  href={whatsappLinks.toPromoter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    ...btnBase,
+                    background: '#25D366',
+                    color: '#fff',
+                    textDecoration: 'none',
+                  }}
+                >
+                  📱 Enviar WhatsApp al promotor
+                </a>
+              )}
+              {whatsappLinks.toAttendant && (
+                <a
+                  href={whatsappLinks.toAttendant}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    ...btnBase,
+                    background: '#25D366',
+                    color: '#fff',
+                    textDecoration: 'none',
+                  }}
+                >
+                  📱 Consultar al encargado
+                </a>
+              )}
+              {whatsappLinks.sendVoucher && (
+                <a
+                  href={whatsappLinks.sendVoucher}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    ...btnBase,
+                    background: '#25D366',
+                    color: '#fff',
+                    textDecoration: 'none',
+                  }}
+                >
+                  🎫 Enviar comprobante
+                </a>
+              )}
             </div>
           )}
 
@@ -527,9 +584,20 @@ function ReservationModal({
                       🧾 Ver comprobante
                     </a>
 
-                    <button onClick={handleSendVoucher} disabled={!user?.phone} style={{ ...btnBase, background: '#25D366', color: '#fff' }}>
-                      📱 Enviar comprobante al promotor
-                    </button>
+                    {user?.phone ? (
+                      <a
+                        href={`https://wa.me/${user.phone}?text=${encodeURIComponent(`Hola ${user.firstName}! Aquí está tu comprobante de reserva.\nEntrá al link, sacá captura de pantalla y mandásela a tu comprador:\n${window.location.origin}/comprobante/${reservation.reservationCode}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ ...btnBase, background: '#25D366', color: '#fff', textDecoration: 'none' }}
+                      >
+                        📱 Enviar comprobante al promotor
+                      </a>
+                    ) : (
+                      <button disabled style={{ ...btnBase, background: '#25D366', color: '#fff', opacity: 0.5 }}>
+                        📱 Enviar comprobante al promotor
+                      </button>
+                    )}
 
                     <div style={{ borderTop: '1px solid #E8E3D5', margin: '0.25rem 0' }} />
 

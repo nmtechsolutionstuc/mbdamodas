@@ -2,6 +2,45 @@ import { useState, useEffect } from 'react'
 import axiosClient from '../../api/axiosClient'
 import { useToast } from '../../context/ToastContext'
 
+interface MenuItemConfig {
+  active: boolean
+  title: string
+  description: string
+}
+
+interface MenuConfig {
+  enviar?: MenuItemConfig
+  solicitudes?: MenuItemConfig
+  reservas?: MenuItemConfig
+  perfil?: MenuItemConfig
+}
+
+interface FeatureCardConfig {
+  active: boolean
+  emoji: string
+  title: string
+  desc: string
+}
+
+interface FeatureCardsConfig {
+  card1?: FeatureCardConfig
+  card2?: FeatureCardConfig
+  card3?: FeatureCardConfig
+}
+
+const DEFAULT_FEATURE_CARDS: Record<keyof FeatureCardsConfig, FeatureCardConfig> = {
+  card1: { active: true, emoji: '👗', title: 'Ropa nueva', desc: 'Productos nuevos propios de MBDA Modas, con las últimas tendencias.' },
+  card2: { active: true, emoji: '♻️', title: 'Ropa en consignación', desc: 'Productos seleccionados y cuidados, a precios accesibles.' },
+  card3: { active: true, emoji: '💰', title: 'Ganá vendiendo', desc: 'Reservá un producto, conseguí un comprador y llevate una comisión. Sin inversión.' },
+}
+
+const DEFAULT_MENU_ITEMS: Record<keyof MenuConfig, MenuItemConfig> = {
+  enviar: { active: true, title: 'Quiero vender', description: 'Carga lo que quieras vender, nosotros lo revisamos, lo aprobamos y lo vendemos por vos!' },
+  solicitudes: { active: true, title: 'Mis solicitudes de venta', description: 'Seguí el estado de las solicitudes de venta que cargaste' },
+  reservas: { active: true, title: 'Mis reservas para ganar comisiones', description: 'Reservá productos de la tienda y ganá una comisión luego de completar la venta' },
+  perfil: { active: true, title: 'Mi perfil', description: 'Actualizá tus datos y número de WhatsApp' },
+}
+
 interface Store {
   id: string
   name: string
@@ -16,11 +55,15 @@ interface Store {
   bannerBuyerSubtitle: string | null
   bannerBuyerTitle: string | null
   bannerBuyerDescription: string | null
+  bannerBuyerButtonActive: boolean
   bannerSellerSubtitle: string | null
   bannerSellerTitle: string | null
   bannerSellerDescription: string | null
+  bannerSellerButtonActive: boolean
   aboutContent: string | null
   termsContent: string | null
+  menuConfig: MenuConfig | null
+  featureCards: FeatureCardsConfig | null
 }
 
 export function AdminStoresPage() {
@@ -39,8 +82,32 @@ export function AdminStoresPage() {
   }, [])
 
   function startEdit(store: Store) {
-    setEditing({ ...store })
+    setEditing({ ...store, menuConfig: store.menuConfig ?? {}, featureCards: store.featureCards ?? {} })
     setSaved(false)
+  }
+
+  function getFeatureCardEdit(key: keyof FeatureCardsConfig): FeatureCardConfig {
+    return { ...DEFAULT_FEATURE_CARDS[key], ...(editing?.featureCards?.[key] ?? {}) }
+  }
+
+  function setFeatureCardEdit(key: keyof FeatureCardsConfig, patch: Partial<FeatureCardConfig>) {
+    setEditing(prev => {
+      if (!prev) return prev
+      const current = { ...DEFAULT_FEATURE_CARDS[key], ...(prev.featureCards?.[key] ?? {}) }
+      return { ...prev, featureCards: { ...(prev.featureCards ?? {}), [key]: { ...current, ...patch } } }
+    })
+  }
+
+  function getMenuItemEdit(key: keyof MenuConfig): MenuItemConfig {
+    return { ...DEFAULT_MENU_ITEMS[key], ...(editing?.menuConfig?.[key] ?? {}) }
+  }
+
+  function setMenuItemEdit(key: keyof MenuConfig, patch: Partial<MenuItemConfig>) {
+    setEditing(prev => {
+      if (!prev) return prev
+      const current = { ...DEFAULT_MENU_ITEMS[key], ...(prev.menuConfig?.[key] ?? {}) }
+      return { ...prev, menuConfig: { ...(prev.menuConfig ?? {}), [key]: { ...current, ...patch } } }
+    })
   }
 
   async function handleSave() {
@@ -60,11 +127,15 @@ export function AdminStoresPage() {
         bannerBuyerSubtitle: editing.bannerBuyerSubtitle,
         bannerBuyerTitle: editing.bannerBuyerTitle,
         bannerBuyerDescription: editing.bannerBuyerDescription,
+        bannerBuyerButtonActive: editing.bannerBuyerButtonActive,
         bannerSellerSubtitle: editing.bannerSellerSubtitle,
         bannerSellerTitle: editing.bannerSellerTitle,
         bannerSellerDescription: editing.bannerSellerDescription,
+        bannerSellerButtonActive: editing.bannerSellerButtonActive,
         aboutContent: editing.aboutContent,
         termsContent: editing.termsContent,
+        menuConfig: editing.menuConfig ?? {},
+        featureCards: editing.featureCards ?? {},
       })
       setStores(prev => prev.map(s => s.id === editing.id ? data.data : s))
       setEditing(null)
@@ -175,6 +246,10 @@ export function AdminStoresPage() {
                   Ej: "Ropa nueva y con historia a precios que sorprenden"
                 </p>
                 {txtArea('Descripcion', editing.bannerBuyerDescription ?? '', v => setEditing(e => e && ({ ...e, bannerBuyerDescription: v })))}
+                <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914' }}>
+                  <input type="checkbox" checked={editing.bannerBuyerButtonActive ?? false} onChange={e => setEditing(prev => prev && ({ ...prev, bannerBuyerButtonActive: e.target.checked }))} />
+                  Mostrar botón del panel comprador
+                </label>
 
                 {/* ── Banner vendedores/promotores (homepage) ── */}
                 {sectionTitle('Banner vendedores/promotores (homepage - panel derecho)')}
@@ -187,6 +262,10 @@ export function AdminStoresPage() {
                   Ej: "Gana dinero vendiendo nuestros productos"
                 </p>
                 {txtArea('Descripcion', editing.bannerSellerDescription ?? '', v => setEditing(e => e && ({ ...e, bannerSellerDescription: v })))}
+                <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914' }}>
+                  <input type="checkbox" checked={editing.bannerSellerButtonActive ?? false} onChange={e => setEditing(prev => prev && ({ ...prev, bannerSellerButtonActive: e.target.checked }))} />
+                  Mostrar botón del panel vendedor
+                </label>
 
                 {/* ── Pagina Nosotros ── */}
                 {sectionTitle('Pagina "Nosotros"')}
@@ -201,6 +280,102 @@ export function AdminStoresPage() {
                   Usa ## para titulos de articulos, ### para subtitulos, --- para separadores. Cada articulo en un parrafo separado.
                 </p>
                 {txtArea('Contenido de Terminos y Condiciones', editing.termsContent ?? '', v => setEditing(e => e && ({ ...e, termsContent: v })), 10)}
+
+                {/* ── Cards de propuesta de valor (homepage) ── */}
+                {sectionTitle('Cards de propuesta de valor (homepage)')}
+                <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '-0.25rem' }}>
+                  Las tres cards que aparecen debajo del banner principal. Podés editarlas, cambiar el emoji/ícono, y desactivarlas.
+                </p>
+                {(['card1', 'card2', 'card3'] as (keyof FeatureCardsConfig)[]).map(key => {
+                  const card = getFeatureCardEdit(key)
+                  const nums: Record<keyof FeatureCardsConfig, string> = { card1: 'Card 1', card2: 'Card 2', card3: 'Card 3' }
+                  return (
+                    <div key={key} style={{ background: '#FAF8F3', border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600, color: '#1E1914' }}>
+                        <input
+                          type="checkbox"
+                          checked={card.active}
+                          onChange={e => setFeatureCardEdit(key, { active: e.target.checked })}
+                        />
+                        {nums[key]} — {card.title}
+                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '0.5rem' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>Emoji/ícono</label>
+                          <input
+                            type="text"
+                            value={card.emoji}
+                            onChange={e => setFeatureCardEdit(key, { emoji: e.target.value })}
+                            style={{ width: '100%', padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid #E8E3D5', fontSize: '1.25rem', textAlign: 'center', boxSizing: 'border-box' as const }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>Título</label>
+                          <input
+                            type="text"
+                            value={card.title}
+                            onChange={e => setFeatureCardEdit(key, { title: e.target.value })}
+                            style={{ width: '100%', padding: '0.5rem 0.625rem', borderRadius: '0.5rem', border: '1px solid #E8E3D5', fontSize: '0.875rem', color: '#1E1914', boxSizing: 'border-box' as const }}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>Descripción</label>
+                        <textarea
+                          value={card.desc}
+                          onChange={e => setFeatureCardEdit(key, { desc: e.target.value })}
+                          rows={2}
+                          style={{ width: '100%', padding: '0.5rem 0.625rem', borderRadius: '0.5rem', border: '1px solid #E8E3D5', fontSize: '0.875rem', color: '#1E1914', boxSizing: 'border-box' as const, resize: 'vertical', fontFamily: "'Inter', sans-serif" }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {/* ── Menu del dashboard de usuarios ── */}
+                {sectionTitle('Menú del panel de usuarios')}
+                <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '-0.25rem' }}>
+                  Configurá las opciones que ven los usuarios en su panel. Podés desactivar opciones, y editar sus títulos y descripciones.
+                </p>
+                {(['enviar', 'solicitudes', 'reservas', 'perfil'] as (keyof MenuConfig)[]).map(key => {
+                  const item = getMenuItemEdit(key)
+                  const labels: Record<keyof MenuConfig, string> = {
+                    enviar: 'Opción "Quiero vender"',
+                    solicitudes: 'Opción "Mis solicitudes"',
+                    reservas: 'Opción "Mis reservas"',
+                    perfil: 'Opción "Mi perfil"',
+                  }
+                  return (
+                    <div key={key} style={{ background: '#FAF8F3', border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600, color: '#1E1914' }}>
+                        <input
+                          type="checkbox"
+                          checked={item.active}
+                          onChange={e => setMenuItemEdit(key, { active: e.target.checked })}
+                        />
+                        {labels[key]}
+                      </label>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>Título</label>
+                        <input
+                          type="text"
+                          value={item.title}
+                          onChange={e => setMenuItemEdit(key, { title: e.target.value })}
+                          style={{ width: '100%', padding: '0.5rem 0.625rem', borderRadius: '0.5rem', border: '1px solid #E8E3D5', fontSize: '0.875rem', color: '#1E1914', boxSizing: 'border-box' as const }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>Descripción</label>
+                        <textarea
+                          value={item.description}
+                          onChange={e => setMenuItemEdit(key, { description: e.target.value })}
+                          rows={2}
+                          style={{ width: '100%', padding: '0.5rem 0.625rem', borderRadius: '0.5rem', border: '1px solid #E8E3D5', fontSize: '0.875rem', color: '#1E1914', boxSizing: 'border-box' as const, resize: 'vertical', fontFamily: "'Inter', sans-serif" }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
 
                 <div style={{ display: 'flex', gap: '0.625rem', marginTop: '0.5rem' }}>
                   <button onClick={() => setEditing(null)} style={{ flex: 1, padding: '0.625rem', borderRadius: '0.75rem', border: '1px solid #E8E3D5', background: '#fff', cursor: 'pointer', fontSize: '0.875rem' }}>
