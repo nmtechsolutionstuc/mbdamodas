@@ -8,12 +8,20 @@ export function Navbar() {
   const { user, clearAuth } = useAuthStore()
   const navigate = useNavigate()
   const [announcement, setAnnouncement] = useState<string | null>(null)
+  const [showRegisterBtn, setShowRegisterBtn] = useState(false)
 
   const isAdmin = user?.role === 'ADMIN'
 
   useEffect(() => {
     axiosClient.get('/announcement')
       .then(r => { if (r.data?.data?.text) setAnnouncement(r.data.data.text) })
+      .catch(() => {})
+    axiosClient.get('/store-info')
+      .then(r => {
+        const store = r.data?.data?.store
+        // Show "Registrate" only if the seller banner button is active
+        setShowRegisterBtn(store?.bannerSellerButtonActive ?? false)
+      })
       .catch(() => {})
   }, [])
 
@@ -156,14 +164,16 @@ export function Navbar() {
                 >
                   Ingresar
                 </Link>
-                <Link
-                  to="/register"
-                  style={{ background: '#E8E3D5', color: '#1E1914', textDecoration: 'none', padding: '0.375rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 600, fontFamily: "'Inter', sans-serif", transition: 'background 0.15s ease' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#f5f0e6')}
-                  onMouseLeave={e => (e.currentTarget.style.background = '#E8E3D5')}
-                >
-                  Registrate
-                </Link>
+                {showRegisterBtn && (
+                  <Link
+                    to="/register"
+                    style={{ background: '#E8E3D5', color: '#1E1914', textDecoration: 'none', padding: '0.375rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 600, fontFamily: "'Inter', sans-serif", transition: 'background 0.15s ease' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#f5f0e6')}
+                    onMouseLeave={e => (e.currentTarget.style.background = '#E8E3D5')}
+                  >
+                    Registrate
+                  </Link>
+                )}
               </div>
             )}
           </div>

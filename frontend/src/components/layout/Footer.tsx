@@ -9,7 +9,7 @@ interface StoreInfo {
   email: string | null
   address: string | null
   socialLinks: { whatsappGroup?: SocialLink; tiktok?: SocialLink; instagram?: SocialLink; facebook?: SocialLink } | null
-  footerConfig: { tagline?: string; address?: string; showDeveloper?: boolean } | null
+  footerConfig: { tagline?: string; address?: string; showDeveloper?: boolean; showVenderLink?: boolean; venderLinkText?: string } | null
 }
 
 export function Footer() {
@@ -21,9 +21,11 @@ export function Footer() {
       .catch(() => {})
   }, [])
 
-  const tagline = info?.footerConfig?.tagline ?? info?.address ?? 'Tienda de ropa en Concepcion, Tucuman. Productos nuevos, consignacion y comisiones para promotores.'
+  const tagline = info?.footerConfig?.tagline ?? 'Tienda de ropa en Concepcion, Tucuman. Productos nuevos, consignacion y comisiones para promotores.'
   const address = info?.footerConfig?.address ?? info?.address ?? 'Calle Espana 1356, Concepcion, Tucuman'
   const showDeveloper = info?.footerConfig?.showDeveloper ?? true
+  const showVenderLink = info?.footerConfig?.showVenderLink ?? false
+  const venderLinkText = info?.footerConfig?.venderLinkText ?? 'Quiero vender'
   const social = info?.socialLinks ?? {}
 
   return (
@@ -75,10 +77,10 @@ export function Footer() {
           </p>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {[
-              { label: 'Catalogo', to: '/' },
-              { label: 'Nosotros', to: '/nosotros' },
-              { label: 'Quiero vender', to: '/register' },
-            ].map(l => (
+              { label: 'Catalogo', to: '/', show: true },
+              { label: 'Nosotros', to: '/nosotros', show: true },
+              { label: venderLinkText, to: '/register', show: showVenderLink },
+            ].filter(l => l.show).map(l => (
               <Link key={l.to} to={l.to} style={{ color: 'rgba(232,227,213,0.7)', textDecoration: 'none', fontSize: '0.875rem', transition: 'color 0.15s' }}
                 onMouseEnter={e => (e.currentTarget.style.color = '#E8E3D5')}
                 onMouseLeave={e => (e.currentTarget.style.color = 'rgba(232,227,213,0.7)')}

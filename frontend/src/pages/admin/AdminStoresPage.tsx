@@ -80,7 +80,7 @@ interface Store {
   menuConfig: MenuConfig | null
   featureCards: FeatureCardsConfig | null
   socialLinks: SocialLinksConfig | null
-  footerConfig: { tagline?: string; address?: string; showDeveloper?: boolean } | null
+  footerConfig: { tagline?: string; address?: string; showDeveloper?: boolean; showVenderLink?: boolean; venderLinkText?: string } | null
   aboutConfig: { showCatalogButton?: boolean; showVenderButton?: boolean; showWhatsappButton?: boolean; showEmailButton?: boolean } | null
 }
 
@@ -463,7 +463,7 @@ export function AdminStoresPage() {
                 {sectionTitle('Configuración del footer')}
                 {txtArea('Descripción/tagline de la tienda', editing.footerConfig?.tagline ?? '', v => setEditing(e => e && ({ ...e, footerConfig: { ...(e.footerConfig ?? {}), tagline: v } })))}
                 {inp('Dirección en footer', editing.footerConfig?.address ?? '', v => setEditing(e => e && ({ ...e, footerConfig: { ...(e.footerConfig ?? {}), address: v } })))}
-                <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914' }}>
+                <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914', marginTop: '0.25rem' }}>
                   <input
                     type="checkbox"
                     checked={editing.footerConfig?.showDeveloper ?? true}
@@ -471,6 +471,19 @@ export function AdminStoresPage() {
                   />
                   Mostrar sección del desarrollador
                 </label>
+                <div style={{ border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914', fontWeight: 600 }}>
+                    <input
+                      type="checkbox"
+                      checked={editing.footerConfig?.showVenderLink ?? false}
+                      onChange={e => setEditing(prev => prev && ({ ...prev, footerConfig: { ...(prev.footerConfig ?? {}), showVenderLink: e.target.checked } }))}
+                    />
+                    Mostrar link "Quiero vender" en navegación del footer
+                  </label>
+                  {(editing.footerConfig?.showVenderLink ?? false) && (
+                    inp('Texto del link', editing.footerConfig?.venderLinkText ?? 'Quiero vender', v => setEditing(e => e && ({ ...e, footerConfig: { ...(e.footerConfig ?? {}), venderLinkText: v } })))
+                  )}
+                </div>
 
                 {/* ── Página Nosotros - botones ── */}
                 {sectionTitle('Página Nosotros - botones')}
