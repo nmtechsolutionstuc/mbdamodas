@@ -84,6 +84,11 @@ export async function uploadItemPhotos(itemId: string, files: File[]) {
   return data.data
 }
 
+export async function deleteItemPhoto(itemId: string, photoId: string) {
+  const { data } = await axiosClient.delete(`/admin/catalog/${itemId}/photos/${photoId}`)
+  return data.data
+}
+
 export async function fetchAdminUsers(page = 1, search?: string) {
   const { data } = await axiosClient.get('/admin/users', { params: { page, search: search || undefined } })
   return data

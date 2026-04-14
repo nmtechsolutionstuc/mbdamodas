@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchAdminCatalog, updateCatalogItem, deleteCatalogItem, markSold, markReturned, createCatalogItem, fetchProductTypes, uploadItemPhotos } from '../../api/admin'
+import { fetchAdminCatalog, updateCatalogItem, deleteCatalogItem, markSold, markReturned, createCatalogItem, fetchProductTypes, uploadItemPhotos, deleteItemPhoto } from '../../api/admin'
 import { StatusBadge } from '../../components/catalog/StatusBadge'
 import { useToast } from '../../context/ToastContext'
 import { ListRowSkeleton } from '../../components/ui/Skeleton'
@@ -31,7 +31,7 @@ interface CatalogItem {
       seller: { firstName: string; lastName: string; phone: string | null }
     }
   } | null
-  photos: { url: string; order: number }[]
+  photos: { id: string; url: string; order: number }[]
 }
 
 interface EditForm {
@@ -86,6 +86,10 @@ export function AdminCatalogPage() {
   // Create form photo state
   const [newItemPhotos, setNewItemPhotos] = useState<File[]>([])
   const [newItemPhotoPreviews, setNewItemPhotoPreviews] = useState<string[]>([])
+  // Edit form photo state
+  const [editPhotos, setEditPhotos] = useState<File[]>([])
+  const [editPhotoPreviews, setEditPhotoPreviews] = useState<string[]>([])
+  const [deletedPhotoIds, setDeletedPhotoIds] = useState<string[]>([])
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [confirmingDeactivateId, setConfirmingDeactivateId] = useState<string | null>(null)
   const [page, setPage] = useState(1)
@@ -149,6 +153,9 @@ export function AdminCatalogPage() {
       quantity: String(item.quantity ?? 1),
       isActive: item.isActive,
     })
+    setEditPhotos([])
+    setEditPhotoPreviews([])
+    setDeletedPhotoIds([])
   }
 
   async function saveEdit(id: string) {
@@ -165,9 +172,22 @@ export function AdminCatalogPage() {
         quantity: parseInt(editForm.quantity, 10),
         isActive: editForm.isActive,
       })
+      // Delete removed photos
+      for (const photoId of deletedPhotoIds) {
+        try { await deleteItemPhoto(id, photoId) } catch { /* ignore individual errors */ }
+      }
+      // Upload new photos
+      if (editPhotos.length > 0) {
+        try { await uploadItemPhotos(id, editPhotos) } catch { /* ignore upload errors */ }
+      }
       setItems(prev => prev.map(it => it.id === id ? { ...it, ...updated } : it))
       setEditingId(null)
+      setEditPhotos([])
+      setEditPhotoPreviews([])
+      setDeletedPhotoIds([])
       toast('Producto actualizado', 'success')
+      // Reload to get updated photos
+      loadItems()
     } catch {
       toast('Error al actualizar', 'error')
     } finally {
@@ -697,6 +717,88 @@ export function AdminCatalogPage() {
                             />
                             <label htmlFor={`isActive-${item.id}`} style={{ fontSize: '0.8rem', color: '#1E1914', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
                               Activo (visible en catálogo)
+                            </label>
+                          </div>
+
+                          {/* Fotos */}
+                          <div style={{ marginTop: '0.5rem' }}>
+                            <label style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 600, display: 'block', marginBottom: '0.375rem' }}>Fotos actuales</label>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                              {item.photos
+                                .filter(p => !deletedPhotoIds.includes(p.id))
+                                .sort((a, b) => a.order - b.order)
+                                .map(photo => (
+                                  <div key={photo.id} style={{ position: 'relative' }}>
+                                    <img
+                                      src={photo.url}
+                                      alt=""
+                                      style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '0.5rem', border: '1px solid #E8E3D5' }}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => setDeletedPhotoIds(prev => [...prev, photo.id])}
+                                      style={{
+                                        position: 'absolute', top: '-6px', right: '-6px',
+                                        background: '#ef4444', color: '#fff', border: 'none',
+                                        borderRadius: '50%', width: '18px', height: '18px',
+                                        fontSize: '0.65rem', cursor: 'pointer', display: 'flex',
+                                        alignItems: 'center', justifyContent: 'center', fontWeight: 700, lineHeight: 1,
+                                      }}
+                                    >✕</button>
+                                  </div>
+                                ))}
+                              {item.photos.filter(p => !deletedPhotoIds.includes(p.id)).length === 0 && (
+                                <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Sin fotos</span>
+                              )}
+                            </div>
+                            {editPhotoPreviews.length > 0 && (
+                              <>
+                                <label style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 600, display: 'block', marginBottom: '0.375rem' }}>Nuevas fotos</label>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                  {editPhotoPreviews.map((src, idx) => (
+                                    <div key={idx} style={{ position: 'relative' }}>
+                                      <img src={src} alt="" style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '0.5rem', border: '1px solid #E8E3D5' }} />
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setEditPhotos(prev => prev.filter((_, i) => i !== idx))
+                                          setEditPhotoPreviews(prev => prev.filter((_, i) => i !== idx))
+                                        }}
+                                        style={{
+                                          position: 'absolute', top: '-6px', right: '-6px',
+                                          background: '#ef4444', color: '#fff', border: 'none',
+                                          borderRadius: '50%', width: '18px', height: '18px',
+                                          fontSize: '0.65rem', cursor: 'pointer', display: 'flex',
+                                          alignItems: 'center', justifyContent: 'center', fontWeight: 700, lineHeight: 1,
+                                        }}
+                                      >✕</button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                            <label
+                              style={{
+                                display: 'inline-flex', alignItems: 'center', gap: '0.375rem',
+                                fontSize: '0.8rem', color: '#6b7280', cursor: 'pointer',
+                                border: '1px dashed #E8E3D5', borderRadius: '0.5rem',
+                                padding: '0.375rem 0.75rem', background: '#fafaf9',
+                              }}
+                            >
+                              📷 Agregar fotos
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                style={{ display: 'none' }}
+                                onChange={e => {
+                                  const files = Array.from(e.target.files ?? [])
+                                  setEditPhotos(prev => [...prev, ...files].slice(0, 5))
+                                  const previews = files.map(f => URL.createObjectURL(f))
+                                  setEditPhotoPreviews(prev => [...prev, ...previews].slice(0, 5))
+                                  e.target.value = ''
+                                }}
+                              />
                             </label>
                           </div>
                         </div>

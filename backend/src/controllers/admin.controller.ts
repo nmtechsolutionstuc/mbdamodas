@@ -237,6 +237,17 @@ export async function deleteUser(req: Request, res: Response): Promise<void> {
   }
 }
 
+export async function deleteItemPhoto(req: Request, res: Response): Promise<void> {
+  try {
+    const photo = await prisma.itemPhoto.findUnique({ where: { id: req.params.photoId! } })
+    if (!photo) { notFound(res, 'Foto no encontrada'); return }
+    await prisma.itemPhoto.delete({ where: { id: req.params.photoId! } })
+    ok(res, { deleted: true })
+  } catch {
+    serverError(res)
+  }
+}
+
 export async function uploadCatalogItemPhotos(req: Request, res: Response): Promise<void> {
   const files = req.files as Express.Multer.File[] | undefined
   if (!files || files.length === 0) { badRequest(res, 'No se enviaron fotos'); return }
