@@ -6,6 +6,7 @@ import { useToast } from '../../context/ToastContext'
 import { ListRowSkeleton } from '../../components/ui/Skeleton'
 import type { ItemCondition, SubmissionItemStatus, ProductType } from '../../types'
 import { CONDITION_LABELS } from '../../types'
+import { useConditionConfig } from '../../hooks/useConditionConfig'
 
 interface CatalogItem {
   id: string
@@ -79,6 +80,7 @@ const badgeStyle = (bg: string, color: string) => ({
 
 export function AdminCatalogPage() {
   const { toast } = useToast()
+  const { getLabel: getConditionLabel, getActiveConditions } = useConditionConfig()
   const [items, setItems] = useState<CatalogItem[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -410,8 +412,8 @@ export function AdminCatalogPage() {
                   onChange={e => setNewItem(p => ({ ...p, condition: e.target.value as ItemCondition }))}
                   style={{ ...inputStyle, cursor: 'pointer' }}
                 >
-                  {(Object.entries(CONDITION_LABELS) as [ItemCondition, string][]).map(([val, label]) => (
-                    <option key={val} value={val}>{label}</option>
+                  {getActiveConditions().map(val => (
+                    <option key={val} value={val}>{getConditionLabel(val)}</option>
                   ))}
                 </select>
               </div>
@@ -671,8 +673,8 @@ export function AdminCatalogPage() {
                                 onChange={e => setEditForm(f => ({ ...f, condition: e.target.value as ItemCondition }))}
                                 style={{ width: '100%', border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.5rem 0.75rem', fontSize: '0.85rem', cursor: 'pointer' }}
                               >
-                                {(Object.entries(CONDITION_LABELS) as [ItemCondition, string][]).map(([val, label]) => (
-                                  <option key={val} value={val}>{label}</option>
+                                {getActiveConditions().map(val => (
+                                  <option key={val} value={val}>{getConditionLabel(val)}</option>
                                 ))}
                               </select>
                             </div>
@@ -819,7 +821,7 @@ export function AdminCatalogPage() {
                             {item.size && (
                               <span style={badgeStyle('#E8E3D5', '#1E1914')}>Talle {item.size.name}</span>
                             )}
-                            <span style={badgeStyle('#f3f4f6', '#6b7280')}>{CONDITION_LABELS[item.condition] ?? item.condition}</span>
+                            <span style={badgeStyle('#f3f4f6', '#6b7280')}>{getConditionLabel(item.condition)}</span>
                             {item.quantity > 1 && (
                               <span style={badgeStyle('#dbeafe', '#1e40af')}>x{item.quantity}</span>
                             )}

@@ -7,7 +7,7 @@ import {
 import { StatusBadge } from '../../components/catalog/StatusBadge'
 import { useToast } from '../../context/ToastContext'
 import type { SubmissionItemStatus } from '../../types'
-import { CONDITION_LABELS } from '../../types'
+import { useConditionConfig } from '../../hooks/useConditionConfig'
 
 interface AdminItem {
   id: string
@@ -34,6 +34,7 @@ interface AdminSubmissionDetail {
 
 export function AdminSubmissionDetailPage() {
   const { toast } = useToast()
+  const { getLabel: getConditionLabel } = useConditionConfig()
   const { id } = useParams<{ id: string }>()
   const [submission, setSubmission] = useState<AdminSubmissionDetail | null>(null)
   const [loading, setLoading] = useState(true)
@@ -101,7 +102,7 @@ export function AdminSubmissionDetailPage() {
                 <div>
                   <h3 style={{ fontWeight: 700, color: '#1E1914', marginBottom: '0.25rem' }}>{idx + 1}. {item.title}</h3>
                   <p style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-                    {item.productType?.name ?? ''}{item.size ? ` · Talle ${item.size.name}` : ''} · {CONDITION_LABELS[item.condition as keyof typeof CONDITION_LABELS]}
+                    {item.productType?.name ?? ''}{item.size ? ` · Talle ${item.size.name}` : ''} · {getConditionLabel(item.condition as import('../../types').ItemCondition)}
                     {item.quantity > 1 && ` · ${item.quantity} unidades`}
                   </p>
                   {item.tags && item.tags.length > 0 && (

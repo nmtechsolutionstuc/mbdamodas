@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { fetchItemById } from '../../api/items'
 import { createReservation } from '../../api/reservations'
 import type { Item } from '../../types'
-import { CONDITION_LABELS } from '../../types'
+import { useConditionConfig } from '../../hooks/useConditionConfig'
 import { useAuthStore } from '../../store/authStore'
 
 function buildWhatsAppLink(phone: string, item: Item): string {
@@ -17,6 +17,7 @@ export function ItemDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuthStore()
+  const { getLabel: getConditionLabel } = useConditionConfig()
   const [item, setItem] = useState<Item | null>(null)
   const [loading, setLoading] = useState(true)
   const [photoIndex, setPhotoIndex] = useState(0)
@@ -267,7 +268,7 @@ export function ItemDetailPage() {
                 )}
                 <div>
                   <dt style={{ color: '#9ca3af', fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', marginBottom: '0.2rem' }}>Estado</dt>
-                  <dd style={{ color: '#1E1914', fontWeight: 600, margin: 0, fontFamily: "'Inter', sans-serif" }}>{CONDITION_LABELS[item.condition]}</dd>
+                  <dd style={{ color: '#1E1914', fontWeight: 600, margin: 0, fontFamily: "'Inter', sans-serif" }}>{getConditionLabel(item.condition)}</dd>
                 </div>
                 {item.quantity > 1 && (
                   <div>

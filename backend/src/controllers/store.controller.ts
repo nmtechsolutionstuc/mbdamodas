@@ -36,6 +36,7 @@ const storeSchema = z.object({
   socialLinks: z.record(z.any()).optional().nullable(),
   footerConfig: z.record(z.any()).optional().nullable(),
   aboutConfig: z.record(z.any()).optional().nullable(),
+  conditionConfig: z.record(z.any()).optional().nullable(),
 })
 
 export async function getAnnouncement(_req: Request, res: Response): Promise<void> {
@@ -152,7 +153,7 @@ export async function updateStore(req: Request, res: Response): Promise<void> {
 export async function getStoreInfo(_req: Request, res: Response): Promise<void> {
   const store = await prisma.store.findFirst({
     where: { isActive: true },
-    select: { name: true, phone: true, email: true, address: true, socialLinks: true, footerConfig: true, aboutConfig: true },
+    select: { name: true, phone: true, email: true, address: true, socialLinks: true, footerConfig: true, aboutConfig: true, conditionConfig: true, bannerSellerButtonActive: true },
   })
   ok(res, { store: store ?? null })
 }

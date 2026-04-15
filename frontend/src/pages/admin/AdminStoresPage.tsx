@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import axiosClient from '../../api/axiosClient'
 import { useToast } from '../../context/ToastContext'
+import { ALL_CONDITIONS, type ConditionConfig, type ConditionEntry, invalidateConditionCache } from '../../hooks/useConditionConfig'
+import { CONDITION_LABELS } from '../../types'
 
 interface SocialLinkConfig { active: boolean; url: string }
 interface SocialLinksConfig {
@@ -82,6 +84,7 @@ interface Store {
   socialLinks: SocialLinksConfig | null
   footerConfig: { tagline?: string; address?: string; showDeveloper?: boolean; showVenderLink?: boolean; venderLinkText?: string } | null
   aboutConfig: { showCatalogButton?: boolean; showVenderButton?: boolean; showWhatsappButton?: boolean; showEmailButton?: boolean } | null
+  conditionConfig: ConditionConfig | null
 }
 
 export function AdminStoresPage() {
@@ -107,6 +110,7 @@ export function AdminStoresPage() {
       socialLinks: store.socialLinks ?? {},
       footerConfig: store.footerConfig ?? {},
       aboutConfig: store.aboutConfig ?? {},
+      conditionConfig: store.conditionConfig ?? {},
       bannerReservarButtonActive: store.bannerReservarButtonActive ?? true,
     })
     setSaved(false)
@@ -178,8 +182,10 @@ export function AdminStoresPage() {
         socialLinks: editing.socialLinks ?? {},
         footerConfig: editing.footerConfig ?? {},
         aboutConfig: editing.aboutConfig ?? {},
+        conditionConfig: editing.conditionConfig ?? {},
       })
       setStores(prev => prev.map(s => s.id === editing.id ? data.data : s))
+      invalidateConditionCache()
       setEditing(null)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
@@ -519,6 +525,44 @@ export function AdminStoresPage() {
                   />
                   Mostrar botón Email de contacto
                 </label>
+
+                {/* ── Condiciones de producto ── */}
+                {sectionTitle('Condiciones de producto')}
+                <p style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                  Editá el nombre visible de cada condición y desactivá las que no uses.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {ALL_CONDITIONS.map((cond, idx) => {
+                    const entry: ConditionEntry = {
+                      label: CONDITION_LABELS[cond],
+                      active: true,
+                      order: idx,
+                      ...(editing.conditionConfig?.[cond] ?? {}),
+                    }
+                    return (
+                      <div key={cond} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.5rem 0.75rem', background: entry.active ? '#fff' : '#f9f9f9', opacity: entry.active ? 1 : 0.6 }}>
+                        <input
+                          type="checkbox"
+                          checked={entry.active}
+                          onChange={e => setEditing(prev => prev && ({
+                            ...prev,
+                            conditionConfig: { ...(prev.conditionConfig ?? {}), [cond]: { ...entry, active: e.target.checked } },
+                          }))}
+                          style={{ cursor: 'pointer', flexShrink: 0 }}
+                        />
+                        <input
+                          value={entry.label}
+                          onChange={e => setEditing(prev => prev && ({
+                            ...prev,
+                            conditionConfig: { ...(prev.conditionConfig ?? {}), [cond]: { ...entry, label: e.target.value } },
+                          }))}
+                          style={{ flex: 1, border: '1px solid #E8E3D5', borderRadius: '0.5rem', padding: '0.35rem 0.625rem', fontSize: '0.875rem', color: '#1E1914', background: 'transparent' }}
+                        />
+                        <span style={{ fontSize: '0.7rem', color: '#9ca3af', whiteSpace: 'nowrap', fontFamily: 'monospace' }}>{cond}</span>
+                      </div>
+                    )
+                  })}
+                </div>
 
                 <div style={{ display: 'flex', gap: '0.625rem', marginTop: '0.5rem' }}>
                   <button onClick={() => setEditing(null)} style={{ flex: 1, padding: '0.625rem', borderRadius: '0.75rem', border: '1px solid #E8E3D5', background: '#fff', cursor: 'pointer', fontSize: '0.875rem' }}>

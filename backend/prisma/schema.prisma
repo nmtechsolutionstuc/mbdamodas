@@ -168,6 +168,8 @@ model Store {
   footerConfig               Json?   // {tagline?, address?, showDeveloper?}
   // ── About page config ──
   aboutConfig                Json?   // {showCatalogButton?, showVenderButton?, showWhatsappButton?, showEmailButton?}
+  // ── Condiciones de producto ──
+  conditionConfig            Json?   // {NUEVA_CON_ETIQUETA:{label,active,order}, ...}
 
   // ── Contenido editable de páginas ──
   aboutContent      String?  @db.Text // Contenido de la página Nosotros (formato markdown simple)

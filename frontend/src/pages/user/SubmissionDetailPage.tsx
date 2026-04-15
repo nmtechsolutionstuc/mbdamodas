@@ -3,10 +3,11 @@ import { useParams, Link } from 'react-router-dom'
 import { fetchMySubmissionById } from '../../api/submissions'
 import { StatusBadge } from '../../components/catalog/StatusBadge'
 import type { Submission } from '../../types'
-import { CONDITION_LABELS } from '../../types'
+import { useConditionConfig } from '../../hooks/useConditionConfig'
 
 export function SubmissionDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const { getLabel: getConditionLabel } = useConditionConfig()
   const [submission, setSubmission] = useState<Submission | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -83,7 +84,7 @@ export function SubmissionDetailPage() {
                     <StatusBadge status={item.status} />
                   </div>
                   <p style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.25rem' }}>
-                    {item.productType?.name ?? ''}{item.size ? ` · Talle ${item.size.name}` : ''} · {CONDITION_LABELS[item.condition]}
+                    {item.productType?.name ?? ''}{item.size ? ` · Talle ${item.size.name}` : ''} · {getConditionLabel(item.condition as import('../../types').ItemCondition)}
                   </p>
                   <p style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1E1914' }}>
                     ${item.desiredPrice.toLocaleString('es-AR')}

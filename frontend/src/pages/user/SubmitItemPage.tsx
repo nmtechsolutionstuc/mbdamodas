@@ -2,10 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createSubmission, type SubmissionItemFormData } from '../../api/submissions'
 import type { ItemCondition } from '../../types'
-import { CONDITION_LABELS } from '../../types'
 import { useProductTypes } from '../../hooks/useProductTypes'
-
-const CONDITIONS = Object.entries(CONDITION_LABELS) as [ItemCondition, string][]
+import { useConditionConfig } from '../../hooks/useConditionConfig'
 
 const EMPTY_ITEM = (): SubmissionItemFormData => ({
   title: '',
@@ -32,6 +30,7 @@ const STEP_LABELS: Record<Step, string> = {
 export function SubmitItemPage() {
   const navigate = useNavigate()
   const { productTypes } = useProductTypes()
+  const { getLabel: getConditionLabel, getActiveConditions } = useConditionConfig()
   const [items, setItems] = useState<SubmissionItemFormData[]>([EMPTY_ITEM()])
   const [currentItem, setCurrentItem] = useState(0)
   const [step, setStep] = useState<Step>(1)
@@ -319,7 +318,7 @@ export function SubmitItemPage() {
             <div>
               <label style={labelStyle}>Condicion *</label>
               <select style={inputStyle} value={item.condition} onChange={e => updateItem({ condition: e.target.value as ItemCondition })}>
-                {CONDITIONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                {getActiveConditions().map(v => <option key={v} value={v}>{getConditionLabel(v)}</option>)}
               </select>
             </div>
             <div>
