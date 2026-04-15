@@ -89,6 +89,11 @@ export async function deleteItemPhoto(itemId: string, photoId: string) {
   return data.data
 }
 
+export async function toggleFeatured(itemId: string): Promise<{ id: string; featured: boolean }> {
+  const { data } = await axiosClient.patch(`/admin/catalog/${itemId}/toggle-featured`)
+  return data.data
+}
+
 export async function fetchAdminUsers(page = 1, search?: string) {
   const { data } = await axiosClient.get('/admin/users', { params: { page, search: search || undefined } })
   return data

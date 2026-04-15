@@ -215,7 +215,13 @@
       "Bash(powershell.exe -NoProfile -Command \":*)",
       "Bash(find /c/Users/MilagrosMedina -name *.json -path *netlify*)",
       "Bash(timeout 5 netlify login)",
-      "Bash(netlify login:*)"
+      "Bash(netlify login:*)",
+      "Bash(head -10 grep -n \"isActive\\\\|soldAt\\\\|featured\" ~/repos/mbdamodas/backend/prisma/schema.prisma)",
+      "Bash(head -5 grep -n \"GET.*items\\\\|fetchItems\\\\|/items\" ~/repos/mbdamodas/frontend/src/api/items.ts)",
+      "Bash(powershell.exe -NoProfile -Command \"Remove-Item ''C:\\\\Users\\\\MilagrosMedina\\\\repos\\\\mbdamodas\\\\.git\\\\index.lock'' -Force -ErrorAction SilentlyContinue; Write-Output ''done''\")",
+      "Bash(taskkill //F //IM git.exe)",
+      "Bash(rm -f /c/Users/MilagrosMedina/repos/mbdamodas/.git/index.lock)",
+      "Bash(ls -la /c/Users/MilagrosMedina/repos/mbdamodas/.git/index*)"
     ]
   }
 }

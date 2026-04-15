@@ -4,7 +4,7 @@ import { authorize } from '../middlewares/authorize'
 import {
   listSubmissions, getSubmission,
   approve, reject, markInStore, markSold, markReturned,
-  listCatalog, createCatalogItem, editCatalogItem, softDeleteCatalogItem, uploadCatalogItemPhotos, deleteItemPhoto,
+  listCatalog, createCatalogItem, editCatalogItem, softDeleteCatalogItem, uploadCatalogItemPhotos, deleteItemPhoto, toggleFeatured,
   listUsers, createUser, deactivateUser, updateUser, deleteUser,
   getDashboardStats,
   listProductTypes, toggleProductType,
@@ -46,6 +46,7 @@ router.patch('/catalog/:id', asyncHandler(editCatalogItem))
 router.delete('/catalog/:id', asyncHandler(softDeleteCatalogItem))
 router.post('/catalog/:id/photos', upload.array('photos', 5), asyncHandler(uploadCatalogItemPhotos))
 router.delete('/catalog/:id/photos/:photoId', asyncHandler(deleteItemPhoto))
+router.patch('/catalog/:id/toggle-featured', asyncHandler(toggleFeatured))
 
 // Product Types / Sizes / Tags
 router.get('/product-types', asyncHandler(listProductTypes))

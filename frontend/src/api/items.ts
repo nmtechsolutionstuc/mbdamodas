@@ -26,3 +26,8 @@ export async function fetchPublicProductTypes(): Promise<ProductType[]> {
   const { data } = await axiosClient.get<ApiResponse<ProductType[]>>('/items/product-types')
   return data.data
 }
+
+export async function fetchFeaturedItems(): Promise<Item[]> {
+  const { data } = await axiosClient.get<ApiResponse<Item[]>>('/items/featured')
+  return data.data
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchAdminCatalog, updateCatalogItem, deleteCatalogItem, markSold, markReturned, createCatalogItem, fetchProductTypes, uploadItemPhotos, deleteItemPhoto } from '../../api/admin'
+import { fetchAdminCatalog, updateCatalogItem, deleteCatalogItem, markSold, markReturned, createCatalogItem, fetchProductTypes, uploadItemPhotos, deleteItemPhoto, toggleFeatured } from '../../api/admin'
 import { StatusBadge } from '../../components/catalog/StatusBadge'
 import { useToast } from '../../context/ToastContext'
 import { ListRowSkeleton } from '../../components/ui/Skeleton'
@@ -31,6 +31,7 @@ interface CatalogItem {
       seller: { firstName: string; lastName: string; phone: string | null }
     }
   } | null
+  featured: boolean
   photos: { id: string; url: string; order: number }[]
 }
 
@@ -889,6 +890,31 @@ export function AdminCatalogPage() {
                             </>
                           )}
                           <>
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const result = await toggleFeatured(item.id)
+                                  setItems(prev => prev.map(it => it.id === item.id ? { ...it, featured: result.featured } : it))
+                                  toast(result.featured ? '⭐ Producto destacado' : 'Producto quitado de destacados', 'success')
+                                } catch {
+                                  toast('Error al actualizar', 'error')
+                                }
+                              }}
+                              title={item.featured ? 'Quitar de destacados' : 'Destacar en home'}
+                              style={{
+                                background: item.featured ? '#fef9c3' : '#f9f9f9',
+                                color: item.featured ? '#b45309' : '#9ca3af',
+                                border: `1px solid ${item.featured ? '#fde68a' : '#E8E3D5'}`,
+                                borderRadius: '0.5rem',
+                                padding: '0.4rem 0.75rem',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                fontWeight: item.featured ? 700 : 400,
+                                transition: 'all 0.15s',
+                              }}
+                            >
+                              {item.featured ? '⭐ Destacado' : '☆ Destacar'}
+                            </button>
                             <button
                               onClick={() => startEdit(item)}
                               style={{ background: '#E8E3D5', color: '#1E1914', border: 'none', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.8rem' }}

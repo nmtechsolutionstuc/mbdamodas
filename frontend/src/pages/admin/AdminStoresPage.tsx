@@ -82,6 +82,7 @@ interface Store {
   menuConfig: MenuConfig | null
   featureCards: FeatureCardsConfig | null
   socialLinks: SocialLinksConfig | null
+  featuredSectionTitle: string | null
   footerConfig: { tagline?: string; address?: string; showDeveloper?: boolean; showVenderLink?: boolean; venderLinkText?: string } | null
   aboutConfig: { showCatalogButton?: boolean; showVenderButton?: boolean; showWhatsappButton?: boolean; showEmailButton?: boolean } | null
   conditionConfig: ConditionConfig | null
@@ -183,6 +184,7 @@ export function AdminStoresPage() {
         footerConfig: editing.footerConfig ?? {},
         aboutConfig: editing.aboutConfig ?? {},
         conditionConfig: editing.conditionConfig ?? {},
+        featuredSectionTitle: editing.featuredSectionTitle,
       })
       setStores(prev => prev.map(s => s.id === editing.id ? data.data : s))
       invalidateConditionCache()
@@ -464,6 +466,13 @@ export function AdminStoresPage() {
                     </div>
                   )
                 })}
+
+                {/* ── Sección Destacados ── */}
+                {sectionTitle('Sección "Destacados" (home)')}
+                {inp('Título de la sección', editing.featuredSectionTitle ?? 'Destacados', v => setEditing(e => e && ({ ...e, featuredSectionTitle: v })))}
+                <p style={{ fontSize: '0.78rem', color: '#9ca3af', margin: '-0.25rem 0 0.25rem' }}>
+                  Seleccioná los productos a destacar con el botón ⭐ en Admin → Catálogo.
+                </p>
 
                 {/* ── Configuración del footer ── */}
                 {sectionTitle('Configuración del footer')}

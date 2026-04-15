@@ -170,6 +170,8 @@ model Store {
   aboutConfig                Json?   // {showCatalogButton?, showVenderButton?, showWhatsappButton?, showEmailButton?}
   // ── Condiciones de producto ──
   conditionConfig            Json?   // {NUEVA_CON_ETIQUETA:{label,active,order}, ...}
+  // ── Sección Destacados (home) ──
+  featuredSectionTitle       String? @default("Destacados")
 
   // ── Contenido editable de páginas ──
   aboutContent      String?  @db.Text // Contenido de la página Nosotros (formato markdown simple)
@@ -352,6 +354,7 @@ model Item {
 
   isOwnProduct          Boolean       @default(false)
   promoterCommissionPct Decimal?      @db.Decimal(5, 2)
+  featured              Boolean       @default(false)  // aparece en sección Destacados del home
 
   photos       ItemPhoto[]
   tags         ItemTag[]

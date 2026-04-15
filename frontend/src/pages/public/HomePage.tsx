@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ItemCard } from '../../components/catalog/ItemCard'
+import { FeaturedCarousel } from '../../components/catalog/FeaturedCarousel'
 import { ItemCardSkeleton } from '../../components/ui/Skeleton'
-import { fetchItems } from '../../api/items'
+import { fetchItems, fetchFeaturedItems } from '../../api/items'
 import { useProductTypes } from '../../hooks/useProductTypes'
 import { useAuthStore } from '../../store/authStore'
 import axiosClient from '../../api/axiosClient'
@@ -46,6 +47,8 @@ export function HomePage() {
   const [hoveredCta, setHoveredCta] = useState<string | null>(null)
   const [banners, setBanners] = useState<BannerData | null>(null)
   const [featureCardsData, setFeatureCardsData] = useState<FeatureCardsData>({})
+  const [featuredItems, setFeaturedItems] = useState<Item[]>([])
+  const [featuredTitle, setFeaturedTitle] = useState('Destacados')
 
   const selectedProductType = (productTypes ?? []).find(pt => pt.id === productTypeId)
 
@@ -55,6 +58,12 @@ export function HomePage() {
       .catch(() => {})
     axiosClient.get<{ data: { featureCards: FeatureCardsData | null } }>('/feature-cards')
       .then(r => setFeatureCardsData(r.data.data.featureCards ?? {}))
+      .catch(() => {})
+    fetchFeaturedItems()
+      .then(setFeaturedItems)
+      .catch(() => {})
+    axiosClient.get('/store-info')
+      .then(r => { if (r.data?.data?.store?.featuredSectionTitle) setFeaturedTitle(r.data.data.store.featuredSectionTitle) })
       .catch(() => {})
   }, [])
 
@@ -278,6 +287,11 @@ export function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ── Destacados ──────────────────────────────────── */}
+      {featuredItems.length > 0 && (
+        <FeaturedCarousel items={featuredItems} title={featuredTitle} />
+      )}
 
       {/* ── Propuesta de valor ──────────────────────────── */}
       <style>{`

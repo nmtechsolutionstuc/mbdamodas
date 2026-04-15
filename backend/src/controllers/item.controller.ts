@@ -29,6 +29,20 @@ export async function listItems(req: Request, res: Response): Promise<void> {
   })
 }
 
+export async function listFeaturedItems(_req: Request, res: Response): Promise<void> {
+  const items = await prisma.item.findMany({
+    where: { featured: true, isActive: true, soldAt: null },
+    orderBy: { updatedAt: 'desc' },
+    include: {
+      photos: { orderBy: { order: 'asc' } },
+      productType: true,
+      size: true,
+      store: { select: { phone: true } },
+    },
+  })
+  ok(res, items)
+}
+
 export async function listPublicProductTypes(_req: Request, res: Response): Promise<void> {
   const productTypes = await prisma.productType.findMany({
     where: { isActive: true },

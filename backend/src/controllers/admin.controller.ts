@@ -106,6 +106,17 @@ export async function softDeleteCatalogItem(req: Request, res: Response): Promis
   }
 }
 
+export async function toggleFeatured(req: Request, res: Response): Promise<void> {
+  try {
+    const item = await prisma.item.findUnique({ where: { id: req.params.id! }, select: { id: true, featured: true } })
+    if (!item) { notFound(res, 'Item no encontrado'); return }
+    const updated = await prisma.item.update({ where: { id: item.id }, data: { featured: !item.featured } })
+    ok(res, { id: updated.id, featured: updated.featured })
+  } catch {
+    serverError(res)
+  }
+}
+
 export async function createCatalogItem(req: Request, res: Response): Promise<void> {
   const schema = z.object({
     title: z.string().min(1, 'Título requerido'),
