@@ -5,7 +5,6 @@ import { StatusBadge } from '../../components/catalog/StatusBadge'
 import { useToast } from '../../context/ToastContext'
 import { ListRowSkeleton } from '../../components/ui/Skeleton'
 import type { ItemCondition, SubmissionItemStatus, ProductType } from '../../types'
-import { CONDITION_LABELS } from '../../types'
 import { useConditionConfig } from '../../hooks/useConditionConfig'
 
 interface CatalogItem {
