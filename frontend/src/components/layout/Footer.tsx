@@ -38,6 +38,14 @@ export function Footer() {
           </p>
           <p style={{ fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '0.5rem' }}>{tagline}</p>
           <p style={{ fontSize: '0.8rem', lineHeight: 1.6, opacity: 0.7 }}>{address}</p>
+          {info?.email && (
+            <a href={`mailto:${info.email}`} style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(232,227,213,0.65)', textDecoration: 'none', marginTop: '0.25rem' }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#E8E3D5')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(232,227,213,0.65)')}
+            >
+              {info.email}
+            </a>
+          )}
 
           {/* Social links */}
           {(social.whatsappGroup?.active || social.tiktok?.active || social.instagram?.active || social.facebook?.active) && (

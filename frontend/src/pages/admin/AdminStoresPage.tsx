@@ -86,6 +86,7 @@ interface Store {
   footerConfig: { tagline?: string; address?: string; showDeveloper?: boolean; showVenderLink?: boolean; venderLinkText?: string } | null
   aboutConfig: { showCatalogButton?: boolean; showVenderButton?: boolean; showWhatsappButton?: boolean; showEmailButton?: boolean } | null
   conditionConfig: ConditionConfig | null
+  videoSection: { active: boolean; title: string; videoUrl: string; description: string } | null
 }
 
 export function AdminStoresPage() {
@@ -113,6 +114,7 @@ export function AdminStoresPage() {
       aboutConfig: store.aboutConfig ?? {},
       conditionConfig: store.conditionConfig ?? {},
       bannerReservarButtonActive: store.bannerReservarButtonActive ?? true,
+      videoSection: store.videoSection ?? { active: false, title: '', videoUrl: '', description: '' },
     })
     setSaved(false)
   }
@@ -185,6 +187,7 @@ export function AdminStoresPage() {
         aboutConfig: editing.aboutConfig ?? {},
         conditionConfig: editing.conditionConfig ?? {},
         featuredSectionTitle: editing.featuredSectionTitle,
+        videoSection: editing.videoSection ?? { active: false, title: '', videoUrl: '', description: '' },
       })
       setStores(prev => prev.map(s => s.id === editing.id ? data.data : s))
       invalidateConditionCache()
@@ -473,6 +476,27 @@ export function AdminStoresPage() {
                 <p style={{ fontSize: '0.78rem', color: '#9ca3af', margin: '-0.25rem 0 0.25rem' }}>
                   Seleccioná los productos a destacar con el botón ⭐ en Admin → Catálogo.
                 </p>
+
+                {/* ── Sección Video ── */}
+                {sectionTitle('Sección Video (home)')}
+                <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914', fontWeight: 600 }}>
+                  <input
+                    type="checkbox"
+                    checked={editing.videoSection?.active ?? false}
+                    onChange={e => setEditing(prev => prev && ({ ...prev, videoSection: { ...(prev.videoSection ?? { title: '', videoUrl: '', description: '' }), active: e.target.checked } }))}
+                  />
+                  Mostrar sección de video en la home
+                </label>
+                {(editing.videoSection?.active ?? false) && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem', border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.75rem', marginTop: '0.25rem' }}>
+                    {inp('Título de la sección', editing.videoSection?.title ?? '', v => setEditing(prev => prev && ({ ...prev, videoSection: { ...(prev.videoSection ?? { active: true, description: '' }), title: v, videoUrl: prev.videoSection?.videoUrl ?? '', description: prev.videoSection?.description ?? '' } })))}
+                    {inp('URL del video (YouTube embed o MP4)', editing.videoSection?.videoUrl ?? '', v => setEditing(prev => prev && ({ ...prev, videoSection: { ...(prev.videoSection ?? { active: true, title: '' }), videoUrl: v, title: prev.videoSection?.title ?? '', description: prev.videoSection?.description ?? '' } })))}
+                    <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '-0.25rem' }}>
+                      Para YouTube: usá el link de embed (ej: https://www.youtube.com/embed/ID_DEL_VIDEO). Para video propio: URL directa al .mp4.
+                    </p>
+                    {txtArea('Descripción', editing.videoSection?.description ?? '', v => setEditing(prev => prev && ({ ...prev, videoSection: { ...(prev.videoSection ?? { active: true, title: '' }), description: v, title: prev.videoSection?.title ?? '', videoUrl: prev.videoSection?.videoUrl ?? '' } })), 4)}
+                  </div>
+                )}
 
                 {/* ── Configuración del footer ── */}
                 {sectionTitle('Configuración del footer')}

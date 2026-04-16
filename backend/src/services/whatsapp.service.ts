@@ -63,6 +63,7 @@ export interface ReservationWAContext {
   itemTitle: string
   itemCode?: string | null
   reservationCode: string
+  quantity?: number
   earnings?: number
   expiresAt?: Date | null
   adminNote?: string | null
@@ -94,7 +95,8 @@ export function generateReservationWALink(
       phone = ctx.storeAttendantPhone
       const formatPrice = ctx.itemPrice != null ? ctx.itemPrice.toLocaleString('es-AR') : null
       const pricePart = formatPrice != null ? `, precio de venta $${formatPrice}` : ''
-      text = `Hola! Hay una reserva para el producto "${ctx.itemTitle}"${codePart}, código ${ctx.reservationCode}${pricePart}. ¿El producto está disponible? ¿La tienda abrirá en las próximas 24hs?`
+      const qtyPart = ctx.quantity && ctx.quantity > 1 ? `, cantidad solicitada: ${ctx.quantity}` : ''
+      text = `Hola! Hay una reserva para el producto "${ctx.itemTitle}"${codePart}, código ${ctx.reservationCode}${pricePart}${qtyPart}. ¿El producto está disponible? ¿La tienda abrirá en las próximas 24hs?`
       break
     }
 

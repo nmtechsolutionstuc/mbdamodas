@@ -5,12 +5,16 @@ import { renderContent } from '../../utils/renderContent'
 export function TermsPage() {
   const [content, setContent] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [storeEmail, setStoreEmail] = useState<string | null>(null)
 
   useEffect(() => {
     axiosClient.get('/terms-content')
       .then(r => setContent(r.data.data.content))
       .catch(() => {})
       .finally(() => setLoading(false))
+    axiosClient.get('/store-info')
+      .then(r => { if (r.data?.data?.store?.email) setStoreEmail(r.data.data.store.email) })
+      .catch(() => {})
   }, [])
 
   if (loading) {
@@ -41,12 +45,14 @@ export function TermsPage() {
 
         {renderContent(content)}
 
-        <div style={{ marginTop: '3rem', padding: '1.25rem', background: '#E8E3D5', borderRadius: '1rem', fontSize: '0.875rem', color: '#6b7280' }}>
-          Para consultas sobre estos terminos, contactanos en{' '}
-          <a href="mailto:contacto@mbdamodas.com" style={{ color: '#1E1914', fontWeight: 600 }}>
-            contacto@mbdamodas.com
-          </a>
-        </div>
+        {storeEmail && (
+          <div style={{ marginTop: '3rem', padding: '1.25rem', background: '#E8E3D5', borderRadius: '1rem', fontSize: '0.875rem', color: '#6b7280' }}>
+            Para consultas sobre estos terminos, contactanos en{' '}
+            <a href={`mailto:${storeEmail}`} style={{ color: '#1E1914', fontWeight: 600 }}>
+              {storeEmail}
+            </a>
+          </div>
+        )}
       </div>
     </div>
   )

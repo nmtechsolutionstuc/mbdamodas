@@ -106,6 +106,7 @@ export async function createReservation(itemId: string, userId: string, quantity
     itemTitle: item.title,
     itemCode: item.code,
     reservationCode,
+    quantity,
     voucherUrl: buildVoucherUrl(reservationCode),
     itemPrice: item.price != null ? Number(item.price) : undefined,
   }

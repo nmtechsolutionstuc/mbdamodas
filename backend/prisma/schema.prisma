@@ -172,6 +172,8 @@ model Store {
   conditionConfig            Json?   // {NUEVA_CON_ETIQUETA:{label,active,order}, ...}
   // ── Sección Destacados (home) ──
   featuredSectionTitle       String? @default("Destacados")
+  // ── Sección Video (home) ──
+  videoSection               Json?   // {active:bool, title:string, videoUrl:string, description:string}
 
   // ── Contenido editable de páginas ──
   aboutContent      String?  @db.Text // Contenido de la página Nosotros (formato markdown simple)

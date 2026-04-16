@@ -10,6 +10,7 @@ export async function register(data: {
   firstName: string
   lastName: string
   dni: string
+  phone: string
   email: string
   password: string
 }): Promise<AuthResponse> {

@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuthStore()
+  const location = useLocation()
 
   if (isLoading) {
     return (
@@ -20,6 +21,11 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   }
 
   if (!user) return <Navigate to="/login" replace />
+
+  // Si el usuario no tiene teléfono y no es admin, redirigir a completar perfil
+  if (!user.phone && user.role !== 'ADMIN' && location.pathname !== '/completar-perfil') {
+    return <Navigate to="/completar-perfil" replace />
+  }
 
   return <>{children}</>
 }

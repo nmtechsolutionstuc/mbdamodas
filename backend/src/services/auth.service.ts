@@ -75,6 +75,7 @@ export const registerSchema = z.object({
     .regex(/[A-Z]/, 'Debe contener al menos una mayúscula')
     .regex(/[a-z]/, 'Debe contener al menos una minúscula')
     .regex(/[0-9]/, 'Debe contener al menos un número'),
+  phone: z.string().min(6, 'Número de WhatsApp requerido').max(20, 'Número demasiado largo').regex(/^\d+$/, 'Solo números, sin + ni espacios'),
 })
 
 export type RegisterInput = z.infer<typeof registerSchema>
@@ -96,6 +97,7 @@ export async function registerUser(
       firstName: stripHtml(input.firstName),
       lastName: stripHtml(input.lastName),
       dni: input.dni,
+      phone: input.phone,
       password: hash,
     },
   })

@@ -49,6 +49,7 @@ export function HomePage() {
   const [featureCardsData, setFeatureCardsData] = useState<FeatureCardsData>({})
   const [featuredItems, setFeaturedItems] = useState<Item[]>([])
   const [featuredTitle, setFeaturedTitle] = useState('Destacados')
+  const [videoSection, setVideoSection] = useState<{ active: boolean; title: string; videoUrl: string; description: string } | null>(null)
 
   const selectedProductType = (productTypes ?? []).find(pt => pt.id === productTypeId)
 
@@ -63,7 +64,11 @@ export function HomePage() {
       .then(setFeaturedItems)
       .catch(() => {})
     axiosClient.get('/store-info')
-      .then(r => { if (r.data?.data?.store?.featuredSectionTitle) setFeaturedTitle(r.data.data.store.featuredSectionTitle) })
+      .then(r => {
+        const store = r.data?.data?.store
+        if (store?.featuredSectionTitle) setFeaturedTitle(store.featuredSectionTitle)
+        if (store?.videoSection) setVideoSection(store.videoSection)
+      })
       .catch(() => {})
   }, [])
 
@@ -291,6 +296,51 @@ export function HomePage() {
       {/* ── Destacados ──────────────────────────────────── */}
       {featuredItems.length > 0 && (
         <FeaturedCarousel items={featuredItems} title={featuredTitle} />
+      )}
+
+      {/* ── Sección Video ─────────────────────────────────── */}
+      {videoSection?.active && videoSection.videoUrl && (
+        <>
+          <style>{`
+            .mbda-video-section { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: center; }
+            @media (max-width: 768px) { .mbda-video-section { grid-template-columns: 1fr; } }
+          `}</style>
+          <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '3rem 1.5rem 0' }}>
+            {videoSection.title && (
+              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(1.25rem, 3vw, 1.6rem)', fontWeight: 700, color: '#1E1914', marginBottom: '1.5rem' }}>
+                {videoSection.title}
+              </h2>
+            )}
+            <div className="mbda-video-section">
+              {/* Video */}
+              <div style={{ borderRadius: '1rem', overflow: 'hidden', background: '#1E1914', aspectRatio: '16/9' }}>
+                {videoSection.videoUrl.includes('youtube.com') || videoSection.videoUrl.includes('youtu.be') ? (
+                  <iframe
+                    src={videoSection.videoUrl}
+                    title={videoSection.title || 'Video'}
+                    style={{ width: '100%', height: '100%', border: 'none' }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video
+                    src={videoSection.videoUrl}
+                    controls
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                )}
+              </div>
+              {/* Descripción */}
+              {videoSection.description && (
+                <div>
+                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.05rem', color: '#4b5563', lineHeight: 1.75, whiteSpace: 'pre-line' }}>
+                    {videoSection.description}
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
+        </>
       )}
 
       {/* ── Propuesta de valor ──────────────────────────── */}

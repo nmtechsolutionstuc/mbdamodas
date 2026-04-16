@@ -10,6 +10,7 @@ const schema = z.object({
   firstName: z.string().min(1, 'Requerido').max(50),
   lastName: z.string().min(1, 'Requerido').max(50),
   dni: z.string().min(7, 'Mínimo 7 dígitos').max(10, 'Máximo 10 dígitos').regex(/^\d+$/, 'Solo números'),
+  phone: z.string().min(6, 'Requerido').max(20, 'Demasiado largo').regex(/^\d+$/, 'Solo números, sin + ni espacios'),
   email: z.string().email('Email inválido'),
   password: z.string()
     .min(8, 'Mínimo 8 caracteres')
@@ -46,6 +47,7 @@ export function RegisterPage() {
         firstName: values.firstName,
         lastName: values.lastName,
         dni: values.dni,
+        phone: values.phone,
         email: values.email,
         password: values.password,
       })
@@ -95,6 +97,15 @@ export function RegisterPage() {
             <label style={lbl}>DNI *</label>
             <input {...register('dni')} inputMode="numeric" placeholder="12345678" style={inp} />
             {errors.dni && <p style={err}>{errors.dni.message}</p>}
+          </div>
+
+          <div>
+            <label style={lbl}>Número de WhatsApp *</label>
+            <input {...register('phone')} inputMode="numeric" placeholder="Ej: 5491112345678" style={inp} />
+            <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>
+              Solo números, sin + ni espacios (ej: 5491112345678)
+            </p>
+            {errors.phone && <p style={err}>{errors.phone.message}</p>}
           </div>
 
           <div>

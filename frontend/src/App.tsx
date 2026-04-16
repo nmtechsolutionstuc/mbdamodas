@@ -9,6 +9,7 @@ import { Footer } from './components/layout/Footer'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { GoogleCallbackPage } from './pages/auth/GoogleCallbackPage'
+import { CompletarPerfilPage } from './pages/auth/CompletarPerfilPage'
 import { HomePage } from './pages/public/HomePage'
 import { ItemDetailPage } from './pages/public/ItemDetailPage'
 import { UserDashboardPage } from './pages/user/UserDashboardPage'
@@ -49,6 +50,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/auth/callback" element={<GoogleCallbackPage />} />
           <Route path="/comprobante/:code" element={<VoucherPage />} />
+          <Route path="/completar-perfil" element={<ProtectedRoute><CompletarPerfilPage /></ProtectedRoute>} />
 
           {/* Usuario autenticado */}
           <Route path="/dashboard" element={<ProtectedRoute><UserDashboardPage /></ProtectedRoute>} />
