@@ -45,7 +45,7 @@ interface FeatureCardsConfig {
 }
 
 const DEFAULT_FEATURE_CARDS: Record<keyof FeatureCardsConfig, FeatureCardConfig> = {
-  card1: { active: true, emoji: '👗', title: 'Ropa nueva', desc: 'Productos nuevos propios de MBDA Modas, con las últimas tendencias.' },
+  card1: { active: true, emoji: '👗', title: 'Ropa nueva', desc: 'Productos nuevos propios de MBDA Market, con las últimas tendencias.' },
   card2: { active: true, emoji: '♻️', title: 'Ropa en consignación', desc: 'Productos seleccionados y cuidados, a precios accesibles.' },
   card3: { active: true, emoji: '💰', title: 'Ganá vendiendo', desc: 'Reservá un producto, conseguí un comprador y llevate una comisión. Sin inversión.' },
 }
@@ -77,6 +77,9 @@ interface Store {
   bannerSellerDescription: string | null
   bannerSellerButtonActive: boolean
   bannerReservarButtonActive: boolean
+  bannerExtraButtonActive: boolean
+  bannerExtraButtonText: string | null
+  bannerExtraButtonUrl: string | null
   aboutContent: string | null
   termsContent: string | null
   menuConfig: MenuConfig | null
@@ -107,13 +110,22 @@ export function AdminStoresPage() {
   function startEdit(store: Store) {
     setEditing({
       ...store,
+      // Coerce all boolean fields to avoid null → Zod validation failure
+      isActive: store.isActive ?? true,
+      announcementActive: store.announcementActive ?? false,
+      bannerBuyerButtonActive: store.bannerBuyerButtonActive ?? true,
+      bannerSellerButtonActive: store.bannerSellerButtonActive ?? false,
+      bannerReservarButtonActive: store.bannerReservarButtonActive ?? true,
+      bannerExtraButtonActive: store.bannerExtraButtonActive ?? false,
+      bannerExtraButtonText: store.bannerExtraButtonText ?? '',
+      bannerExtraButtonUrl: store.bannerExtraButtonUrl ?? '',
+      // Coerce JSON fields
       menuConfig: store.menuConfig ?? {},
       featureCards: store.featureCards ?? {},
       socialLinks: store.socialLinks ?? {},
       footerConfig: store.footerConfig ?? {},
       aboutConfig: store.aboutConfig ?? {},
       conditionConfig: store.conditionConfig ?? {},
-      bannerReservarButtonActive: store.bannerReservarButtonActive ?? true,
       videoSection: store.videoSection ?? { active: false, title: '', videoUrl: '', description: '' },
     })
     setSaved(false)
@@ -163,7 +175,7 @@ export function AdminStoresPage() {
         name: editing.name,
         address: editing.address,
         phone: editing.phone,
-        email: editing.email,
+        email: editing.email || null,
         defaultCommission: Number(editing.defaultCommission),
         isActive: editing.isActive,
         storeAttendantPhone: editing.storeAttendantPhone,
@@ -178,6 +190,9 @@ export function AdminStoresPage() {
         bannerSellerDescription: editing.bannerSellerDescription,
         bannerSellerButtonActive: editing.bannerSellerButtonActive,
         bannerReservarButtonActive: editing.bannerReservarButtonActive,
+        bannerExtraButtonActive: editing.bannerExtraButtonActive,
+        bannerExtraButtonText: editing.bannerExtraButtonText || null,
+        bannerExtraButtonUrl: editing.bannerExtraButtonUrl || null,
         aboutContent: editing.aboutContent,
         termsContent: editing.termsContent,
         menuConfig: editing.menuConfig ?? {},
@@ -194,8 +209,11 @@ export function AdminStoresPage() {
       setEditing(null)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
-    } catch {
-      toast('No se pudo guardar', 'error')
+    } catch (err: any) {
+      const details = err?.response?.data?.error?.details
+      const firstDetail = Array.isArray(details) ? details[0] : null
+      const msg = firstDetail ? `${firstDetail.path?.join('.') ?? '?'}: ${firstDetail.message}` : (err?.response?.data?.error?.message ?? 'No se pudo guardar')
+      toast(msg, 'error')
     } finally {
       setSaving(false)
     }
@@ -323,6 +341,16 @@ export function AdminStoresPage() {
                   <input type="checkbox" checked={editing.bannerSellerButtonActive ?? false} onChange={e => setEditing(prev => prev && ({ ...prev, bannerSellerButtonActive: e.target.checked }))} />
                   Mostrar botón 'Quiero vender'
                 </label>
+                <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#1E1914' }}>
+                  <input type="checkbox" checked={editing.bannerExtraButtonActive ?? false} onChange={e => setEditing(prev => prev && ({ ...prev, bannerExtraButtonActive: e.target.checked }))} />
+                  Mostrar botón extra (configurable)
+                </label>
+                {editing.bannerExtraButtonActive && (
+                  <div style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {inp('Texto del botón extra', editing.bannerExtraButtonText ?? '', v => setEditing(e => e && ({ ...e, bannerExtraButtonText: v })))}
+                    {inp('URL del botón extra', editing.bannerExtraButtonUrl ?? '', v => setEditing(e => e && ({ ...e, bannerExtraButtonUrl: v })))}
+                  </div>
+                )}
 
                 {/* ── Pagina Nosotros ── */}
                 {sectionTitle('Pagina "Nosotros"')}

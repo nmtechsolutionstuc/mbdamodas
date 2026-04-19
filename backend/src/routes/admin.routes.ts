@@ -18,6 +18,15 @@ import {
   completeReservationHandler, extendReservationHandler,
   deleteAdminReservation, resendReservationWhatsapp,
 } from '../controllers/reservation.controller'
+import {
+  adminListShops, adminUpdateShop,
+  adminListProducts, adminApproveProduct, adminRejectProduct, adminToggleFeatured,
+  adminPendingCount,
+} from '../controllers/admin-minishops.controller'
+import {
+  listFeatured, setFeaturedItem, setFeaturedMiniShopProduct,
+  searchProductsToFeature, adminEditProduct,
+} from '../controllers/admin-featured.controller'
 import { asyncHandler } from '../utils/asyncHandler'
 
 const router = Router()
@@ -67,6 +76,22 @@ router.delete('/users/:id', asyncHandler(deleteUser))
 router.get('/stores', asyncHandler(listStores))
 router.post('/stores', asyncHandler(createStore))
 router.patch('/stores/:id', asyncHandler(updateStore))
+
+// Mini-tiendas (admin)
+router.get('/minishops/products/pending-count', asyncHandler(adminPendingCount))
+router.get('/minishops/products', asyncHandler(adminListProducts))
+router.patch('/minishops/products/:id/approve', asyncHandler(adminApproveProduct))
+router.patch('/minishops/products/:id/reject', asyncHandler(adminRejectProduct))
+router.patch('/minishops/products/:id/toggle-featured', asyncHandler(adminToggleFeatured))
+router.patch('/minishops/products/:id/edit', asyncHandler(adminEditProduct))
+router.get('/minishops', asyncHandler(adminListShops))
+router.patch('/minishops/:id', asyncHandler(adminUpdateShop))
+
+// Gestión de Destacados
+router.get('/featured', asyncHandler(listFeatured))
+router.get('/featured/search', asyncHandler(searchProductsToFeature))
+router.patch('/featured/item/:id', asyncHandler(setFeaturedItem))
+router.patch('/featured/minishop-product/:id', asyncHandler(setFeaturedMiniShopProduct))
 
 // Reservas
 router.get('/reservations', asyncHandler(listAdminReservations))

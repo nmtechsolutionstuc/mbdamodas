@@ -30,17 +30,41 @@ export async function listItems(req: Request, res: Response): Promise<void> {
 }
 
 export async function listFeaturedItems(_req: Request, res: Response): Promise<void> {
-  const items = await prisma.item.findMany({
-    where: { featured: true, isActive: true, soldAt: null },
-    orderBy: { updatedAt: 'desc' },
-    include: {
-      photos: { orderBy: { order: 'asc' } },
-      productType: true,
-      size: true,
-      store: { select: { phone: true } },
-    },
-  })
-  ok(res, items)
+  // Lazy expire featured items whose featuredUntil has passed
+  const now = new Date()
+  await Promise.all([
+    prisma.item.updateMany({ where: { featured: true, featuredUntil: { lt: now } }, data: { featured: false } }),
+    prisma.miniShopProduct.updateMany({ where: { featured: true, featuredUntil: { lt: now } }, data: { featured: false, featuredUntil: null } }),
+  ])
+
+  const [mbdaItems, minishopProducts] = await Promise.all([
+    prisma.item.findMany({
+      where: { featured: true, isActive: true, soldAt: null },
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        photos: { orderBy: { order: 'asc' } },
+        productType: true,
+        size: true,
+        store: { select: { phone: true } },
+      },
+    }),
+    prisma.miniShopProduct.findMany({
+      where: { featured: true, status: 'APPROVED', miniShop: { status: 'ACTIVE' } },
+      orderBy: { featuredAt: 'desc' },
+      include: {
+        photos: { orderBy: { order: 'asc' }, take: 1 },
+        productType: { select: { id: true, name: true, code: true } },
+        size: { select: { id: true, name: true } },
+        miniShop: { select: { name: true, slug: true, whatsapp: true } },
+      },
+    }),
+  ])
+
+  const enriched = [
+    ...mbdaItems.map((i: any) => ({ ...i, source: 'mbda' as const })),
+    ...minishopProducts.map((p: any) => ({ ...p, source: 'minishop' as const })),
+  ]
+  ok(res, enriched)
 }
 
 export async function listPublicProductTypes(_req: Request, res: Response): Promise<void> {

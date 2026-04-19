@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { ItemCard } from '../../components/catalog/ItemCard'
+import { Link, useSearchParams } from 'react-router-dom'
+import { CatalogCard } from '../../components/catalog/CatalogCard'
 import { FeaturedCarousel } from '../../components/catalog/FeaturedCarousel'
 import { ItemCardSkeleton } from '../../components/ui/Skeleton'
-import { fetchItems, fetchFeaturedItems } from '../../api/items'
+import { fetchCatalog, fetchCatalogShops } from '../../api/catalog'
+import { fetchFeaturedItems } from '../../api/items'
 import { useProductTypes } from '../../hooks/useProductTypes'
 import { useAuthStore } from '../../store/authStore'
 import axiosClient from '../../api/axiosClient'
-import type { Item } from '../../types'
+import type { CatalogItem, CatalogShop } from '../../types'
 
 interface BannerData {
   buyer: { subtitle: string | null; title: string | null; description: string | null; buttonActive: boolean }
-  seller: { subtitle: string | null; title: string | null; description: string | null; buttonActive: boolean; reservarButtonActive: boolean }
+  seller: { subtitle: string | null; title: string | null; description: string | null; buttonActive: boolean; reservarButtonActive: boolean; extraButtonActive: boolean; extraButtonText: string; extraButtonUrl: string }
 }
 
 interface FeatureCardConfig {
@@ -28,7 +29,7 @@ interface FeatureCardsData {
 }
 
 const DEFAULT_FEATURE_CARDS: Required<FeatureCardsData> = {
-  card1: { active: true, emoji: '\uD83D\uDC57', title: 'Ropa nueva', desc: 'Productos nuevos propios de MBDA Modas, con las últimas tendencias.' },
+  card1: { active: true, emoji: '\uD83D\uDC57', title: 'Ropa nueva', desc: 'Productos nuevos propios de MBDA Market, con las últimas tendencias.' },
   card2: { active: true, emoji: '\u267B\uFE0F', title: 'Ropa en consignación', desc: 'Productos seleccionados y cuidados, a precios accesibles.' },
   card3: { active: true, emoji: '\uD83D\uDCB0', title: 'Ganá vendiendo', desc: 'Reservá un producto, conseguí un comprador y llevate una comisión. Sin inversión.' },
 }
@@ -36,20 +37,25 @@ const DEFAULT_FEATURE_CARDS: Required<FeatureCardsData> = {
 export function HomePage() {
   const { productTypes } = useProductTypes()
   const { user } = useAuthStore()
-  const [items, setItems] = useState<Item[]>([])
+  const [searchParams] = useSearchParams()
+  const [items, setItems] = useState<CatalogItem[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [productTypeId, setProductTypeId] = useState('')
   const [sizeId, setSizeId] = useState('')
   const [tagId, setTagId] = useState('')
+  const [miniShopSlug, setMiniShopSlug] = useState(() => searchParams.get('miniShopSlug') ?? '')
+  const [source, setSource] = useState<'' | 'mbda'>('')
+  const [sortPrice, setSortPrice] = useState<'' | 'asc' | 'desc'>('')
   const [page, setPage] = useState(1)
   const [hoveredCta, setHoveredCta] = useState<string | null>(null)
   const [banners, setBanners] = useState<BannerData | null>(null)
   const [featureCardsData, setFeatureCardsData] = useState<FeatureCardsData>({})
-  const [featuredItems, setFeaturedItems] = useState<Item[]>([])
+  const [featuredItems, setFeaturedItems] = useState<any[]>([])
   const [featuredTitle, setFeaturedTitle] = useState('Destacados')
   const [videoSection, setVideoSection] = useState<{ active: boolean; title: string; videoUrl: string; description: string } | null>(null)
+  const [shops, setShops] = useState<CatalogShop[]>([])
 
   const selectedProductType = (productTypes ?? []).find(pt => pt.id === productTypeId)
 
@@ -70,6 +76,9 @@ export function HomePage() {
         if (store?.videoSection) setVideoSection(store.videoSection)
       })
       .catch(() => {})
+    fetchCatalogShops()
+      .then(setShops)
+      .catch(() => {})
   }, [])
 
   // Banner text with fallbacks
@@ -82,26 +91,49 @@ export function HomePage() {
   const sellerDesc = banners?.seller?.description || 'Reserva un producto del catalogo, consegiu un comprador y gana una comision por cada venta. Sin capital inicial, sin riesgo.'
   const sellerButtonActive = banners?.seller?.buttonActive ?? true
   const reservarButtonActive = banners?.seller?.reservarButtonActive ?? true
+  const extraButtonActive = banners?.seller?.extraButtonActive ?? false
+  const extraButtonText = banners?.seller?.extraButtonText || 'Ver más'
+  const extraButtonUrl = banners?.seller?.extraButtonUrl || ''
 
   useEffect(() => {
     setLoading(true)
-    fetchItems({
+    fetchCatalog({
       search: search || undefined,
       productTypeId: productTypeId || undefined,
       sizeId: sizeId || undefined,
       tagId: tagId || undefined,
+      miniShopSlug: miniShopSlug || undefined,
+      source: source || undefined,
+      sortPrice: sortPrice || undefined,
       page,
       limit: 12,
     })
       .then(r => { setItems(r.items); setTotal(r.total) })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [search, productTypeId, sizeId, tagId, page])
+  }, [search, productTypeId, sizeId, tagId, miniShopSlug, source, sortPrice, page])
 
   function handleProductTypeChange(newId: string) {
     setProductTypeId(newId)
     setSizeId('')
     setTagId('')
+    setPage(1)
+  }
+
+  function handleMiniShopChange(slug: string) {
+    setMiniShopSlug(slug)
+    if (slug) setSource('')   // clear source filter when filtering by shop
+    setPage(1)
+  }
+
+  function handleSourceToggle(val: '' | 'mbda') {
+    setSource(val)
+    if (val === 'mbda') setMiniShopSlug('')  // clear shop filter when viewing MBDA-only
+    setPage(1)
+  }
+
+  function handleSortPrice(val: string) {
+    setSortPrice(val as '' | 'asc' | 'desc')
     setPage(1)
   }
 
@@ -167,29 +199,30 @@ export function HomePage() {
           <p style={{ color: '#4b5563', marginBottom: '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
             {buyerDesc}
           </p>
-          {buyerButtonActive && (
-            <a
-              href="#catalogo"
-              onMouseEnter={() => setHoveredCta('catalogo')}
-              onMouseLeave={() => setHoveredCta(null)}
-              style={{
-                background: hoveredCta === 'catalogo' ? '#352e28' : '#1E1914',
-                color: '#E8E3D5',
-                padding: '0.875rem 2rem',
-                borderRadius: '0.75rem',
-                textDecoration: 'none',
-                fontWeight: 600,
-                fontSize: '1rem',
-                letterSpacing: '0.02em',
-                transition: 'background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
-                transform: hoveredCta === 'catalogo' ? 'translateY(-2px)' : 'translateY(0)',
-                boxShadow: hoveredCta === 'catalogo' ? '0 6px 20px rgba(30,25,20,0.3)' : '0 2px 8px rgba(30,25,20,0.15)',
-                position: 'relative',
-              }}
-            >
-              Ver catalogo
-            </a>
-          )}
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
+            {buyerButtonActive && (
+              <a
+                href="#catalogo"
+                onMouseEnter={() => setHoveredCta('catalogo')}
+                onMouseLeave={() => setHoveredCta(null)}
+                style={{
+                  background: hoveredCta === 'catalogo' ? '#352e28' : '#1E1914',
+                  color: '#E8E3D5',
+                  padding: '0.875rem 2rem',
+                  borderRadius: '0.75rem',
+                  textDecoration: 'none',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  letterSpacing: '0.02em',
+                  transition: 'background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
+                  transform: hoveredCta === 'catalogo' ? 'translateY(-2px)' : 'translateY(0)',
+                  boxShadow: hoveredCta === 'catalogo' ? '0 6px 20px rgba(30,25,20,0.3)' : '0 2px 8px rgba(30,25,20,0.15)',
+                }}
+              >
+                Ver catálogo
+              </a>
+            )}
+          </div>
         </div>
 
         {/* Panel vendedor / promotor */}
@@ -288,6 +321,28 @@ export function HomePage() {
               >
                 Quiero vender
               </Link>
+            )}
+            {extraButtonActive && extraButtonUrl && (
+              <a
+                href={extraButtonUrl}
+                onMouseEnter={() => setHoveredCta('extra')}
+                onMouseLeave={() => setHoveredCta(null)}
+                style={{
+                  background: 'transparent',
+                  color: '#E8E3D5',
+                  padding: '0.875rem 1.75rem',
+                  borderRadius: '0.75rem',
+                  textDecoration: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  letterSpacing: '0.02em',
+                  border: '1px solid rgba(232, 227, 213, 0.3)',
+                  transition: 'background 0.2s ease, transform 0.2s ease',
+                  transform: hoveredCta === 'extra' ? 'translateY(-2px)' : 'translateY(0)',
+                }}
+              >
+                {extraButtonText}
+              </a>
             )}
           </div>
         </div>
@@ -512,6 +567,71 @@ export function HomePage() {
               ))}
             </select>
           )}
+          {shops.length > 0 && (
+            <select
+              value={miniShopSlug}
+              onChange={e => handleMiniShopChange(e.target.value)}
+              style={{
+                padding: '0.625rem 1rem',
+                borderRadius: '0.5rem',
+                border: miniShopSlug ? '1px solid #1E1914' : '1px solid #E8E3D5',
+                background: miniShopSlug ? '#1E1914' : '#FAF8F3',
+                color: miniShopSlug ? '#FAF8F3' : '#1E1914',
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '0.9rem',
+                outline: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="">Todas las tiendas</option>
+              {shops.map(s => (
+                <option key={s.id} value={s.slug}>{s.name}</option>
+              ))}
+            </select>
+          )}
+          {/* Source toggle */}
+          <div style={{ display: 'flex', gap: '0.375rem', border: '1px solid #E8E3D5', borderRadius: '0.5rem', padding: '0.25rem', background: '#FAF8F3' }}>
+            {([['', 'Todos'], ['mbda', 'MBDA']] as ['' | 'mbda', string][]).map(([val, label]) => (
+              <button
+                key={val}
+                onClick={() => handleSourceToggle(val)}
+                style={{
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '0.35rem',
+                  border: 'none',
+                  background: source === val ? '#1E1914' : 'transparent',
+                  color: source === val ? '#FAF8F3' : '#6b7280',
+                  fontSize: '0.8rem',
+                  fontWeight: source === val ? 600 : 400,
+                  cursor: 'pointer',
+                  fontFamily: "'Inter', sans-serif",
+                  transition: 'background 0.15s, color 0.15s',
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <select
+            value={sortPrice}
+            onChange={e => handleSortPrice(e.target.value)}
+            style={{
+              padding: '0.625rem 1rem',
+              borderRadius: '0.5rem',
+              border: '1px solid #E8E3D5',
+              background: '#FAF8F3',
+              color: '#1E1914',
+              fontFamily: "'Inter', sans-serif",
+              fontSize: '0.9rem',
+              outline: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            <option value="">Precio: relevancia</option>
+            <option value="asc">Precio: menor a mayor</option>
+            <option value="desc">Precio: mayor a menor</option>
+          </select>
         </div>
 
         {/* Grid */}
@@ -556,7 +676,7 @@ export function HomePage() {
             }}
           >
             {items.map(item => (
-              <ItemCard key={item.id} item={item} />
+              <CatalogCard key={item.id} item={item} />
             ))}
           </div>
         )}

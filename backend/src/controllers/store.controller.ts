@@ -8,23 +8,23 @@ const storeSchema = z.object({
   name: z.string().min(1).max(200),
   address: z.string().max(300).optional().nullable(),
   phone: z.string().max(30).optional().nullable(),
-  email: z.string().email().optional().nullable(),
+  email: z.union([z.string().email(), z.literal(''), z.null()]).optional().transform(v => v === '' ? null : v),
   description: z.string().max(1000).optional().nullable(),
-  logoUrl: z.string().url().optional().nullable(),
-  defaultCommission: z.number().min(0).max(100).optional(),
-  isActive: z.boolean().optional(),
+  logoUrl: z.union([z.string().url(), z.literal(''), z.null()]).optional().transform(v => v === '' ? null : v),
+  defaultCommission: z.union([z.number(), z.string().transform(Number)]).pipe(z.number().min(0).max(100)).optional(),
+  isActive: z.boolean().nullable().optional().transform(v => v ?? undefined),
   storeAttendantPhone: z.string().max(30).optional().nullable(),
   announcementText: z.string().max(500).optional().nullable(),
-  announcementActive: z.boolean().optional(),
+  announcementActive: z.boolean().nullable().optional().transform(v => v ?? undefined),
   // Banners editables de la homepage
   bannerBuyerSubtitle: z.string().max(200).optional().nullable(),
   bannerBuyerTitle: z.string().max(300).optional().nullable(),
   bannerBuyerDescription: z.string().max(500).optional().nullable(),
-  bannerBuyerButtonActive: z.boolean().optional(),
+  bannerBuyerButtonActive: z.boolean().nullable().optional().transform(v => v ?? undefined),
   bannerSellerSubtitle: z.string().max(200).optional().nullable(),
   bannerSellerTitle: z.string().max(300).optional().nullable(),
   bannerSellerDescription: z.string().max(500).optional().nullable(),
-  bannerSellerButtonActive: z.boolean().optional(),
+  bannerSellerButtonActive: z.boolean().nullable().optional().transform(v => v ?? undefined),
   // Contenido de páginas
   aboutContent: z.string().max(10000).optional().nullable(),
   termsContent: z.string().max(20000).optional().nullable(),
@@ -32,7 +32,10 @@ const storeSchema = z.object({
   menuConfig: z.record(z.any()).optional().nullable(),
   // Cards de propuesta de valor (homepage)
   featureCards: z.record(z.any()).optional().nullable(),
-  bannerReservarButtonActive: z.boolean().optional(),
+  bannerReservarButtonActive: z.boolean().nullable().optional().transform(v => v ?? undefined),
+  bannerExtraButtonActive: z.boolean().nullable().optional().transform(v => v ?? undefined),
+  bannerExtraButtonText: z.string().max(100).optional().nullable(),
+  bannerExtraButtonUrl: z.string().max(500).optional().nullable(),
   socialLinks: z.record(z.any()).optional().nullable(),
   footerConfig: z.record(z.any()).optional().nullable(),
   aboutConfig: z.record(z.any()).optional().nullable(),
@@ -62,6 +65,9 @@ export async function getHomeBanners(_req: Request, res: Response): Promise<void
       bannerSellerDescription: true,
       bannerSellerButtonActive: true,
       bannerReservarButtonActive: true,
+      bannerExtraButtonActive: true,
+      bannerExtraButtonText: true,
+      bannerExtraButtonUrl: true,
     },
   })
   ok(res, {
@@ -77,6 +83,9 @@ export async function getHomeBanners(_req: Request, res: Response): Promise<void
       description: store?.bannerSellerDescription ?? null,
       buttonActive: store?.bannerSellerButtonActive ?? true,
       reservarButtonActive: store?.bannerReservarButtonActive ?? true,
+      extraButtonActive: store?.bannerExtraButtonActive ?? false,
+      extraButtonText: store?.bannerExtraButtonText ?? 'Ver más',
+      extraButtonUrl: store?.bannerExtraButtonUrl ?? '',
     },
   })
 }
@@ -143,7 +152,11 @@ export async function createStore(req: Request, res: Response): Promise<void> {
 
 export async function updateStore(req: Request, res: Response): Promise<void> {
   const parsed = storeSchema.partial().safeParse(req.body)
-  if (!parsed.success) { badRequest(res, 'Datos inválidos', parsed.error.errors); return }
+  if (!parsed.success) {
+    console.error('[updateStore] Zod errors:', JSON.stringify(parsed.error.errors, null, 2))
+    badRequest(res, 'Datos inválidos', parsed.error.errors)
+    return
+  }
   try {
     const store = await prisma.store.update({ where: { id: req.params.id! }, data: sanitizeStoreData(parsed.data) })
     ok(res, store)

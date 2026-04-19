@@ -35,6 +35,19 @@ enum ItemCondition {
   USO_INTENSO         // Desgaste notable
 }
 
+enum MiniShopStatus {
+  ACTIVE
+  PAUSED
+  DELETED
+}
+
+enum MiniShopProductStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAUSED
+}
+
 enum ReservationStatus {
   PENDING_APPROVAL  // Creada por el usuario, esperando confirmación del admin
   APPROVED          // Aprobada — producto reservado por 24h
@@ -57,10 +70,11 @@ model ProductType {
   order        Int      @default(0) // for display ordering
   createdAt    DateTime @default(now())
 
-  items           Item[]
-  submissionItems SubmissionItem[]
-  tags            Tag[]
-  sizes           Size[]
+  items              Item[]
+  submissionItems    SubmissionItem[]
+  tags               Tag[]
+  sizes              Size[]
+  miniShopProducts   MiniShopProduct[]
 
   @@map("product_types")
 }
@@ -79,8 +93,9 @@ model Size {
   productTypeId String
   productType   ProductType @relation(fields: [productTypeId], references: [id])
 
-  items           Item[]
-  submissionItems SubmissionItem[]
+  items              Item[]
+  submissionItems    SubmissionItem[]
+  miniShopProducts   MiniShopProduct[]
 
   @@unique([productTypeId, name])
   @@index([productTypeId])
@@ -101,8 +116,9 @@ model Tag {
   productTypeId String
   productType   ProductType @relation(fields: [productTypeId], references: [id])
 
-  items           ItemTag[]
-  submissionItems SubmissionItemTag[]
+  items              ItemTag[]
+  submissionItems    SubmissionItemTag[]
+  miniShopProducts   MiniShopProductTag[]
 
   @@unique([productTypeId, name])
   @@index([productTypeId])
@@ -162,6 +178,9 @@ model Store {
   // ── Configuración botones banner vendedor ──
   bannerReservarButtonActive Boolean @default(true) // "Reservar y ganar" button
   // (bannerSellerButtonActive stays as "Quiero vender" button)
+  bannerExtraButtonActive  Boolean  @default(false) // Botón extra configurable en panel vendedor
+  bannerExtraButtonText    String?  // Texto del botón extra
+  bannerExtraButtonUrl     String?  // URL del botón extra
   // ── Redes sociales ──
   socialLinks                Json?   // {whatsappGroup?:{active,url}, tiktok?:{active,url}, instagram?:{active,url}, facebook?:{active,url}}
   // ── Footer editable ──
@@ -221,6 +240,7 @@ model User {
   refreshTokens RefreshToken[]
   submissions   Submission[]
   reservations  Reservation[]
+  miniShops     MiniShop[]
 
   @@map("users")
 }
@@ -357,6 +377,8 @@ model Item {
   isOwnProduct          Boolean       @default(false)
   promoterCommissionPct Decimal?      @db.Decimal(5, 2)
   featured              Boolean       @default(false)  // aparece en sección Destacados del home
+  featuredAt            DateTime?                       // cuándo se activó el destacado
+  featuredUntil         DateTime?                       // cuándo vence (null = sin límite)
 
   photos       ItemPhoto[]
   tags         ItemTag[]
@@ -435,4 +457,93 @@ model Reservation {
   @@index([userId])
   @@index([status])
   @@map("reservations")
+}
+
+// ─────────────────────────────────────────────────────────────
+// MINISHOP — Minitienda creada por un usuario del marketplace
+// ─────────────────────────────────────────────────────────────
+
+model MiniShop {
+  id              String          @id @default(uuid())
+  name            String
+  slug            String          @unique
+  description     String?
+  profilePhotoUrl String?
+  whatsapp        String
+  socialLinks     Json?           // {instagram?, tiktok?, facebook?, otra?}
+  deliveryMethods Json            // {meetingPoint: bool, address?: string, shipping: bool}
+  acceptedTerms   Boolean         @default(false)
+  status          MiniShopStatus  @default(ACTIVE)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+
+  products MiniShopProduct[]
+
+  @@index([userId])
+  @@index([slug])
+  @@index([status])
+  @@map("mini_shops")
+}
+
+// ─────────────────────────────────────────────────────────────
+// MINISHOP PRODUCT — Producto de una minitienda (requiere aprobación admin)
+// ─────────────────────────────────────────────────────────────
+
+model MiniShopProduct {
+  id              String                  @id @default(uuid())
+  title           String
+  slug            String                  @unique
+  description     String?
+  price           Decimal                 @db.Decimal(12, 2)
+  quantity        Int                     @default(1)
+  status          MiniShopProductStatus   @default(PENDING)
+  rejectionReason String?
+  featured        Boolean                 @default(false)
+  featuredAt      DateTime?
+  featuredUntil   DateTime?
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  miniShopId    String
+  miniShop      MiniShop    @relation(fields: [miniShopId], references: [id], onDelete: Cascade)
+
+  productTypeId String
+  productType   ProductType @relation(fields: [productTypeId], references: [id])
+
+  sizeId String?
+  size   Size?   @relation(fields: [sizeId], references: [id])
+
+  photos MiniShopProductPhoto[]
+  tags   MiniShopProductTag[]
+
+  @@index([miniShopId])
+  @@index([status])
+  @@index([productTypeId])
+  @@map("mini_shop_products")
+}
+
+model MiniShopProductPhoto {
+  id        String   @id @default(uuid())
+  url       String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  miniShopProductId String
+  miniShopProduct   MiniShopProduct @relation(fields: [miniShopProductId], references: [id], onDelete: Cascade)
+
+  @@index([miniShopProductId])
+  @@map("mini_shop_product_photos")
+}
+
+model MiniShopProductTag {
+  miniShopProductId String
+  miniShopProduct   MiniShopProduct @relation(fields: [miniShopProductId], references: [id], onDelete: Cascade)
+  tagId             String
+  tag               Tag             @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([miniShopProductId, tagId])
+  @@map("mini_shop_product_tags")
 }

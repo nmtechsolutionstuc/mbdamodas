@@ -76,7 +76,7 @@ export function RegisterPage() {
           Crear cuenta
         </h1>
         <p style={{ color: '#6b7280', textAlign: 'center', marginBottom: '2rem' }}>
-          Vendé tus productos en MBDA Modas
+          Vendé tus productos en MBDA Market
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -182,7 +182,7 @@ export function RegisterPage() {
               <Link to="/terminos-y-condiciones" target="_blank" style={{ color: '#1E1914', fontWeight: 600, textDecoration: 'underline' }}>
                 Términos y Condiciones
               </Link>
-              {' '}de consignación de MBDA Modas
+              {' '}de consignación de MBDA Market
             </span>
           </label>
 

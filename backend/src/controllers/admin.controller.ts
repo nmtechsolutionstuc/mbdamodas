@@ -110,8 +110,22 @@ export async function toggleFeatured(req: Request, res: Response): Promise<void>
   try {
     const item = await prisma.item.findUnique({ where: { id: req.params.id! }, select: { id: true, featured: true } })
     if (!item) { notFound(res, 'Item no encontrado'); return }
-    const updated = await prisma.item.update({ where: { id: item.id }, data: { featured: !item.featured } })
-    ok(res, { id: updated.id, featured: updated.featured })
+    // Support optional days parameter for time-based featuring
+    const { days } = req.body
+    const newFeatured = !item.featured
+    let featuredUntil: Date | null = null
+    if (newFeatured && days && typeof days === 'number' && days > 0) {
+      featuredUntil = new Date(Date.now() + days * 24 * 60 * 60 * 1000)
+    }
+    const updated = await prisma.item.update({
+      where: { id: item.id },
+      data: {
+        featured: newFeatured,
+        featuredAt: newFeatured ? new Date() : null,
+        featuredUntil: newFeatured ? featuredUntil : null,
+      },
+    })
+    ok(res, { id: updated.id, featured: updated.featured, featuredAt: updated.featuredAt, featuredUntil: updated.featuredUntil })
   } catch {
     serverError(res)
   }
@@ -311,7 +325,7 @@ export async function createUser(req: Request, res: Response): Promise<void> {
 
 export async function getDashboardStats(req: Request, res: Response): Promise<void> {
   try {
-    const [pending, inStore, soldThisMonth] = await prisma.$transaction([
+    const [pending, inStore, soldThisMonth, miniShopPending] = await prisma.$transaction([
       prisma.submissionItem.count({ where: { status: 'PENDING' } }),
       prisma.submissionItem.count({ where: { status: 'IN_STORE' } }),
       prisma.submissionItem.count({
@@ -320,8 +334,9 @@ export async function getDashboardStats(req: Request, res: Response): Promise<vo
           updatedAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) },
         },
       }),
+      prisma.miniShopProduct.count({ where: { status: 'PENDING' } }),
     ])
-    ok(res, { pending, inStore, soldThisMonth })
+    ok(res, { pending, inStore, soldThisMonth, miniShopPending })
   } catch {
     serverError(res)
   }

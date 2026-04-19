@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { fetchAdminStats } from '../../api/admin'
 
 export function AdminDashboardPage() {
-  const [stats, setStats] = useState({ pending: 0, inStore: 0, soldThisMonth: 0 })
+  const [stats, setStats] = useState({ pending: 0, inStore: 0, soldThisMonth: 0, miniShopPending: 0 })
   const [hoveredLink, setHoveredLink] = useState<string | null>(null)
 
   useEffect(() => {
@@ -11,9 +11,10 @@ export function AdminDashboardPage() {
   }, [])
 
   const statCards = [
-    { label: 'Productos en revisión', value: stats.pending, icon: '📋', color: '#854d0e', bg: 'linear-gradient(135deg, #fef9c3 0%, #fef3c7 100%)', link: '/admin/solicitudes' },
+    { label: 'Solicitudes en revisión', value: stats.pending, icon: '📋', color: '#854d0e', bg: 'linear-gradient(135deg, #fef9c3 0%, #fef3c7 100%)', link: '/admin/solicitudes' },
     { label: 'En tienda', value: stats.inStore, icon: '🏪', color: '#1e40af', bg: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', link: '/admin/solicitudes' },
     { label: 'Vendidas este mes', value: stats.soldThisMonth, icon: '✨', color: '#166534', bg: 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)', link: '/admin/catalogo' },
+    { label: 'Mini-tiendas pendientes', value: stats.miniShopPending, icon: '🛍️', color: '#6d28d9', bg: 'linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)', link: '/admin/mini-tiendas' },
   ]
 
   const quickLinks = [
@@ -23,12 +24,14 @@ export function AdminDashboardPage() {
     { label: 'Tiendas', desc: 'Configurar comisiones y datos de la tienda', to: '/admin/tiendas', dark: false, icon: '🏬' },
     { label: 'Configuracion', desc: 'Tipos de producto, talles y etiquetas', to: '/admin/configuracion', dark: false, icon: '⚙️' },
     { label: 'Gestionar Reservas', desc: 'Aprobar, rechazar y completar reservas de promotores', to: '/admin/reservas', dark: false, icon: '🔖' },
+    { label: 'Mini-tiendas', desc: 'Aprobar productos, gestionar tiendas de vendedores', to: '/admin/mini-tiendas', dark: false, icon: '🛍️' },
+    { label: 'Destacados', desc: 'Gestionar qué productos aparecen en la sección destacada del home', to: '/admin/destacados', dark: false, icon: '⭐' },
   ]
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F3', padding: '1.5rem' }}>
       <style>{`
-        .mbda-admin-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
+        .mbda-admin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
         .mbda-admin-links { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         @media (max-width: 640px) {
           .mbda-admin-stats { grid-template-columns: 1fr; }

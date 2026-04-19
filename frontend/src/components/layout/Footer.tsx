@@ -34,7 +34,7 @@ export function Footer() {
         {/* Marca */}
         <div>
           <p style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem', fontWeight: 700, color: '#E8E3D5', marginBottom: '0.5rem' }}>
-            {info?.name ?? 'MBDA Modas'}
+            {info?.name ?? 'MBDA Market'}
           </p>
           <p style={{ fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '0.5rem' }}>{tagline}</p>
           <p style={{ fontSize: '0.8rem', lineHeight: 1.6, opacity: 0.7 }}>{address}</p>
@@ -120,7 +120,7 @@ export function Footer() {
         <div style={{ maxWidth: '1100px', margin: '2rem auto 0', paddingTop: '1.5rem', borderTop: '1px solid rgba(232,227,213,0.1)', textAlign: 'center' }}>
           <p style={{ fontSize: '0.8rem', color: 'rgba(232,227,213,0.5)', marginBottom: '0.375rem' }}>
             Desarrollado por{' '}
-            <a href="https://wa.me/543865468239?text=Hola%20Nahuel!%20Vi%20tu%20trabajo%20en%20MBDA%20Modas%20y%20me%20interesa%20un%20proyecto%20similar." target="_blank" rel="noopener noreferrer"
+            <a href="https://wa.me/543865468239?text=Hola%20Nahuel!%20Vi%20tu%20trabajo%20en%20MBDA%20Market%20y%20me%20interesa%20un%20proyecto%20similar." target="_blank" rel="noopener noreferrer"
               style={{ color: '#E8E3D5', textDecoration: 'none', fontWeight: 600 }}
               onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
               onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
@@ -136,7 +136,7 @@ export function Footer() {
             >Contactame</a>
           </p>
           <p style={{ fontSize: '0.75rem', color: 'rgba(232,227,213,0.4)', marginTop: '1rem' }}>
-            © {new Date().getFullYear()} {info?.name ?? 'MBDA Modas'} — Todos los derechos reservados
+            © {new Date().getFullYear()} {info?.name ?? 'MBDA Market'} — Todos los derechos reservados
           </p>
         </div>
       )}

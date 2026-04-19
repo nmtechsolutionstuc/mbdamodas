@@ -1,14 +1,26 @@
 import { useRef, useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import type { Item } from '../../types'
 
-function FeaturedCard({ item }: { item: Item }) {
+// Unified featured item — can come from MBDA or mini-shop
+interface FeaturedItem {
+  id: string
+  title: string
+  price: number
+  source: 'mbda' | 'minishop'
+  slug?: string
+  photos?: { url: string }[]
+  size?: { name: string } | null
+  miniShop?: { name: string; slug: string }
+}
+
+function FeaturedCard({ item }: { item: FeaturedItem }) {
   const cover = item.photos?.[0]?.url
   const [hovered, setHovered] = useState(false)
+  const to = item.source === 'minishop' && item.slug ? `/producto/${item.slug}` : `/item/${item.id}`
 
   return (
     <Link
-      to={`/item/${item.id}`}
+      to={to}
       style={{ textDecoration: 'none', flexShrink: 0, scrollSnapAlign: 'start' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -33,6 +45,11 @@ function FeaturedCard({ item }: { item: Item }) {
           )}
         </div>
         <div style={{ padding: '0.75rem' }}>
+          {item.source === 'minishop' && item.miniShop && (
+            <p style={{ fontSize: '0.65rem', color: '#9ca3af', margin: '0 0 0.2rem', fontFamily: "'Inter', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {item.miniShop.name}
+            </p>
+          )}
           <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.875rem', color: '#1E1914', margin: 0, marginBottom: '0.25rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {item.title}
           </p>
@@ -50,7 +67,7 @@ function FeaturedCard({ item }: { item: Item }) {
   )
 }
 
-export function FeaturedCarousel({ items, title }: { items: Item[]; title: string }) {
+export function FeaturedCarousel({ items, title }: { items: FeaturedItem[]; title: string }) {
   const trackRef = useRef<HTMLDivElement>(null)
   const [canLeft, setCanLeft] = useState(false)
   const [canRight, setCanRight] = useState(false)
@@ -111,7 +128,7 @@ export function FeaturedCarousel({ items, title }: { items: Item[]; title: strin
         }}
       >
         <style>{`.feat-track::-webkit-scrollbar{display:none}`}</style>
-        {items.map(item => <FeaturedCard key={item.id} item={item} />)}
+        {items.map(item => <FeaturedCard key={`${item.source}-${item.id}`} item={item} />)}
       </div>
     </section>
   )

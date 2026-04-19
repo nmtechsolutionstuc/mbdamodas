@@ -26,11 +26,19 @@ import { AdminCatalogPage } from './pages/admin/AdminCatalogPage'
 import { AdminUsersPage } from './pages/admin/AdminUsersPage'
 import { AdminCatalogSettingsPage } from './pages/admin/AdminCatalogSettingsPage'
 import { AdminReservationsPage } from './pages/admin/AdminReservationsPage'
+import { AdminMiniShopsPage } from './pages/admin/AdminMiniShopsPage'
+import { AdminFeaturedPage } from './pages/admin/AdminFeaturedPage'
 import { TermsPage } from './pages/public/TermsPage'
 import { AboutPage } from './pages/public/AboutPage'
 import { NotFoundPage } from './pages/public/NotFoundPage'
 import { MyReservationsPage } from './pages/user/MyReservationsPage'
 import { VoucherPage } from './pages/public/VoucherPage'
+import { MiniShopsPage } from './pages/user/MiniShopsPage'
+import { CreateMiniShopPage } from './pages/user/CreateMiniShopPage'
+import { MiniShopPanelPage } from './pages/user/MiniShopPanelPage'
+import { MiniShopProfilePage } from './pages/public/MiniShopProfilePage'
+import { MiniShopProductDetailPage } from './pages/public/MiniShopProductDetailPage'
+import { ShopsDirectoryPage } from './pages/public/ShopsDirectoryPage'
 
 function App() {
   return (
@@ -50,6 +58,9 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/auth/callback" element={<GoogleCallbackPage />} />
           <Route path="/comprobante/:code" element={<VoucherPage />} />
+          <Route path="/tiendas" element={<ShopsDirectoryPage />} />
+          <Route path="/tienda/:slug" element={<MiniShopProfilePage />} />
+          <Route path="/producto/:slug" element={<MiniShopProductDetailPage />} />
           <Route path="/completar-perfil" element={<ProtectedRoute><CompletarPerfilPage /></ProtectedRoute>} />
 
           {/* Usuario autenticado */}
@@ -59,6 +70,9 @@ function App() {
           <Route path="/dashboard/mis-solicitudes" element={<ProtectedRoute><MySubmissionsPage /></ProtectedRoute>} />
           <Route path="/dashboard/mis-solicitudes/:id" element={<ProtectedRoute><SubmissionDetailPage /></ProtectedRoute>} />
           <Route path="/dashboard/mis-reservas" element={<ProtectedRoute><MyReservationsPage /></ProtectedRoute>} />
+          <Route path="/dashboard/tiendas" element={<ProtectedRoute><MiniShopsPage /></ProtectedRoute>} />
+          <Route path="/dashboard/tiendas/nueva" element={<ProtectedRoute><CreateMiniShopPage /></ProtectedRoute>} />
+          <Route path="/dashboard/tiendas/:shopId" element={<ProtectedRoute><MiniShopPanelPage /></ProtectedRoute>} />
 
           {/* Admin */}
           <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
@@ -69,6 +83,8 @@ function App() {
           <Route path="/admin/tiendas" element={<AdminRoute><AdminStoresPage /></AdminRoute>} />
           <Route path="/admin/configuracion" element={<AdminRoute><AdminCatalogSettingsPage /></AdminRoute>} />
           <Route path="/admin/reservas" element={<AdminRoute><AdminReservationsPage /></AdminRoute>} />
+          <Route path="/admin/mini-tiendas" element={<AdminRoute><AdminMiniShopsPage /></AdminRoute>} />
+          <Route path="/admin/destacados" element={<AdminRoute><AdminFeaturedPage /></AdminRoute>} />
 
           {/* 404 */}
           <Route path="*" element={<NotFoundPage />} />

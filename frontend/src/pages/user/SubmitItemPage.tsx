@@ -452,7 +452,7 @@ export function SubmitItemPage() {
                 <a href="/terminos-y-condiciones" target="_blank" rel="noopener noreferrer" style={{ color: '#1E1914', fontWeight: 600, textDecoration: 'underline' }}>
                   Terminos y Condiciones
                 </a>
-                {' '}de consignacion de MBDA Modas.
+                {' '}de consignacion de MBDA Market.
               </span>
             </label>
 

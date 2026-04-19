@@ -9,7 +9,7 @@ import { useAuthStore } from '../../store/authStore'
 function buildWhatsAppLink(phone: string, item: Item): string {
   const sizePart = item.size ? ` (Talle ${item.size.name})` : ''
   const codePart = item.code ? ` [${item.code}]` : ''
-  const msg = `Hola MBDA Modas! Me interesa el producto "${item.title}"${codePart}${sizePart} · $${Number(item.price).toLocaleString('es-AR')}. ¿Está disponible? Lo vi en el catálogo online.`
+  const msg = `Hola MBDA Market! Me interesa el producto "${item.title}"${codePart}${sizePart} · $${Number(item.price).toLocaleString('es-AR')}. ¿Está disponible? Lo vi en el catálogo online.`
   return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
 }
 
@@ -310,7 +310,7 @@ export function ItemDetailPage() {
                   }}>
                     {reservationSuccess ? (
                       <p style={{ color: '#166534', fontWeight: 600, fontFamily: "'Inter', sans-serif", margin: 0 }}>
-                        Reserva enviada. El equipo de MBDA Modas te va a confirmar por WhatsApp.
+                        Reserva enviada. El equipo de MBDA Market te va a confirmar por WhatsApp.
                       </p>
                     ) : (
                       <>

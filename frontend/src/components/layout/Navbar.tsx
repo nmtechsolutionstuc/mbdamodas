@@ -59,7 +59,7 @@ export function Navbar() {
             style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
             <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', fontWeight: 700, color: '#E8E3D5', letterSpacing: '0.03em' }}>
-              MBDA Modas
+              MBDA Market
             </span>
             {isAdmin && (
               <span style={{
@@ -82,12 +82,24 @@ export function Navbar() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             {user ? (
               <>
+                {/* Tiendas link */}
+                <Link
+                  to="/tiendas"
+                  style={{ color: '#E8E3D5', textDecoration: 'none', padding: '0.35rem 0.75rem', fontSize: '0.85rem', fontWeight: 500, opacity: 0.85, fontFamily: "'Inter', sans-serif", transition: 'opacity 0.15s ease' }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
+                  className="hide-mobile"
+                >
+                  Tiendas
+                </Link>
+
                 {/* Nosotros link */}
                 <Link
                   to="/nosotros"
                   style={{ color: '#E8E3D5', textDecoration: 'none', padding: '0.35rem 0.75rem', fontSize: '0.85rem', fontWeight: 500, opacity: 0.85, fontFamily: "'Inter', sans-serif", transition: 'opacity 0.15s ease' }}
                   onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
                   onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
+                  className="hide-mobile"
                 >
                   Nosotros
                 </Link>
@@ -149,10 +161,20 @@ export function Navbar() {
             ) : (
               <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
                 <Link
+                  to="/tiendas"
+                  style={{ color: '#E8E3D5', textDecoration: 'none', padding: '0.375rem 0.875rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, opacity: 0.85, fontFamily: "'Inter', sans-serif", transition: 'opacity 0.15s ease' }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
+                  className="hide-mobile"
+                >
+                  Tiendas
+                </Link>
+                <Link
                   to="/nosotros"
                   style={{ color: '#E8E3D5', textDecoration: 'none', padding: '0.375rem 0.875rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, opacity: 0.85, fontFamily: "'Inter', sans-serif", transition: 'opacity 0.15s ease' }}
                   onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
                   onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
+                  className="hide-mobile"
                 >
                   Nosotros
                 </Link>

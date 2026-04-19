@@ -191,3 +191,122 @@ export interface ApiResponse<T> {
   data: T
   meta?: { page: number; limit: number; total: number }
 }
+
+// ── Unified Catalog ────────────────────────────────────────────
+
+interface CatalogItemBase {
+  id: string
+  title: string
+  price: number
+  photos: { id?: string; url: string; order: number }[]
+  productType?: { id: string; name: string; code: string } | null
+  size?: { id: string; name: string } | null
+  tags?: { tag: { id: string; name: string } }[]
+}
+
+export interface MbdaCatalogItem extends CatalogItemBase {
+  source: 'mbda'
+  code?: string | null
+  description?: string | null
+  condition?: string
+  quantity: number
+  isActive: boolean
+  isOwnProduct?: boolean
+  promoterCommissionPct?: number | null
+  store?: { id: string; name: string; phone: string | null }
+  activeReservation?: { id: string; status: ReservationStatus } | null
+  reservedQuantity?: number
+  availableQuantity?: number
+}
+
+export interface MinishopCatalogItem extends CatalogItemBase {
+  source: 'minishop'
+  slug: string
+  description?: string | null
+  quantity: number
+  status: MiniShopProductStatus
+  miniShop: { name: string; slug: string; whatsapp: string; profilePhotoUrl: string | null }
+}
+
+export type CatalogItem = MbdaCatalogItem | MinishopCatalogItem
+
+export interface CatalogShop {
+  id: string
+  name: string
+  slug: string
+  profilePhotoUrl: string | null
+  description?: string | null
+  _count?: { products: number }
+}
+
+// ── MiniShop (Minitiendas) ─────────────────────────────────────
+
+export type MiniShopStatus = 'ACTIVE' | 'PAUSED' | 'DELETED'
+export type MiniShopProductStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAUSED'
+
+export const MINISHOP_PRODUCT_STATUS_LABELS: Record<MiniShopProductStatus, string> = {
+  PENDING: 'Pendiente',
+  APPROVED: 'Aprobado',
+  REJECTED: 'Rechazado',
+  PAUSED: 'Pausado',
+}
+
+export const MINISHOP_PRODUCT_STATUS_COLORS: Record<MiniShopProductStatus, { bg: string; text: string }> = {
+  PENDING: { bg: '#FEF3C7', text: '#92400E' },
+  APPROVED: { bg: '#D1FAE5', text: '#065F46' },
+  REJECTED: { bg: '#FEE2E2', text: '#991B1B' },
+  PAUSED: { bg: '#E5E7EB', text: '#374151' },
+}
+
+export interface MiniShopSocialLinks {
+  instagram?: string
+  tiktok?: string
+  facebook?: string
+  otra?: string
+}
+
+export interface MiniShopDeliveryMethods {
+  meetingPoint: boolean
+  address?: string
+  shipping: boolean
+  otro?: boolean
+  otroText?: string
+}
+
+export interface MiniShop {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  profilePhotoUrl: string | null
+  whatsapp: string
+  socialLinks: MiniShopSocialLinks | null
+  deliveryMethods: MiniShopDeliveryMethods
+  acceptedTerms: boolean
+  status: MiniShopStatus
+  createdAt: string
+  _count?: { products: number }
+}
+
+export interface MiniShopProduct {
+  id: string
+  title: string
+  slug: string
+  description: string | null
+  price: number
+  quantity: number
+  status: MiniShopProductStatus
+  rejectionReason: string | null
+  featured: boolean
+  featuredAt: string | null
+  featuredUntil: string | null
+  createdAt: string
+  miniShopId: string
+  miniShop?: { id: string; name: string; slug: string; whatsapp: string; profilePhotoUrl: string | null }
+  productTypeId: string
+  productType?: ProductType
+  sizeId: string | null
+  size?: Size | null
+  photos: ItemPhoto[]
+  tags?: { tag: Tag }[]
+}

@@ -5,6 +5,8 @@ import itemRoutes from './item.routes'
 import submissionRoutes from './submission.routes'
 import adminRoutes from './admin.routes'
 import reservationRoutes from './reservation.routes'
+import minishopRoutes from './minishop.routes'
+import catalogRoutes from './catalog.routes'
 import { getAnnouncement, getHomeBanners, getAboutContent, getTermsContent, getMenuConfig, getFeatureCards, getStoreInfo } from '../controllers/store.controller'
 import { asyncHandler } from '../utils/asyncHandler'
 
@@ -16,6 +18,8 @@ router.use('/items', itemRoutes)
 router.use('/submissions', submissionRoutes)
 router.use('/admin', adminRoutes)
 router.use('/reservations', reservationRoutes)
+router.use('/minishops', minishopRoutes)
+router.use('/catalog', catalogRoutes)
 
 // Public endpoints
 router.get('/announcement', asyncHandler(getAnnouncement))

@@ -73,7 +73,7 @@ export function VoucherPage() {
             <img src={(item.store as any).logoUrl} alt={item.store.name} style={{ height: '48px', objectFit: 'contain', marginBottom: '0.5rem' }} />
           ) : (
             <p style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.5rem', fontWeight: 700, color: '#1E1914', margin: '0 0 0.25rem' }}>
-              {item.store?.name ?? 'MBDA Modas'}
+              {item.store?.name ?? 'MBDA Market'}
             </p>
           )}
           <p style={{ fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#9ca3af', margin: 0, fontFamily: "'Inter', sans-serif" }}>
