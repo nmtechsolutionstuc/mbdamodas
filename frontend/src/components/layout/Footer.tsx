@@ -34,7 +34,7 @@ export function Footer() {
         {/* Marca */}
         <div>
           <p style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem', fontWeight: 700, color: '#E8E3D5', marginBottom: '0.5rem' }}>
-            {info?.name ?? 'MBDA Market'}
+            MBDA Market
           </p>
           <p style={{ fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '0.5rem' }}>{tagline}</p>
           <p style={{ fontSize: '0.8rem', lineHeight: 1.6, opacity: 0.7 }}>{address}</p>
@@ -136,7 +136,7 @@ export function Footer() {
             >Contactame</a>
           </p>
           <p style={{ fontSize: '0.75rem', color: 'rgba(232,227,213,0.4)', marginTop: '1rem' }}>
-            © {new Date().getFullYear()} {info?.name ?? 'MBDA Market'} — Todos los derechos reservados
+            © {new Date().getFullYear()} MBDA Market — Todos los derechos reservados
           </p>
         </div>
       )}
