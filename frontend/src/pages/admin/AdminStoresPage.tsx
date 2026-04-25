@@ -202,6 +202,7 @@ export function AdminStoresPage() {
       })
       setStores(prev => prev.map(s => s.id === editing.id ? data.data : s))
       invalidateConditionCache()
+      window.dispatchEvent(new Event('mbda:store-updated'))
       setEditing(null)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)

@@ -13,16 +13,20 @@ export function Navbar() {
   const isAdmin = user?.role === 'ADMIN'
 
   useEffect(() => {
-    axiosClient.get('/announcement')
-      .then(r => { if (r.data?.data?.text) setAnnouncement(r.data.data.text) })
-      .catch(() => {})
-    axiosClient.get('/store-info')
-      .then(r => {
-        const store = r.data?.data?.store
-        // Show "Registrate" only if the seller banner button is active
-        setShowRegisterBtn(store?.bannerSellerButtonActive ?? false)
-      })
-      .catch(() => {})
+    function fetchStoreData() {
+      axiosClient.get('/announcement')
+        .then(r => setAnnouncement(r.data?.data?.text ?? null))
+        .catch(() => {})
+      axiosClient.get('/store-info')
+        .then(r => {
+          const store = r.data?.data?.store
+          setShowRegisterBtn(store?.bannerSellerButtonActive ?? false)
+        })
+        .catch(() => {})
+    }
+    fetchStoreData()
+    window.addEventListener('mbda:store-updated', fetchStoreData)
+    return () => window.removeEventListener('mbda:store-updated', fetchStoreData)
   }, [])
 
   async function handleLogout() {
