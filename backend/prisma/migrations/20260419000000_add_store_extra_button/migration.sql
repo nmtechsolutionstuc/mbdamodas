@@ -1,3 +1,3 @@
-ALTER TABLE "Store" ADD COLUMN IF NOT EXISTS "bannerExtraButtonActive" BOOLEAN NOT NULL DEFAULT false;
-ALTER TABLE "Store" ADD COLUMN IF NOT EXISTS "bannerExtraButtonText" TEXT;
-ALTER TABLE "Store" ADD COLUMN IF NOT EXISTS "bannerExtraButtonUrl" TEXT;
+ALTER TABLE "stores" ADD COLUMN IF NOT EXISTS "bannerExtraButtonActive" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "stores" ADD COLUMN IF NOT EXISTS "bannerExtraButtonText" TEXT;
+ALTER TABLE "stores" ADD COLUMN IF NOT EXISTS "bannerExtraButtonUrl" TEXT;
