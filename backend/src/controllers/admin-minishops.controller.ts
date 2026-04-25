@@ -152,6 +152,51 @@ export async function adminToggleFeatured(req: Request, res: Response): Promise<
   ok(res, updated)
 }
 
+// ── PATCH /admin/minishops/products/:id/toggle-status ───────────
+// Pausa un producto APPROVED (→ PAUSED) o lo reactiva (PAUSED → APPROVED)
+export async function adminToggleProductStatus(req: Request, res: Response): Promise<void> {
+  const product = await prisma.miniShopProduct.findUnique({
+    where: { id: req.params.id! },
+    include: { miniShop: { select: { name: true, whatsapp: true } } },
+  })
+  if (!product) { notFound(res, 'Producto no encontrado'); return }
+  if (product.status !== 'APPROVED' && product.status !== 'PAUSED') {
+    badRequest(res, 'Solo se pueden pausar o activar productos aprobados'); return
+  }
+
+  const newStatus = product.status === 'APPROVED' ? 'PAUSED' : 'APPROVED'
+  const updated = await prisma.miniShopProduct.update({
+    where: { id: product.id },
+    data: { status: newStatus },
+    include: PRODUCT_INCLUDE,
+  })
+
+  const shop = (product as any).miniShop
+  const waMsg = newStatus === 'PAUSED'
+    ? `⚠️ Hola ${shop.name}! Tu producto "${product.title}" fue pausado temporalmente del catálogo de MBDA Market. Ante cualquier consulta, escribinos.`
+    : `✅ Hola ${shop.name}! Tu producto "${product.title}" volvió a estar activo en el catálogo de MBDA Market.`
+  const whatsappLink = buildWaLink(shop.whatsapp, waMsg)
+
+  ok(res, { product: updated, whatsappLink })
+}
+
+// ── DELETE /admin/minishops/products/:id ─────────────────────────
+export async function adminDeleteProduct(req: Request, res: Response): Promise<void> {
+  const product = await prisma.miniShopProduct.findUnique({
+    where: { id: req.params.id! },
+    include: { miniShop: { select: { name: true, whatsapp: true } } },
+  })
+  if (!product) { notFound(res, 'Producto no encontrado'); return }
+
+  await prisma.miniShopProduct.delete({ where: { id: product.id } })
+
+  const shop = (product as any).miniShop
+  const waMsg = `🗑 Hola ${shop.name}. Tu producto "${product.title}" fue eliminado del catálogo de MBDA Market. Si tenés preguntas, escribinos.`
+  const whatsappLink = buildWaLink(shop.whatsapp, waMsg)
+
+  ok(res, { whatsappLink })
+}
+
 // ── GET /admin/minishops/products/pending-count ──────────────────
 export async function adminPendingCount(req: Request, res: Response): Promise<void> {
   const count = await prisma.miniShopProduct.count({ where: { status: 'PENDING' } })

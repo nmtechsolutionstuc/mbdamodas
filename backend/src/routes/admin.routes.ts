@@ -21,6 +21,7 @@ import {
 import {
   adminListShops, adminUpdateShop,
   adminListProducts, adminApproveProduct, adminRejectProduct, adminToggleFeatured,
+  adminToggleProductStatus, adminDeleteProduct,
   adminPendingCount,
 } from '../controllers/admin-minishops.controller'
 import {
@@ -84,6 +85,8 @@ router.get('/minishops/products', asyncHandler(adminListProducts))
 router.patch('/minishops/products/:id/approve', asyncHandler(adminApproveProduct))
 router.patch('/minishops/products/:id/reject', asyncHandler(adminRejectProduct))
 router.patch('/minishops/products/:id/toggle-featured', asyncHandler(adminToggleFeatured))
+router.patch('/minishops/products/:id/toggle-status', asyncHandler(adminToggleProductStatus))
+router.delete('/minishops/products/:id', asyncHandler(adminDeleteProduct))
 router.patch('/minishops/products/:id/edit', asyncHandler(adminEditProduct))
 router.get('/minishops', asyncHandler(adminListShops))
 router.patch('/minishops/:id', asyncHandler(adminUpdateShop))

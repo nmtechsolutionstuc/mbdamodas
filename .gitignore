@@ -34,5 +34,5 @@ backend/public/uploads/*
 # TypeScript
 *.tsbuildinfo
 
-# Local Netlify folder
-.netlify
+# Claude Code agent worktrees (never commit these — git treats them as submodules)
+.claude/worktrees/

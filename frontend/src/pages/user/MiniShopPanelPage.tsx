@@ -788,7 +788,7 @@ function FeaturedTab({ shopId }: { shopId: string }) {
 
   function buildFeaturedWaLink(product: MiniShopProduct) {
     if (!storePhone) return ''
-    const msg = `Hola MBDA Market! Me gustaría que mi producto "${product.title}" sea destacado en el catálogo. ${product.slug ? `https://mbdamodas.netlify.app/producto/${product.slug}` : ''}`
+    const msg = `Hola MBDA Market! Me gustaría que mi producto "${product.title}" sea destacado en el catálogo. ${product.slug ? `${window.location.origin}/producto/${product.slug}` : ''}`
     return `https://wa.me/${storePhone}?text=${encodeURIComponent(msg)}`
   }
 

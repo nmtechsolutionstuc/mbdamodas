@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import {
   adminFetchProducts, adminApproveProduct, adminRejectProduct,
   adminToggleFeaturedProduct, adminFetchShops, adminUpdateShop, adminEditProduct,
+  adminToggleProductStatus, adminDeleteProduct,
 } from '../../api/adminMinishops'
 import type { MiniShop, MiniShopProduct } from '../../types'
 import { MINISHOP_PRODUCT_STATUS_LABELS, MINISHOP_PRODUCT_STATUS_COLORS } from '../../types'
@@ -152,6 +153,33 @@ function ProductsTab({ showToast }: { showToast: (msg: string, type?: 'success' 
     finally { setSubmitting(null) }
   }
 
+  async function handleToggleStatus(id: string, currentStatus: string) {
+    setSubmitting(id)
+    try {
+      const result = await adminToggleProductStatus(id)
+      setProducts(prev => prev.map(p => p.id === id ? { ...p, ...result.product } : p))
+      setWaLink({ productId: id, url: result.whatsappLink })
+      const label = currentStatus === 'APPROVED' ? 'Producto pausado ⏸' : 'Producto reactivado ✅'
+      showToast(label, 'success')
+      // Remove from list if we're filtered to a specific status
+      if (statusFilter !== 'ALL') setProducts(prev => prev.filter(p => p.id !== id))
+    } catch { showToast('Error al cambiar estado', 'error') }
+    finally { setSubmitting(null) }
+  }
+
+  async function handleDeleteProduct(id: string, title: string) {
+    if (!confirm(`¿Eliminar el producto "${title}"? Esta acción no se puede deshacer.`)) return
+    setSubmitting(`del-${id}`)
+    try {
+      const result = await adminDeleteProduct(id)
+      setProducts(prev => prev.filter(p => p.id !== id))
+      setTotal(prev => prev - 1)
+      setWaLink({ productId: id, url: result.whatsappLink })
+      showToast('Producto eliminado', 'success')
+    } catch { showToast('Error al eliminar', 'error') }
+    finally { setSubmitting(null) }
+  }
+
   const totalPages = Math.ceil(total / 20)
 
   return (
@@ -284,12 +312,30 @@ function ProductsTab({ showToast }: { showToast: (msg: string, type?: 'success' 
                       </>
                     )}
                     {product.status === 'APPROVED' && (
+                      <>
+                        <button
+                          onClick={() => handleToggleFeatured(product.id)}
+                          disabled={submitting === product.id}
+                          style={{ padding: '0.4rem 0.875rem', background: product.featured ? '#fef3c7' : '#fff', color: product.featured ? '#92400e' : '#6b7280', border: '1px solid', borderColor: product.featured ? '#fde68a' : '#E8E3D5', borderRadius: '0.5rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          {product.featured ? '★ Quitar destacado' : '☆ Destacar'}
+                        </button>
+                        <button
+                          onClick={() => handleToggleStatus(product.id, product.status)}
+                          disabled={submitting === product.id}
+                          style={{ padding: '0.4rem 0.875rem', background: '#fef3c7', color: '#92400e', border: 'none', borderRadius: '0.5rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          ⏸ Pausar
+                        </button>
+                      </>
+                    )}
+                    {product.status === 'PAUSED' && (
                       <button
-                        onClick={() => handleToggleFeatured(product.id)}
+                        onClick={() => handleToggleStatus(product.id, product.status)}
                         disabled={submitting === product.id}
-                        style={{ padding: '0.4rem 0.875rem', background: product.featured ? '#fef3c7' : '#fff', color: product.featured ? '#92400e' : '#6b7280', border: '1px solid', borderColor: product.featured ? '#fde68a' : '#E8E3D5', borderRadius: '0.5rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
+                        style={{ padding: '0.4rem 0.875rem', background: '#D1FAE5', color: '#065F46', border: 'none', borderRadius: '0.5rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
                       >
-                        {product.featured ? '★ Quitar destacado' : '☆ Destacar'}
+                        ▶ Activar
                       </button>
                     )}
                     {/* Edit button — available for all statuses */}
@@ -298,6 +344,14 @@ function ProductsTab({ showToast }: { showToast: (msg: string, type?: 'success' 
                       style={{ padding: '0.4rem 0.875rem', background: editTarget === product.id ? '#f3f4f6' : '#fff', color: '#1E1914', border: '1px solid #E8E3D5', borderRadius: '0.5rem', fontSize: '0.8rem', fontWeight: 500, cursor: 'pointer' }}
                     >
                       ✏️ Editar
+                    </button>
+                    {/* Delete button — available for all statuses */}
+                    <button
+                      onClick={() => handleDeleteProduct(product.id, product.title)}
+                      disabled={submitting === `del-${product.id}`}
+                      style={{ padding: '0.4rem 0.875rem', background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '0.5rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      🗑 Eliminar
                     </button>
                   </div>
                 </div>

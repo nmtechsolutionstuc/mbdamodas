@@ -83,3 +83,13 @@ export async function adminEditProduct(id: string, payload: {
   const { data } = await axiosClient.patch<ApiResponse<MiniShopProduct>>(`/admin/minishops/products/${id}/edit`, payload)
   return data.data
 }
+
+export async function adminToggleProductStatus(id: string): Promise<{ product: MiniShopProduct; whatsappLink: string }> {
+  const { data } = await axiosClient.patch<ApiResponse<{ product: MiniShopProduct; whatsappLink: string }>>(`/admin/minishops/products/${id}/toggle-status`)
+  return data.data
+}
+
+export async function adminDeleteProduct(id: string): Promise<{ whatsappLink: string }> {
+  const { data } = await axiosClient.delete<ApiResponse<{ whatsappLink: string }>>(`/admin/minishops/products/${id}`)
+  return data.data
+}
