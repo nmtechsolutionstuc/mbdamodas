@@ -80,8 +80,6 @@ interface Store {
   bannerExtraButtonActive: boolean
   bannerExtraButtonText: string | null
   bannerExtraButtonUrl: string | null
-  aboutContent: string | null
-  termsContent: string | null
   menuConfig: MenuConfig | null
   featureCards: FeatureCardsConfig | null
   socialLinks: SocialLinksConfig | null
@@ -193,8 +191,6 @@ export function AdminStoresPage() {
         bannerExtraButtonActive: editing.bannerExtraButtonActive,
         bannerExtraButtonText: editing.bannerExtraButtonText || null,
         bannerExtraButtonUrl: editing.bannerExtraButtonUrl || null,
-        aboutContent: editing.aboutContent,
-        termsContent: editing.termsContent,
         menuConfig: editing.menuConfig ?? {},
         featureCards: editing.featureCards ?? {},
         socialLinks: editing.socialLinks ?? {},
@@ -353,19 +349,10 @@ export function AdminStoresPage() {
                   </div>
                 )}
 
-                {/* ── Pagina Nosotros ── */}
-                {sectionTitle('Pagina "Nosotros"')}
-                <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '-0.25rem' }}>
-                  Usa ## para titulos, ### para subtitulos, y texto normal para parrafos. Separa secciones con una linea en blanco.
+                {sectionTitle('Contenido de páginas')}
+                <p style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                  El contenido de las páginas "Nosotros" y "Términos y Condiciones" se edita directamente en cada página (visible solo para administradores).
                 </p>
-                {txtArea('Contenido de la pagina Nosotros', editing.aboutContent ?? '', v => setEditing(e => e && ({ ...e, aboutContent: v })), 10)}
-
-                {/* ── Pagina Terminos y Condiciones ── */}
-                {sectionTitle('Pagina "Terminos y Condiciones"')}
-                <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '-0.25rem' }}>
-                  Usa ## para titulos de articulos, ### para subtitulos, --- para separadores. Cada articulo en un parrafo separado.
-                </p>
-                {txtArea('Contenido de Terminos y Condiciones', editing.termsContent ?? '', v => setEditing(e => e && ({ ...e, termsContent: v })), 10)}
 
                 {/* ── Cards de propuesta de valor (homepage) ── */}
                 {sectionTitle('Cards de propuesta de valor (homepage)')}

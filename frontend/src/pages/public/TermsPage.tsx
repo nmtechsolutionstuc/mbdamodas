@@ -1,11 +1,18 @@
 import { useState, useEffect } from 'react'
 import axiosClient from '../../api/axiosClient'
 import { renderContent } from '../../utils/renderContent'
+import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../context/ToastContext'
 
 export function TermsPage() {
+  const { isAdmin } = useAuth()
+  const { toast } = useToast()
   const [content, setContent] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [storeEmail, setStoreEmail] = useState<string | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState('')
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     axiosClient.get('/terms-content')
@@ -17,18 +24,24 @@ export function TermsPage() {
       .catch(() => {})
   }, [])
 
+  async function handleSaveTerms() {
+    setSaving(true)
+    try {
+      await axiosClient.patch('/admin/store-content', { termsContent: draft })
+      setContent(draft)
+      setEditing(false)
+      toast('Contenido guardado', 'success')
+    } catch {
+      toast('No se pudo guardar', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#FAF8F3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: '#9ca3af' }}>Cargando...</p>
-      </div>
-    )
-  }
-
-  if (!content) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#FAF8F3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#9ca3af' }}>Contenido no disponible.</p>
       </div>
     )
   }
@@ -39,11 +52,52 @@ export function TermsPage() {
         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', fontWeight: 700, color: '#1E1914', marginBottom: '0.5rem' }}>
           Terminos y Condiciones
         </h1>
-        <p style={{ color: '#9ca3af', fontSize: '0.875rem', marginBottom: '2.5rem' }}>
+        <p style={{ color: '#9ca3af', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
           Contrato de consignacion mercantil — MBDA Market, Concepcion, Tucuman, Argentina.
         </p>
 
-        {renderContent(content)}
+        {isAdmin && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+            <button
+              onClick={() => { setDraft(content ?? ''); setEditing(true) }}
+              style={{ padding: '0.5rem 1rem', borderRadius: '0.75rem', border: '1px solid #E8E3D5', background: '#fff', cursor: 'pointer', fontSize: '0.8rem', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '0.375rem' }}
+            >
+              ✏️ Editar contenido
+            </button>
+          </div>
+        )}
+
+        {isAdmin && editing && (
+          <div style={{ background: '#fff', border: '1px solid #E8E3D5', borderRadius: '1rem', padding: '1.25rem', marginBottom: '2rem' }}>
+            <p style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.75rem' }}>
+              Usá <strong>##</strong> para títulos, <strong>###</strong> para subtítulos. Separá secciones con línea en blanco.
+            </p>
+            <textarea
+              value={draft}
+              onChange={e => setDraft(e.target.value)}
+              rows={20}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.625rem', border: '1px solid #E8E3D5', fontSize: '0.875rem', fontFamily: 'monospace', boxSizing: 'border-box', resize: 'vertical' }}
+            />
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem', justifyContent: 'flex-end' }}>
+              <button onClick={() => setEditing(false)} style={{ padding: '0.5rem 1rem', borderRadius: '0.75rem', border: '1px solid #E8E3D5', background: '#fff', cursor: 'pointer', fontSize: '0.875rem' }}>
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveTerms}
+                disabled={saving}
+                style={{ padding: '0.5rem 1.25rem', borderRadius: '0.75rem', border: 'none', background: '#1E1914', color: '#E8E3D5', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
+              >
+                {saving ? 'Guardando...' : 'Guardar'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {content ? (
+          renderContent(content)
+        ) : (
+          <p style={{ color: '#9ca3af' }}>Contenido no disponible.</p>
+        )}
 
         {/* ── Sección: Mini-tiendas (MBDA Market) ────────────────── */}
         <div style={{ marginTop: '3rem', borderTop: '2px solid #E8E3D5', paddingTop: '2.5rem' }}>

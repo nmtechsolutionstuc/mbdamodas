@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import axiosClient from '../../api/axiosClient'
 import { renderContent } from '../../utils/renderContent'
+import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../context/ToastContext'
 
 interface SocialLink { active: boolean; url: string }
 interface StoreInfo {
@@ -14,9 +16,14 @@ interface StoreInfo {
 }
 
 export function AboutPage() {
+  const { isAdmin } = useAuth()
+  const { toast } = useToast()
   const [content, setContent] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState('')
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     axiosClient.get('/about-content')
@@ -28,6 +35,20 @@ export function AboutPage() {
       .catch(() => {})
   }, [])
 
+  async function handleSaveAbout() {
+    setSaving(true)
+    try {
+      await axiosClient.patch('/admin/store-content', { aboutContent: draft })
+      setContent(draft)
+      setEditing(false)
+      toast('Contenido guardado', 'success')
+    } catch {
+      toast('No se pudo guardar', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const waLink = `https://wa.me/${storeInfo?.phone ?? ''}?text=Hola!%20Quiero%20consultar%20sobre%20MBDA%20Modas.`
   const emailDisplay = storeInfo?.email ?? 'contacto@mbdamodas.com'
   const showCatalogButton = storeInfo?.aboutConfig?.showCatalogButton ?? true
@@ -36,6 +57,46 @@ export function AboutPage() {
   const showEmailButton = storeInfo?.aboutConfig?.showEmailButton ?? true
   const social = storeInfo?.socialLinks ?? {}
   const hasSocialLinks = social.whatsappGroup?.active || social.tiktok?.active || social.instagram?.active || social.facebook?.active
+
+  const editPanel = (
+    <>
+      {isAdmin && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+          <button
+            onClick={() => { setDraft(content ?? ''); setEditing(true) }}
+            style={{ padding: '0.5rem 1rem', borderRadius: '0.75rem', border: '1px solid #E8E3D5', background: '#fff', cursor: 'pointer', fontSize: '0.8rem', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '0.375rem' }}
+          >
+            ✏️ Editar contenido
+          </button>
+        </div>
+      )}
+      {isAdmin && editing && (
+        <div style={{ background: '#fff', border: '1px solid #E8E3D5', borderRadius: '1rem', padding: '1.25rem', marginBottom: '2rem' }}>
+          <p style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.75rem' }}>
+            Usá <strong>##</strong> para títulos, <strong>###</strong> para subtítulos. Separá secciones con línea en blanco.
+          </p>
+          <textarea
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            rows={20}
+            style={{ width: '100%', padding: '0.75rem', borderRadius: '0.625rem', border: '1px solid #E8E3D5', fontSize: '0.875rem', fontFamily: 'monospace', boxSizing: 'border-box', resize: 'vertical' }}
+          />
+          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem', justifyContent: 'flex-end' }}>
+            <button onClick={() => setEditing(false)} style={{ padding: '0.5rem 1rem', borderRadius: '0.75rem', border: '1px solid #E8E3D5', background: '#fff', cursor: 'pointer', fontSize: '0.875rem' }}>
+              Cancelar
+            </button>
+            <button
+              onClick={handleSaveAbout}
+              disabled={saving}
+              style={{ padding: '0.5rem 1.25rem', borderRadius: '0.75rem', border: 'none', background: '#1E1914', color: '#E8E3D5', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
+            >
+              {saving ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  )
 
   if (loading) {
     return (
@@ -66,6 +127,8 @@ export function AboutPage() {
 
         {/* Content */}
         <div style={{ maxWidth: '700px', margin: '0 auto', padding: '3rem 1.5rem' }}>
+          {editPanel}
+
           {renderContent(removeFirstSection(content))}
 
           {/* CTA buttons */}
@@ -202,8 +265,11 @@ export function AboutPage() {
 
   // Fallback: no content yet
   return (
-    <div style={{ minHeight: '100vh', background: '#FAF8F3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <p style={{ color: '#9ca3af' }}>Contenido no disponible.</p>
+    <div style={{ minHeight: '100vh', background: '#FAF8F3', padding: '2rem 1.5rem' }}>
+      <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+        {editPanel}
+        <p style={{ color: '#9ca3af' }}>Contenido no disponible.</p>
+      </div>
     </div>
   )
 }

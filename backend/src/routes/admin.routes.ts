@@ -12,7 +12,7 @@ import {
   createTag, toggleTag,
 } from '../controllers/admin.controller'
 import { upload } from '../config/multer'
-import { listStores, createStore, updateStore } from '../controllers/store.controller'
+import { listStores, createStore, updateStore, updateStoreContent } from '../controllers/store.controller'
 import {
   listAdminReservations, approveReservationHandler, rejectReservationHandler,
   completeReservationHandler, extendReservationHandler,
@@ -76,6 +76,7 @@ router.delete('/users/:id', asyncHandler(deleteUser))
 router.get('/stores', asyncHandler(listStores))
 router.post('/stores', asyncHandler(createStore))
 router.patch('/stores/:id', asyncHandler(updateStore))
+router.patch('/store-content', asyncHandler(updateStoreContent))
 
 // Mini-tiendas (admin)
 router.get('/minishops/products/pending-count', asyncHandler(adminPendingCount))

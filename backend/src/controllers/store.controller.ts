@@ -172,3 +172,16 @@ export async function getStoreInfo(_req: Request, res: Response): Promise<void> 
   })
   ok(res, { store: store ?? null })
 }
+
+export async function updateStoreContent(req: Request, res: Response): Promise<void> {
+  const store = await prisma.store.findFirst({ where: { isActive: true } })
+  if (!store) { notFound(res, 'Tienda no encontrada'); return }
+  const schema = z.object({
+    termsContent: z.string().max(50000).optional().nullable(),
+    aboutContent: z.string().max(50000).optional().nullable(),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) { badRequest(res, 'Datos inválidos', parsed.error.errors); return }
+  await prisma.store.update({ where: { id: store.id }, data: parsed.data })
+  ok(res, { success: true })
+}
