@@ -176,7 +176,7 @@ export function AdminStoresPage() {
         address: editing.address,
         phone: editing.phone,
         email: editing.email || null,
-        defaultCommission: Number(editing.defaultCommission),
+        defaultCommission: (() => { const n = Number(editing.defaultCommission); return isNaN(n) ? undefined : n })(),
         isActive: editing.isActive,
         storeAttendantPhone: editing.storeAttendantPhone,
         announcementText: editing.announcementText,
@@ -211,8 +211,9 @@ export function AdminStoresPage() {
       setTimeout(() => setSaved(false), 3000)
     } catch (err: any) {
       const details = err?.response?.data?.error?.details
+      console.error('[AdminStoresPage] save error:', err?.response?.data ?? err)
       const firstDetail = Array.isArray(details) ? details[0] : null
-      const msg = firstDetail ? `${firstDetail.path?.join('.') ?? '?'}: ${firstDetail.message}` : (err?.response?.data?.error?.message ?? 'No se pudo guardar')
+      const msg = firstDetail ? `Error en "${firstDetail.path?.join('.') ?? '?'}": ${firstDetail.message}` : (err?.response?.data?.error?.message ?? 'No se pudo guardar')
       toast(msg, 'error')
     } finally {
       setSaving(false)

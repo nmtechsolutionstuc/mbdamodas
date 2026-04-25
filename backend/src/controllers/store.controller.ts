@@ -11,7 +11,7 @@ const storeSchema = z.object({
   email: z.union([z.string().email(), z.literal(''), z.null()]).optional().transform(v => v === '' ? null : v),
   description: z.string().max(1000).optional().nullable(),
   logoUrl: z.union([z.string().url(), z.literal(''), z.null()]).optional().transform(v => v === '' ? null : v),
-  defaultCommission: z.union([z.number(), z.string().transform(Number)]).pipe(z.number().min(0).max(100)).optional(),
+  defaultCommission: z.preprocess(v => { const n = Number(v); return (v === null || v === undefined || isNaN(n)) ? undefined : n }, z.number().min(0).max(100).optional()),
   isActive: z.boolean().nullable().optional().transform(v => v ?? undefined),
   storeAttendantPhone: z.string().max(30).optional().nullable(),
   announcementText: z.string().max(500).optional().nullable(),

@@ -40,7 +40,7 @@ export function TermsPage() {
           Terminos y Condiciones
         </h1>
         <p style={{ color: '#9ca3af', fontSize: '0.875rem', marginBottom: '2.5rem' }}>
-          Contrato de consignacion mercantil — MBDA Modas, Concepcion, Tucuman, Argentina.
+          Contrato de consignacion mercantil — MBDA Market, Concepcion, Tucuman, Argentina.
         </p>
 
         {renderContent(content)}
@@ -61,7 +61,7 @@ export function TermsPage() {
             },
             {
               title: 'Productos y contenido',
-              body: 'No se pueden publicar productos que compitan directamente con los artículos de MBDA Modas en precio o categoría, salvo autorización expresa. La plataforma se reserva el derecho de rechazar o eliminar productos sin necesidad de dar explicaciones, y de desactivar una tienda en cualquier momento si se detecta incumplimiento de estas condiciones.',
+              body: 'No se pueden publicar productos que compitan directamente con los artículos de MBDA Market en precio o categoría, salvo autorización expresa. La plataforma se reserva el derecho de rechazar o eliminar productos sin necesidad de dar explicaciones, y de desactivar una tienda en cualquier momento si se detecta incumplimiento de estas condiciones.',
             },
             {
               title: 'Responsabilidad del vendedor',
