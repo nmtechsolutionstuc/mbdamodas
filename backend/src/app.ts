@@ -4,7 +4,6 @@ import cors from 'cors'
 import morgan from 'morgan'
 import compression from 'compression'
 import cookieParser from 'cookie-parser'
-import { rateLimit } from 'express-rate-limit'
 import { env } from './config/env'
 
 const app = express()
@@ -51,15 +50,6 @@ app.use(
     credentials: true,
   }),
 )
-app.use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 min
-    max: 200,
-    standardHeaders: true,
-    legacyHeaders: false,
-  }),
-)
-
 // ── Parsers ───────────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '2mb' }))
 app.use(express.urlencoded({ extended: true, limit: '2mb' }))
