@@ -99,7 +99,7 @@ export async function createReservation(itemId: string, userId: string, quantity
 
   const ctx: ReservationWAContext = {
     storeName: item.store.name,
-    storeAttendantPhone: item.store.storeAttendantPhone,
+    storeAttendantPhone: item.store.phone ?? item.store.storeAttendantPhone,
     promoterPhone: user.phone!,
     promoterName: `${user.firstName} ${user.lastName}`,
     promoterDni: user.dni,
@@ -216,7 +216,7 @@ export async function approveReservation(reservationId: string) {
 
   const ctx: ReservationWAContext = {
     storeName: reservation.item.store.name,
-    storeAttendantPhone: reservation.item.store.storeAttendantPhone,
+    storeAttendantPhone: reservation.item.store.phone ?? reservation.item.store.storeAttendantPhone,
     promoterPhone: reservation.user.phone ?? '',
     promoterName: `${reservation.user.firstName} ${reservation.user.lastName}`,
     promoterDni: reservation.user.dni,
