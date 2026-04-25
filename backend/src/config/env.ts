@@ -16,8 +16,8 @@ export const env = {
   databaseUrl: required('DATABASE_URL'),
   jwtAccessSecret: required('JWT_ACCESS_SECRET'),
   jwtRefreshSecret: required('JWT_REFRESH_SECRET'),
-  jwtAccessExpiresIn: optional('JWT_ACCESS_EXPIRES_IN', '15m'),
-  jwtRefreshExpiresIn: optional('JWT_REFRESH_EXPIRES_IN', '30d'),
+  jwtAccessExpiresIn: optional('JWT_ACCESS_EXPIRES_IN', '7d'),
+  jwtRefreshExpiresIn: optional('JWT_REFRESH_EXPIRES_IN', '60d'),
   // Google OAuth deshabilitado — estos campos ahora son opcionales
   googleClientId: process.env['GOOGLE_CLIENT_ID'] ?? '',
   googleClientSecret: process.env['GOOGLE_CLIENT_SECRET'] ?? '',

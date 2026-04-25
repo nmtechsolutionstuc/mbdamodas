@@ -17,39 +17,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { accessToken, user, setAuth, clearAuth, setLoading } = useAuthStore()
   const didRun = useRef(false)
 
-  // Al montar: si hay token en memoria intentar obtener el usuario;
-  // si no, intentar renovar con el refresh token (httpOnly cookie)
+  // Al montar:
+  // 1. Si hay token + user en localStorage (via Zustand persist) → listos, solo detener loader
+  // 2. Si hay token pero no user (inconsistencia) → pedir /me
+  // 3. Si no hay token → intentar refresh silencioso con la cookie httpOnly
   useEffect(() => {
     // Evitar doble ejecución en StrictMode
     if (didRun.current) return
     didRun.current = true
 
+    // Caso 1: estado completo restaurado desde localStorage
+    if (accessToken && user) {
+      setLoading(false)
+      return
+    }
+
+    // Caso 2: token en memoria pero sin datos de usuario (raro, por consistencia)
     if (accessToken && !user) {
       fetchMe()
         .then(u => setAuth(u, accessToken))
         .catch(() => clearAuth())
       return
     }
+
+    // Caso 3: sin token → intentar renovar silenciosamente con la cookie
     if (!accessToken) {
       if (refreshInProgress) return
       refreshInProgress = true
 
-      // Intenta renovar silenciosamente
       import('../api/axiosClient').then(({ default: axiosClient }) => {
         axiosClient
           .post('/auth/refresh')
           .then(({ data }) => {
             const newToken: string = data.data.accessToken
-            // Guardar el token en el store ANTES de llamar a fetchMe
-            // para que el interceptor de axiosClient lo use
             useAuthStore.getState().setLoading(true)
             useAuthStore.setState({ accessToken: newToken })
-            return fetchMe().then(u => {
-              setAuth(u, newToken)
-            })
+            return fetchMe().then(u => setAuth(u, newToken))
           })
           .catch(() => {
-            // Solo limpiar si no se autenticó por otro camino (ej: register/login)
             if (!useAuthStore.getState().user) {
               clearAuth()
             } else {
@@ -60,8 +65,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             refreshInProgress = false
           })
       })
-    } else {
-      setLoading(false)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 

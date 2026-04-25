@@ -48,8 +48,13 @@ axiosClient.interceptors.response.use(
       pendingRequests = []
       originalRequest.headers.Authorization = `Bearer ${newToken}`
       return axiosClient(originalRequest)
-    } catch {
-      useAuthStore.getState().clearAuth()
+    } catch (refreshError) {
+      // Solo cerrar sesión si el servidor rechazó el refresh (401/403)
+      // Un error de red transitorio no debe cerrar la sesión
+      const status = (refreshError as any)?.response?.status
+      if (status === 401 || status === 403) {
+        useAuthStore.getState().clearAuth()
+      }
       return Promise.reject(error)
     } finally {
       isRefreshing = false

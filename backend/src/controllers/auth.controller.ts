@@ -15,7 +15,7 @@ const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: env.nodeEnv === 'production',
   sameSite: 'lax' as const,
-  maxAge: 30 * 24 * 60 * 60 * 1000, // 30 días
+  maxAge: 60 * 24 * 60 * 60 * 1000, // 60 días
 }
 
 export async function register(req: Request, res: Response): Promise<void> {
