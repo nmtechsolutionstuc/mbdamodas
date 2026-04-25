@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { fetchAdminStats } from '../../api/admin'
 
 export function AdminDashboardPage() {
-  const [stats, setStats] = useState({ pending: 0, inStore: 0, soldThisMonth: 0, miniShopPending: 0 })
+  const [stats, setStats] = useState({ pending: 0, inStore: 0, soldThisMonth: 0, miniShopPending: 0, reservationsPending: 0 })
   const [hoveredLink, setHoveredLink] = useState<string | null>(null)
 
   useEffect(() => {
@@ -14,6 +14,7 @@ export function AdminDashboardPage() {
     { label: 'Solicitudes en revisión', value: stats.pending, icon: '📋', color: '#854d0e', bg: 'linear-gradient(135deg, #fef9c3 0%, #fef3c7 100%)', link: '/admin/solicitudes' },
     { label: 'En tienda', value: stats.inStore, icon: '🏪', color: '#1e40af', bg: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', link: '/admin/solicitudes' },
     { label: 'Vendidas este mes', value: stats.soldThisMonth, icon: '✨', color: '#166534', bg: 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)', link: '/admin/catalogo' },
+    { label: 'Reservas pendientes', value: stats.reservationsPending, icon: '🔖', color: '#9a3412', bg: 'linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%)', link: '/admin/reservas' },
     { label: 'Mini-tiendas pendientes', value: stats.miniShopPending, icon: '🛍️', color: '#6d28d9', bg: 'linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)', link: '/admin/mini-tiendas' },
   ]
 
@@ -31,7 +32,7 @@ export function AdminDashboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F3', padding: '1.5rem' }}>
       <style>{`
-        .mbda-admin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
+        .mbda-admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
         .mbda-admin-links { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         @media (max-width: 640px) {
           .mbda-admin-stats { grid-template-columns: 1fr; }

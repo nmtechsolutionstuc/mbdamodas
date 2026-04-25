@@ -1,10 +1,10 @@
 import axiosClient from './axiosClient'
 import type { ApiResponse, ProductType, Size, Tag } from '../types'
 
-export async function fetchAdminStats(): Promise<{ pending: number; inStore: number; soldThisMonth: number; miniShopPending: number }> {
-  const { data } = await axiosClient.get<ApiResponse<{ pending: number; inStore: number; soldThisMonth: number; miniShopPending?: number }>>('/admin/stats')
+export async function fetchAdminStats(): Promise<{ pending: number; inStore: number; soldThisMonth: number; miniShopPending: number; reservationsPending: number }> {
+  const { data } = await axiosClient.get<ApiResponse<{ pending: number; inStore: number; soldThisMonth: number; miniShopPending?: number; reservationsPending?: number }>>('/admin/stats')
   const d = data.data
-  return { pending: d.pending, inStore: d.inStore, soldThisMonth: d.soldThisMonth, miniShopPending: d.miniShopPending ?? 0 }
+  return { pending: d.pending, inStore: d.inStore, soldThisMonth: d.soldThisMonth, miniShopPending: d.miniShopPending ?? 0, reservationsPending: d.reservationsPending ?? 0 }
 }
 
 export async function fetchAdminSubmissions(status?: string) {

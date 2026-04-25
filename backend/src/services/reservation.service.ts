@@ -210,9 +210,10 @@ export async function approveReservation(reservationId: string) {
     include: fullReservationInclude,
   })
 
-  const earnings = reservation.item.price && reservation.item.promoterCommissionPct
+  const unitEarnings = reservation.item.price && reservation.item.promoterCommissionPct
     ? Number(reservation.item.price) * Number(reservation.item.promoterCommissionPct) / 100
     : undefined
+  const earnings = unitEarnings !== undefined ? unitEarnings * reservation.quantity : undefined
 
   const ctx: ReservationWAContext = {
     storeName: reservation.item.store.name,
@@ -223,6 +224,7 @@ export async function approveReservation(reservationId: string) {
     itemTitle: reservation.item.title,
     itemCode: reservation.item.code,
     reservationCode: reservation.reservationCode,
+    quantity: reservation.quantity,
     earnings,
     expiresAt,
     voucherUrl: buildVoucherUrl(reservation.reservationCode),
@@ -306,9 +308,10 @@ export async function completeReservation(reservationId: string) {
     include: fullReservationInclude,
   })
 
-  const earnings = reservation.item.price && reservation.item.promoterCommissionPct
+  const unitEarnings2 = reservation.item.price && reservation.item.promoterCommissionPct
     ? Number(reservation.item.price) * Number(reservation.item.promoterCommissionPct) / 100
     : undefined
+  const earnings = unitEarnings2 !== undefined ? unitEarnings2 * reservation.quantity : undefined
 
   const ctx: ReservationWAContext = {
     storeName: reservation.item.store.name,
@@ -317,6 +320,7 @@ export async function completeReservation(reservationId: string) {
     itemTitle: reservation.item.title,
     itemCode: reservation.item.code,
     reservationCode: reservation.reservationCode,
+    quantity: reservation.quantity,
     earnings,
     paymentMethod: reservation.user.paymentMethod,
     bankAlias: reservation.user.bankAlias,

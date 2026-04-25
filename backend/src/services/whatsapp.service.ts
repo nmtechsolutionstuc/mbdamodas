@@ -100,10 +100,13 @@ export function generateReservationWALink(
       break
     }
 
-    case 'APPROVED_TO_PROMOTER':
+    case 'APPROVED_TO_PROMOTER': {
       phone = ctx.promoterPhone
-      text = `✅ ¡Tu reserva fue aprobada!\n\nProducto: ${ctx.itemTitle}${codePart}\nCódigo: ${ctx.reservationCode}\nTu ganancia estimada: $${ctx.earnings?.toLocaleString('es-AR') ?? '?'}\nVálido hasta: ${expiresStr}\n\n---\nEn el sitio se generó un comprobante al que debés sacar captura y enviar a tu comprador para ser presentado en la tienda y se efectúe la venta correctamente.\n${ctx.voucherUrl ?? ''}`
+      const earningsTotal = ctx.earnings != null ? `$${ctx.earnings.toLocaleString('es-AR')}` : '?'
+      const qtyNote = ctx.quantity && ctx.quantity > 1 ? ` (${ctx.quantity} unidades)` : ''
+      text = `✅ ¡Tu reserva fue aprobada!\n\nProducto: ${ctx.itemTitle}${codePart}\nCódigo: ${ctx.reservationCode}\nTu ganancia estimada: ${earningsTotal}${qtyNote}\nVálido hasta: ${expiresStr}\n\n---\nEn el sitio se generó un comprobante al que debés sacar captura y enviar a tu comprador para ser presentado en la tienda y se efectúe la venta correctamente.\n${ctx.voucherUrl ?? ''}`
       break
+    }
 
     case 'REJECTED_TO_PROMOTER':
       phone = ctx.promoterPhone
@@ -115,15 +118,21 @@ export function generateReservationWALink(
       text = `Tu reserva para "${ctx.itemTitle}"${codePart} (${ctx.reservationCode}) fue extendida.\nNuevo vencimiento: ${expiresStr}. ¡Gracias por tu paciencia!`
       break
 
-    case 'COMPLETED_TRANSFER':
+    case 'COMPLETED_TRANSFER': {
       phone = ctx.promoterPhone
-      text = `🎉 ¡Venta completada! "${ctx.itemTitle}"${codePart}\nTu ganancia: $${ctx.earnings?.toLocaleString('es-AR') ?? '?'}.\nConfirmás este alias/CVU: ${ctx.bankAlias ?? '?'}? Te hacemos la transferencia a la brevedad.`
+      const gain1 = ctx.earnings != null ? `$${ctx.earnings.toLocaleString('es-AR')}` : '?'
+      const qty1 = ctx.quantity && ctx.quantity > 1 ? ` (${ctx.quantity} unidades)` : ''
+      text = `🎉 ¡Venta completada! "${ctx.itemTitle}"${codePart}\nTu ganancia: ${gain1}${qty1}.\nConfirmás este alias/CVU: ${ctx.bankAlias ?? '?'}? Te hacemos la transferencia a la brevedad.`
       break
+    }
 
-    case 'COMPLETED_CASH':
+    case 'COMPLETED_CASH': {
       phone = ctx.promoterPhone
-      text = `🎉 ¡Venta completada! "${ctx.itemTitle}"${codePart}\nTu ganancia: $${ctx.earnings?.toLocaleString('es-AR') ?? '?'}.\nPasá por ${ctx.storeName} a retirar tu efectivo.`
+      const gain2 = ctx.earnings != null ? `$${ctx.earnings.toLocaleString('es-AR')}` : '?'
+      const qty2 = ctx.quantity && ctx.quantity > 1 ? ` (${ctx.quantity} unidades)` : ''
+      text = `🎉 ¡Venta completada! "${ctx.itemTitle}"${codePart}\nTu ganancia: ${gain2}${qty2}.\nPasá por ${ctx.storeName} a retirar tu efectivo.`
       break
+    }
 
     case 'SEND_VOUCHER':
       phone = ctx.promoterPhone

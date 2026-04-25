@@ -131,9 +131,10 @@ function ReservationModal({
   const photo = reservation.item.photos[0]
   const user = reservation.user
   const store = reservation.store
-  const earnings = reservation.item.promoterCommissionPct && reservation.item.price
+  const unitEarnings = reservation.item.promoterCommissionPct && reservation.item.price
     ? Math.round(Number(reservation.item.price) * Number(reservation.item.promoterCommissionPct) / 100)
     : null
+  const earnings = unitEarnings !== null ? unitEarnings * reservation.quantity : null
 
   const attendantPhone = store?.storeAttendantPhone
   const waAttendantLink = attendantPhone
@@ -402,7 +403,14 @@ function ReservationModal({
             {earnings !== null && (
               <div style={infoRow}>
                 <span style={infoLabel}>Ganancia promotor</span>
-                <span style={{ fontWeight: 700, color: '#166534' }}>${earnings.toLocaleString('es-AR')}</span>
+                <span style={{ fontWeight: 700, color: '#166534' }}>
+                  ${earnings.toLocaleString('es-AR')}
+                  {reservation.quantity > 1 && unitEarnings !== null && (
+                    <span style={{ fontWeight: 400, color: '#6b7280', fontSize: '0.8rem' }}>
+                      {' '}({reservation.quantity} x ${unitEarnings.toLocaleString('es-AR')})
+                    </span>
+                  )}
+                </span>
               </div>
             )}
           </div>

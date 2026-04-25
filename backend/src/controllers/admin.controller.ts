@@ -325,7 +325,7 @@ export async function createUser(req: Request, res: Response): Promise<void> {
 
 export async function getDashboardStats(req: Request, res: Response): Promise<void> {
   try {
-    const [pending, inStore, soldThisMonth, miniShopPending] = await prisma.$transaction([
+    const [pending, inStore, soldThisMonth, miniShopPending, reservationsPending] = await prisma.$transaction([
       prisma.submissionItem.count({ where: { status: 'PENDING' } }),
       prisma.submissionItem.count({ where: { status: 'IN_STORE' } }),
       prisma.submissionItem.count({
@@ -335,8 +335,9 @@ export async function getDashboardStats(req: Request, res: Response): Promise<vo
         },
       }),
       prisma.miniShopProduct.count({ where: { status: 'PENDING' } }),
+      prisma.reservation.count({ where: { status: 'PENDING_APPROVAL' } }),
     ])
-    ok(res, { pending, inStore, soldThisMonth, miniShopPending })
+    ok(res, { pending, inStore, soldThisMonth, miniShopPending, reservationsPending })
   } catch {
     serverError(res)
   }

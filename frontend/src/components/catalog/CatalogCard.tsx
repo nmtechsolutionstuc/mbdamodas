@@ -9,18 +9,35 @@ async function shareProduct(item: CatalogItem) {
     ? `${window.location.origin}/item/${item.id}`
     : `${window.location.origin}/producto/${(item as any).slug}`
 
+  // 1. Web Share API (HTTPS / mobile)
   if (navigator.share) {
     try {
       await navigator.share({ title: item.title, url })
       return
-    } catch { /* fallback */ }
+    } catch { /* user cancelled or not supported, fall through */ }
   }
-  // fallback: copy to clipboard
+
+  // 2. Clipboard API (modern browsers, requires secure context)
   try {
     await navigator.clipboard.writeText(url)
     alert('¡Link copiado al portapapeles!')
+    return
+  } catch { /* not available on HTTP/IP, fall through */ }
+
+  // 3. execCommand fallback (HTTP, older browsers)
+  try {
+    const el = document.createElement('input')
+    el.value = url
+    el.style.cssText = 'position:fixed;opacity:0;top:0;left:0'
+    document.body.appendChild(el)
+    el.focus()
+    el.select()
+    document.execCommand('copy')
+    document.body.removeChild(el)
+    alert('¡Link copiado al portapapeles!')
   } catch {
-    // ignore
+    // 4. Last resort: show the URL so the user can copy manually
+    alert(`Copiá este link:\n${url}`)
   }
 }
 

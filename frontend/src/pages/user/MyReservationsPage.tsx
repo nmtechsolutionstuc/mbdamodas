@@ -28,9 +28,10 @@ function useCountdown(expiresAt: string | null): string {
 function ReservationCard({ reservation, onClick }: { reservation: Reservation; onClick: () => void }) {
   const countdown = useCountdown(reservation.status === 'APPROVED' ? reservation.expiresAt : null)
   const photo = reservation.item.photos[0]
-  const earnings = reservation.item.promoterCommissionPct && reservation.item.price
+  const unitEarnings = reservation.item.promoterCommissionPct && reservation.item.price
     ? Math.round(Number(reservation.item.price) * Number(reservation.item.promoterCommissionPct) / 100)
     : null
+  const earnings = unitEarnings !== null ? unitEarnings * reservation.quantity : null
   const statusColor = RESERVATION_STATUS_COLOR[reservation.status]
 
   return (
@@ -95,6 +96,11 @@ function ReservationCard({ reservation, onClick }: { reservation: Reservation; o
         {(reservation.status === 'APPROVED' || reservation.status === 'PENDING_APPROVAL') && earnings !== null && (
           <p style={{ fontSize: '0.85rem', color: '#166534', fontWeight: 600, margin: '0 0 0.25rem', fontFamily: "'Inter', sans-serif" }}>
             Ganancia estimada: ${earnings.toLocaleString('es-AR')}
+            {reservation.quantity > 1 && unitEarnings !== null && (
+              <span style={{ fontWeight: 400, color: '#6b7280', fontSize: '0.8rem' }}>
+                {' '}({reservation.quantity} x ${unitEarnings.toLocaleString('es-AR')})
+              </span>
+            )}
           </p>
         )}
 
@@ -125,9 +131,10 @@ function ReservationModal({
   const countdown = useCountdown(reservation.status === 'APPROVED' ? reservation.expiresAt : null)
 
   const photo = reservation.item.photos[0]
-  const earnings = reservation.item.promoterCommissionPct && reservation.item.price
+  const unitEarningsModal = reservation.item.promoterCommissionPct && reservation.item.price
     ? Math.round(Number(reservation.item.price) * Number(reservation.item.promoterCommissionPct) / 100)
     : null
+  const earnings = unitEarningsModal !== null ? unitEarningsModal * reservation.quantity : null
 
   async function handleCancel() {
     setCancelling(true)
@@ -281,8 +288,12 @@ function ReservationModal({
               <div style={infoRow}>
                 <span style={infoLabel}>Tu ganancia estimada</span>
                 <span style={{ fontWeight: 700, color: '#166534' }}>
-                  ${(earnings * reservation.quantity).toLocaleString('es-AR')}
-                  {reservation.quantity > 1 ? ` (${reservation.quantity} x $${earnings.toLocaleString('es-AR')})` : ''}
+                  ${earnings.toLocaleString('es-AR')}
+                  {reservation.quantity > 1 && unitEarningsModal !== null && (
+                    <span style={{ fontWeight: 400, color: '#6b7280', fontSize: '0.85rem' }}>
+                      {' '}({reservation.quantity} x ${unitEarningsModal.toLocaleString('es-AR')})
+                    </span>
+                  )}
                 </span>
               </div>
             )}
