@@ -12,7 +12,7 @@ export function Navbar() {
   const [showRegisterBtn, setShowRegisterBtn] = useState(false)
 
   const isAdmin = user?.role === 'ADMIN'
-  const { platformName, miniShopsEnabled, setMiniShopsEnabled } = usePlatformStore()
+  const { platformName, miniShopsEnabled, setMiniShopsEnabled, setMenuConfig } = usePlatformStore()
 
   useEffect(() => {
     function fetchStoreData() {
@@ -25,7 +25,10 @@ export function Navbar() {
           setShowRegisterBtn(store?.bannerSellerButtonActive ?? false)
           setMiniShopsEnabled(store?.miniShopsEnabled ?? true)
         })
-        .catch(() => {})
+        .catch(() => { setMiniShopsEnabled(true) }) // fallback: asumir habilitado si falla
+      axiosClient.get('/menu-config')
+        .then(r => setMenuConfig(r.data?.data?.menuConfig ?? {}))
+        .catch(() => setMenuConfig({}))
     }
     fetchStoreData()
     window.addEventListener('mbda:store-updated', fetchStoreData)

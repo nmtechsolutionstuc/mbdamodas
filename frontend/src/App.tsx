@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import type { ReactNode } from 'react'
 import { AuthProvider } from './context/AuthContext'
 import { ErrorBoundary } from './components/layout/ErrorBoundary'
 import { ToastProvider } from './context/ToastContext'
@@ -39,6 +40,42 @@ import { MiniShopPanelPage } from './pages/user/MiniShopPanelPage'
 import { MiniShopProfilePage } from './pages/public/MiniShopProfilePage'
 import { MiniShopProductDetailPage } from './pages/public/MiniShopProductDetailPage'
 import { ShopsDirectoryPage } from './pages/public/ShopsDirectoryPage'
+import { usePlatformStore, DEFAULT_MENU } from './store/platformStore'
+
+// ── Spinner compartido ────────────────────────────────────────────────────────
+function LoadingSpinner() {
+  return (
+    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAF8F3' }}>
+      <div style={{ width: '36px', height: '36px', borderRadius: '50%', border: '3px solid #E8E3D5', borderTopColor: '#1E1914', animation: 'spin 0.75s linear infinite' }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    </div>
+  )
+}
+
+// ── Guard: rutas que requieren mini-tiendas activas ──────────────────────────
+// Redirige a "/" si el módulo de mini-tiendas está desactivado.
+// Muestra spinner hasta que llegue la respuesta del backend.
+function MiniShopsRoute({ children }: { children: ReactNode }) {
+  const { miniShopsEnabled, storeInfoLoaded } = usePlatformStore()
+  if (!storeInfoLoaded) return <LoadingSpinner />
+  if (!miniShopsEnabled) return <Navigate to="/" replace />
+  return <>{children}</>
+}
+
+// ── Guard: rutas del dashboard que el admin puede ocultar ────────────────────
+// Redirige a "/dashboard" si el ítem del menú está desactivado en la config.
+// menuKey === 'tiendas' también verifica miniShopsEnabled.
+function MenuItemRoute({ menuKey, children }: { menuKey: string; children: ReactNode }) {
+  const { menuConfig, menuConfigLoaded, miniShopsEnabled, storeInfoLoaded } = usePlatformStore()
+  // Esperar ambas cargas
+  if (!menuConfigLoaded || !storeInfoLoaded) return <LoadingSpinner />
+  // Tiendas requiere módulo activo además del permiso de menú
+  if (menuKey === 'tiendas' && !miniShopsEnabled) return <Navigate to="/dashboard" replace />
+  // Resolver configuración efectiva (default: activo)
+  const item = { ...DEFAULT_MENU[menuKey], ...(menuConfig?.[menuKey] ?? {}) }
+  if (!item.active) return <Navigate to="/dashboard" replace />
+  return <>{children}</>
+}
 
 function App() {
   return (
@@ -49,7 +86,7 @@ function App() {
             <Navbar />
             <main>
             <Routes>
-          {/* Públicas */}
+          {/* Públicas — sin restricción de módulo */}
           <Route path="/" element={<HomePage />} />
           <Route path="/item/:id" element={<ItemDetailPage />} />
           <Route path="/terminos-y-condiciones" element={<TermsPage />} />
@@ -58,33 +95,39 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/auth/callback" element={<GoogleCallbackPage />} />
           <Route path="/comprobante/:code" element={<VoucherPage />} />
-          <Route path="/tiendas" element={<ShopsDirectoryPage />} />
-          <Route path="/tienda/:slug" element={<MiniShopProfilePage />} />
-          <Route path="/producto/:slug" element={<MiniShopProductDetailPage />} />
           <Route path="/completar-perfil" element={<ProtectedRoute><CompletarPerfilPage /></ProtectedRoute>} />
 
-          {/* Usuario autenticado */}
-          <Route path="/dashboard" element={<ProtectedRoute><UserDashboardPage /></ProtectedRoute>} />
-          <Route path="/dashboard/perfil" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-          <Route path="/dashboard/enviar" element={<ProtectedRoute><SubmitItemPage /></ProtectedRoute>} />
-          <Route path="/dashboard/mis-solicitudes" element={<ProtectedRoute><MySubmissionsPage /></ProtectedRoute>} />
-          <Route path="/dashboard/mis-solicitudes/:id" element={<ProtectedRoute><SubmissionDetailPage /></ProtectedRoute>} />
-          <Route path="/dashboard/mis-reservas" element={<ProtectedRoute><MyReservationsPage /></ProtectedRoute>} />
-          <Route path="/dashboard/tiendas" element={<ProtectedRoute><MiniShopsPage /></ProtectedRoute>} />
-          <Route path="/dashboard/tiendas/nueva" element={<ProtectedRoute><CreateMiniShopPage /></ProtectedRoute>} />
-          <Route path="/dashboard/tiendas/:shopId" element={<ProtectedRoute><MiniShopPanelPage /></ProtectedRoute>} />
+          {/* Mini-tiendas públicas — solo si el módulo está activo */}
+          <Route path="/tiendas"          element={<MiniShopsRoute><ShopsDirectoryPage /></MiniShopsRoute>} />
+          <Route path="/tienda/:slug"     element={<MiniShopsRoute><MiniShopProfilePage /></MiniShopsRoute>} />
+          <Route path="/producto/:slug"   element={<MiniShopsRoute><MiniShopProductDetailPage /></MiniShopsRoute>} />
+
+          {/* Usuario autenticado — rutas básicas */}
+          <Route path="/dashboard"                    element={<ProtectedRoute><UserDashboardPage /></ProtectedRoute>} />
+          <Route path="/dashboard/perfil"             element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+
+          {/* Usuario autenticado — rutas controladas por menuConfig */}
+          <Route path="/dashboard/enviar"             element={<ProtectedRoute><MenuItemRoute menuKey="enviar"><SubmitItemPage /></MenuItemRoute></ProtectedRoute>} />
+          <Route path="/dashboard/mis-solicitudes"    element={<ProtectedRoute><MenuItemRoute menuKey="solicitudes"><MySubmissionsPage /></MenuItemRoute></ProtectedRoute>} />
+          <Route path="/dashboard/mis-solicitudes/:id" element={<ProtectedRoute><MenuItemRoute menuKey="solicitudes"><SubmissionDetailPage /></MenuItemRoute></ProtectedRoute>} />
+          <Route path="/dashboard/mis-reservas"       element={<ProtectedRoute><MenuItemRoute menuKey="reservas"><MyReservationsPage /></MenuItemRoute></ProtectedRoute>} />
+
+          {/* Mini-tiendas usuario — requiere módulo activo + permiso de menú */}
+          <Route path="/dashboard/tiendas"            element={<ProtectedRoute><MenuItemRoute menuKey="tiendas"><MiniShopsPage /></MenuItemRoute></ProtectedRoute>} />
+          <Route path="/dashboard/tiendas/nueva"      element={<ProtectedRoute><MenuItemRoute menuKey="tiendas"><CreateMiniShopPage /></MenuItemRoute></ProtectedRoute>} />
+          <Route path="/dashboard/tiendas/:shopId"    element={<ProtectedRoute><MenuItemRoute menuKey="tiendas"><MiniShopPanelPage /></MenuItemRoute></ProtectedRoute>} />
 
           {/* Admin */}
-          <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
-          <Route path="/admin/solicitudes" element={<AdminRoute><AdminSubmissionsPage /></AdminRoute>} />
-          <Route path="/admin/solicitudes/:id" element={<AdminRoute><AdminSubmissionDetailPage /></AdminRoute>} />
-          <Route path="/admin/catalogo" element={<AdminRoute><AdminCatalogPage /></AdminRoute>} />
-          <Route path="/admin/usuarios" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
-          <Route path="/admin/tiendas" element={<AdminRoute><AdminStoresPage /></AdminRoute>} />
-          <Route path="/admin/configuracion" element={<AdminRoute><AdminCatalogSettingsPage /></AdminRoute>} />
-          <Route path="/admin/reservas" element={<AdminRoute><AdminReservationsPage /></AdminRoute>} />
-          <Route path="/admin/mini-tiendas" element={<AdminRoute><AdminMiniShopsPage /></AdminRoute>} />
-          <Route path="/admin/destacados" element={<AdminRoute><AdminFeaturedPage /></AdminRoute>} />
+          <Route path="/admin"                        element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
+          <Route path="/admin/solicitudes"            element={<AdminRoute><AdminSubmissionsPage /></AdminRoute>} />
+          <Route path="/admin/solicitudes/:id"        element={<AdminRoute><AdminSubmissionDetailPage /></AdminRoute>} />
+          <Route path="/admin/catalogo"               element={<AdminRoute><AdminCatalogPage /></AdminRoute>} />
+          <Route path="/admin/usuarios"               element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
+          <Route path="/admin/tiendas"                element={<AdminRoute><AdminStoresPage /></AdminRoute>} />
+          <Route path="/admin/configuracion"          element={<AdminRoute><AdminCatalogSettingsPage /></AdminRoute>} />
+          <Route path="/admin/reservas"               element={<AdminRoute><AdminReservationsPage /></AdminRoute>} />
+          <Route path="/admin/mini-tiendas"           element={<AdminRoute><AdminMiniShopsPage /></AdminRoute>} />
+          <Route path="/admin/destacados"             element={<AdminRoute><AdminFeaturedPage /></AdminRoute>} />
 
           {/* 404 */}
           <Route path="*" element={<NotFoundPage />} />

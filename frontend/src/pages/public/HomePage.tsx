@@ -69,7 +69,10 @@ export function HomePage() {
       .then(r => setFeatureCardsData(r.data.data.featureCards ?? {}))
       .catch(() => {})
     fetchFeaturedItems()
-      .then(setFeaturedItems)
+      .then(items => {
+        // Cuando mini-tiendas está desactivado, no mostrar productos de mini-tiendas en destacados
+        setFeaturedItems(miniShopsEnabled ? items : items.filter((i: any) => i.source !== 'minishop'))
+      })
       .catch(() => {})
     axiosClient.get('/store-info')
       .then(r => {
@@ -106,8 +109,9 @@ export function HomePage() {
       productTypeId: productTypeId || undefined,
       sizeId: sizeId || undefined,
       tagId: tagId || undefined,
-      miniShopSlug: miniShopSlug || undefined,
-      source: source || undefined,
+      miniShopSlug: miniShopsEnabled ? (miniShopSlug || undefined) : undefined,
+      // Cuando mini-tiendas está desactivado, forzar solo productos MBDA
+      source: !miniShopsEnabled ? 'mbda' : (source || undefined),
       sortPrice: sortPrice || undefined,
       page,
       limit: 12,
@@ -593,29 +597,31 @@ export function HomePage() {
               ))}
             </select>
           )}
-          {/* Source toggle */}
-          <div style={{ display: 'flex', gap: '0.375rem', border: '1px solid #E8E3D5', borderRadius: '0.5rem', padding: '0.25rem', background: '#FAF8F3' }}>
-            {([['', 'Todos'], ['mbda', 'MBDA']] as ['' | 'mbda', string][]).map(([val, label]) => (
-              <button
-                key={val}
-                onClick={() => handleSourceToggle(val)}
-                style={{
-                  padding: '0.35rem 0.75rem',
-                  borderRadius: '0.35rem',
-                  border: 'none',
-                  background: source === val ? '#1E1914' : 'transparent',
-                  color: source === val ? '#FAF8F3' : '#6b7280',
-                  fontSize: '0.8rem',
-                  fontWeight: source === val ? 600 : 400,
-                  cursor: 'pointer',
-                  fontFamily: "'Inter', sans-serif",
-                  transition: 'background 0.15s, color 0.15s',
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          {/* Source toggle — solo visible cuando mini-tiendas está activo */}
+          {miniShopsEnabled && (
+            <div style={{ display: 'flex', gap: '0.375rem', border: '1px solid #E8E3D5', borderRadius: '0.5rem', padding: '0.25rem', background: '#FAF8F3' }}>
+              {([['', 'Todos'], ['mbda', 'MBDA']] as ['' | 'mbda', string][]).map(([val, label]) => (
+                <button
+                  key={val}
+                  onClick={() => handleSourceToggle(val)}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '0.35rem',
+                    border: 'none',
+                    background: source === val ? '#1E1914' : 'transparent',
+                    color: source === val ? '#FAF8F3' : '#6b7280',
+                    fontSize: '0.8rem',
+                    fontWeight: source === val ? 600 : 400,
+                    cursor: 'pointer',
+                    fontFamily: "'Inter', sans-serif",
+                    transition: 'background 0.15s, color 0.15s',
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
 
           <select
             value={sortPrice}
