@@ -161,8 +161,14 @@ export async function updateStore(req: Request, res: Response): Promise<void> {
   try {
     const store = await prisma.store.update({ where: { id: req.params.id! }, data: sanitizeStoreData(parsed.data) })
     ok(res, store)
-  } catch {
-    notFound(res, 'Tienda no encontrada')
+  } catch (err: any) {
+    // P2025 = record not found (Prisma)
+    if (err?.code === 'P2025') {
+      notFound(res, 'Tienda no encontrada')
+    } else {
+      console.error('[updateStore] DB error:', err)
+      throw err // re-throw so errorHandler returns 500 with detail
+    }
   }
 }
 
