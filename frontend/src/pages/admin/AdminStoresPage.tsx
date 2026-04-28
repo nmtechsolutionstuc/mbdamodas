@@ -80,6 +80,7 @@ interface Store {
   bannerExtraButtonActive: boolean
   bannerExtraButtonText: string | null
   bannerExtraButtonUrl: string | null
+  miniShopsEnabled: boolean
   menuConfig: MenuConfig | null
   featureCards: FeatureCardsConfig | null
   socialLinks: SocialLinksConfig | null
@@ -117,6 +118,7 @@ export function AdminStoresPage() {
       bannerExtraButtonActive: store.bannerExtraButtonActive ?? false,
       bannerExtraButtonText: store.bannerExtraButtonText ?? '',
       bannerExtraButtonUrl: store.bannerExtraButtonUrl ?? '',
+      miniShopsEnabled: store.miniShopsEnabled ?? true,
       // Coerce JSON fields
       menuConfig: store.menuConfig ?? {},
       featureCards: store.featureCards ?? {},
@@ -191,6 +193,7 @@ export function AdminStoresPage() {
         bannerExtraButtonActive: editing.bannerExtraButtonActive,
         bannerExtraButtonText: editing.bannerExtraButtonText || null,
         bannerExtraButtonUrl: editing.bannerExtraButtonUrl || null,
+        miniShopsEnabled: editing.miniShopsEnabled,
         menuConfig: editing.menuConfig ?? {},
         featureCards: editing.featureCards ?? {},
         socialLinks: editing.socialLinks ?? {},
@@ -354,6 +357,28 @@ export function AdminStoresPage() {
                     )}
                   </div>
                 )}
+
+                {sectionTitle('Módulo de Mini-tiendas')}
+                <div style={{ background: editing.miniShopsEnabled ? '#F0FDF4' : '#FFF7ED', border: `1px solid ${editing.miniShopsEnabled ? '#86efac' : '#fdba74'}`, borderRadius: '0.75rem', padding: '0.875rem 1rem' }}>
+                  <label style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={editing.miniShopsEnabled ?? true}
+                      onChange={e => setEditing(prev => prev && ({ ...prev, miniShopsEnabled: e.target.checked }))}
+                      style={{ marginTop: '0.2rem', width: '16px', height: '16px', cursor: 'pointer', accentColor: '#16a34a' }}
+                    />
+                    <div>
+                      <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1E1914', marginBottom: '0.2rem' }}>
+                        Activar módulo de Mini-tiendas
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#6b7280', lineHeight: 1.5 }}>
+                        {editing.miniShopsEnabled
+                          ? '✅ Activo — la plataforma se muestra como MBDA Market con mini-tiendas habilitadas.'
+                          : '⏸ Desactivado — se ocultan las mini-tiendas y la plataforma se muestra como MBDA Modas.'}
+                      </div>
+                    </div>
+                  </label>
+                </div>
 
                 {sectionTitle('Contenido de páginas')}
                 <p style={{ fontSize: '0.8rem', color: '#6b7280' }}>

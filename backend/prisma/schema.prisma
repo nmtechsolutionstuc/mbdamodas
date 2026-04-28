@@ -181,6 +181,7 @@ model Store {
   bannerExtraButtonActive  Boolean  @default(false) // Botón extra configurable en panel vendedor
   bannerExtraButtonText    String?  // Texto del botón extra
   bannerExtraButtonUrl     String?  // URL del botón extra
+  miniShopsEnabled         Boolean  @default(true)  // Activa/desactiva el módulo de mini-tiendas
   // ── Redes sociales ──
   socialLinks                Json?   // {whatsappGroup?:{active,url}, tiktok?:{active,url}, instagram?:{active,url}, facebook?:{active,url}}
   // ── Footer editable ──

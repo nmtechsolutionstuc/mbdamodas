@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import type { CatalogItem, MbdaCatalogItem } from '../../types'
 import { useAuth } from '../../context/AuthContext'
+import { usePlatformStore } from '../../store/platformStore'
 
 // ── Share helper ────────────────────────────────────────
 
@@ -44,8 +45,9 @@ async function shareProduct(item: CatalogItem) {
 // ── WhatsApp link helpers ───────────────────────────────
 
 function buildMbdaWaLink(phone: string, item: MbdaCatalogItem): string {
+  const platformName = usePlatformStore.getState().platformName
   const sizePart = item.size ? ` (Talle ${item.size.name})` : ''
-  const msg = `Hola MBDA Market! Me interesa el producto "${item.title}"${sizePart} · $${Number(item.price).toLocaleString('es-AR')}. ¿Está disponible? Lo vi en el catálogo online.`
+  const msg = `Hola ${platformName}! Me interesa el producto "${item.title}"${sizePart} · $${Number(item.price).toLocaleString('es-AR')}. ¿Está disponible? Lo vi en el catálogo online.`
   return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
 }
 

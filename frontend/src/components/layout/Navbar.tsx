@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { logout } from '../../api/auth'
 import axiosClient from '../../api/axiosClient'
+import { usePlatformStore } from '../../store/platformStore'
 
 export function Navbar() {
   const { user, clearAuth } = useAuthStore()
@@ -11,6 +12,7 @@ export function Navbar() {
   const [showRegisterBtn, setShowRegisterBtn] = useState(false)
 
   const isAdmin = user?.role === 'ADMIN'
+  const { platformName, miniShopsEnabled, setMiniShopsEnabled } = usePlatformStore()
 
   useEffect(() => {
     function fetchStoreData() {
@@ -21,6 +23,7 @@ export function Navbar() {
         .then(r => {
           const store = r.data?.data?.store
           setShowRegisterBtn(store?.bannerSellerButtonActive ?? false)
+          setMiniShopsEnabled(store?.miniShopsEnabled ?? true)
         })
         .catch(() => {})
     }
@@ -63,7 +66,7 @@ export function Navbar() {
             style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
             <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', fontWeight: 700, color: '#E8E3D5', letterSpacing: '0.03em' }}>
-              MBDA Market
+              {platformName}
             </span>
             {isAdmin && (
               <span style={{
@@ -87,15 +90,17 @@ export function Navbar() {
             {user ? (
               <>
                 {/* Tiendas link */}
-                <Link
-                  to="/tiendas"
-                  style={{ color: '#E8E3D5', textDecoration: 'none', padding: '0.35rem 0.75rem', fontSize: '0.85rem', fontWeight: 500, opacity: 0.85, fontFamily: "'Inter', sans-serif", transition: 'opacity 0.15s ease' }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
-                  className="hide-mobile"
-                >
-                  Tiendas
-                </Link>
+                {miniShopsEnabled && (
+                  <Link
+                    to="/tiendas"
+                    style={{ color: '#E8E3D5', textDecoration: 'none', padding: '0.35rem 0.75rem', fontSize: '0.85rem', fontWeight: 500, opacity: 0.85, fontFamily: "'Inter', sans-serif", transition: 'opacity 0.15s ease' }}
+                    onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                    onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
+                    className="hide-mobile"
+                  >
+                    Tiendas
+                  </Link>
+                )}
 
                 {/* Nosotros link */}
                 <Link
@@ -164,15 +169,17 @@ export function Navbar() {
               </>
             ) : (
               <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
-                <Link
-                  to="/tiendas"
-                  style={{ color: '#E8E3D5', textDecoration: 'none', padding: '0.375rem 0.875rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, opacity: 0.85, fontFamily: "'Inter', sans-serif", transition: 'opacity 0.15s ease' }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
-                  className="hide-mobile"
-                >
-                  Tiendas
-                </Link>
+                {miniShopsEnabled && (
+                  <Link
+                    to="/tiendas"
+                    style={{ color: '#E8E3D5', textDecoration: 'none', padding: '0.375rem 0.875rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, opacity: 0.85, fontFamily: "'Inter', sans-serif", transition: 'opacity 0.15s ease' }}
+                    onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                    onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
+                    className="hide-mobile"
+                  >
+                    Tiendas
+                  </Link>
+                )}
                 <Link
                   to="/nosotros"
                   style={{ color: '#E8E3D5', textDecoration: 'none', padding: '0.375rem 0.875rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, opacity: 0.85, fontFamily: "'Inter', sans-serif", transition: 'opacity 0.15s ease' }}

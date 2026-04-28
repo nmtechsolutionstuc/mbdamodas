@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../store/authStore'
+import { usePlatformStore } from '../../store/platformStore'
 import { Link } from 'react-router-dom'
 import axiosClient from '../../api/axiosClient'
 
@@ -30,7 +31,7 @@ const DEFAULT_MENU: Required<MenuConfig> = {
   enviar: { active: true, title: 'Quiero vender', description: 'Carga lo que quieras vender, nosotros lo revisamos, lo aprobamos y lo vendemos por vos!' },
   solicitudes: { active: true, title: 'Mis solicitudes de venta', description: 'Seguí el estado de las solicitudes de venta que cargaste' },
   reservas: { active: true, title: 'Mis reservas para ganar comisiones', description: 'Reservá productos de la tienda y ganá una comisión luego de completar la venta' },
-  tiendas: { active: true, title: 'Mis tiendas', description: 'Crea tu propia tienda dentro de MBDA Market y vende tus productos directamente' },
+  tiendas: { active: true, title: 'Mis tiendas', description: 'Crea tu propia tienda dentro de nuestra plataforma y vende tus productos directamente' },
   perfil: { active: true, title: 'Mi perfil', description: 'Actualizá tus datos y número de WhatsApp' },
 }
 
@@ -38,6 +39,7 @@ export function UserDashboardPage() {
   const { user } = useAuthStore()
   const [stats, setStats] = useState<Stats | null>(null)
   const [menuConfig, setMenuConfig] = useState<MenuConfig>({})
+  const { miniShopsEnabled } = usePlatformStore()
 
   useEffect(() => {
     axiosClient.get<{ data: Stats }>('/submissions/mine/stats')
@@ -119,7 +121,7 @@ export function UserDashboardPage() {
               <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>{getMenuItem('reservas').description}</div>
             </Link>
           )}
-          {getMenuItem('tiendas').active && (
+          {miniShopsEnabled && getMenuItem('tiendas').active && (
             <Link to="/dashboard/tiendas" style={{ display: 'block', padding: '1.25rem', borderRadius: '1rem', textDecoration: 'none', background: '#E8E3D5', color: '#1E1914' }}>
               <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>{getMenuItem('tiendas').title}</div>
               <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>{getMenuItem('tiendas').description}</div>

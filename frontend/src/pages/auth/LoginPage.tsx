@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { login } from '../../api/auth'
 import { useAuthStore } from '../../store/authStore'
+import { usePlatformStore } from '../../store/platformStore'
 
 const schema = z.object({
   email: z.string().email('Email inválido'),
@@ -17,6 +18,7 @@ export function LoginPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { setAuth } = useAuthStore()
+  const { platformName } = usePlatformStore()
   const [serverError, setServerError] = useState<string | null>(null)
 
   const {
@@ -47,7 +49,7 @@ export function LoginPage() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', background: '#FAF8F3' }}>
       <div style={{ width: '100%', maxWidth: '380px' }}>
         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', fontWeight: 700, color: '#1E1914', marginBottom: '0.375rem', textAlign: 'center' }}>
-          MBDA Market
+          {platformName}
         </h1>
         <p style={{ color: '#6b7280', textAlign: 'center', marginBottom: '2rem' }}>
           Ingresá a tu cuenta

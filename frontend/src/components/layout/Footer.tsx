@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import axiosClient from '../../api/axiosClient'
+import { usePlatformStore } from '../../store/platformStore'
 
 interface SocialLink { active: boolean; url: string }
 interface StoreInfo {
@@ -14,6 +15,7 @@ interface StoreInfo {
 
 export function Footer() {
   const [info, setInfo] = useState<StoreInfo | null>(null)
+  const { platformName } = usePlatformStore()
 
   useEffect(() => {
     axiosClient.get<{ data: { store: StoreInfo | null } }>('/store-info')
@@ -34,7 +36,7 @@ export function Footer() {
         {/* Marca */}
         <div>
           <p style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem', fontWeight: 700, color: '#E8E3D5', marginBottom: '0.5rem' }}>
-            MBDA Market
+            {platformName}
           </p>
           <p style={{ fontSize: '0.8rem', lineHeight: 1.6, marginBottom: '0.5rem' }}>{tagline}</p>
           <p style={{ fontSize: '0.8rem', lineHeight: 1.6, opacity: 0.7 }}>{address}</p>
@@ -136,7 +138,7 @@ export function Footer() {
             >Contactame</a>
           </p>
           <p style={{ fontSize: '0.75rem', color: 'rgba(232,227,213,0.4)', marginTop: '1rem' }}>
-            © {new Date().getFullYear()} MBDA Market — Todos los derechos reservados
+            © {new Date().getFullYear()} {platformName} — Todos los derechos reservados
           </p>
         </div>
       )}

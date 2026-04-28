@@ -7,6 +7,7 @@ import { fetchCatalog, fetchCatalogShops } from '../../api/catalog'
 import { fetchFeaturedItems } from '../../api/items'
 import { useProductTypes } from '../../hooks/useProductTypes'
 import { useAuthStore } from '../../store/authStore'
+import { usePlatformStore } from '../../store/platformStore'
 import axiosClient from '../../api/axiosClient'
 import type { CatalogItem, CatalogShop } from '../../types'
 
@@ -37,6 +38,7 @@ const DEFAULT_FEATURE_CARDS: Required<FeatureCardsData> = {
 export function HomePage() {
   const { productTypes } = useProductTypes()
   const { user } = useAuthStore()
+  const { miniShopsEnabled } = usePlatformStore()
   const [searchParams] = useSearchParams()
   const [items, setItems] = useState<CatalogItem[]>([])
   const [total, setTotal] = useState(0)
@@ -76,9 +78,11 @@ export function HomePage() {
         if (store?.videoSection) setVideoSection(store.videoSection)
       })
       .catch(() => {})
-    fetchCatalogShops()
-      .then(setShops)
-      .catch(() => {})
+    if (miniShopsEnabled) {
+      fetchCatalogShops()
+        .then(setShops)
+        .catch(() => {})
+    }
   }, [])
 
   // Banner text with fallbacks
@@ -567,7 +571,7 @@ export function HomePage() {
               ))}
             </select>
           )}
-          {shops.length > 0 && (
+          {miniShopsEnabled && shops.length > 0 && (
             <select
               value={miniShopSlug}
               onChange={e => handleMiniShopChange(e.target.value)}

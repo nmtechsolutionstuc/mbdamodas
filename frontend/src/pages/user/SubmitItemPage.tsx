@@ -4,6 +4,7 @@ import { createSubmission, type SubmissionItemFormData } from '../../api/submiss
 import type { ItemCondition } from '../../types'
 import { useProductTypes } from '../../hooks/useProductTypes'
 import { useConditionConfig } from '../../hooks/useConditionConfig'
+import { usePlatformStore } from '../../store/platformStore'
 
 const EMPTY_ITEM = (): SubmissionItemFormData => ({
   title: '',
@@ -31,6 +32,7 @@ export function SubmitItemPage() {
   const navigate = useNavigate()
   const { productTypes } = useProductTypes()
   const { getLabel: getConditionLabel, getActiveConditions } = useConditionConfig()
+  const { platformName } = usePlatformStore()
   const [items, setItems] = useState<SubmissionItemFormData[]>([EMPTY_ITEM()])
   const [currentItem, setCurrentItem] = useState(0)
   const [step, setStep] = useState<Step>(1)
@@ -452,7 +454,7 @@ export function SubmitItemPage() {
                 <a href="/terminos-y-condiciones" target="_blank" rel="noopener noreferrer" style={{ color: '#1E1914', fontWeight: 600, textDecoration: 'underline' }}>
                   Terminos y Condiciones
                 </a>
-                {' '}de consignacion de MBDA Market.
+                {' '}de consignacion de {platformName}.
               </span>
             </label>
 

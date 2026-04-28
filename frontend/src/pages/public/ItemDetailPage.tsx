@@ -5,11 +5,13 @@ import { createReservation } from '../../api/reservations'
 import type { Item } from '../../types'
 import { useConditionConfig } from '../../hooks/useConditionConfig'
 import { useAuthStore } from '../../store/authStore'
+import { usePlatformStore } from '../../store/platformStore'
 
 function buildWhatsAppLink(phone: string, item: Item): string {
+  const platformName = usePlatformStore.getState().platformName
   const sizePart = item.size ? ` (Talle ${item.size.name})` : ''
   const codePart = item.code ? ` [${item.code}]` : ''
-  const msg = `Hola MBDA Market! Me interesa el producto "${item.title}"${codePart}${sizePart} · $${Number(item.price).toLocaleString('es-AR')}. ¿Está disponible? Lo vi en el catálogo online.`
+  const msg = `Hola ${platformName}! Me interesa el producto "${item.title}"${codePart}${sizePart} · $${Number(item.price).toLocaleString('es-AR')}. ¿Está disponible? Lo vi en el catálogo online.`
   return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
 }
 
@@ -18,6 +20,7 @@ export function ItemDetailPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const { getLabel: getConditionLabel } = useConditionConfig()
+  const { platformName } = usePlatformStore()
   const [item, setItem] = useState<Item | null>(null)
   const [loading, setLoading] = useState(true)
   const [photoIndex, setPhotoIndex] = useState(0)
@@ -310,7 +313,7 @@ export function ItemDetailPage() {
                   }}>
                     {reservationSuccess ? (
                       <p style={{ color: '#166534', fontWeight: 600, fontFamily: "'Inter', sans-serif", margin: 0 }}>
-                        Reserva enviada. El equipo de MBDA Market te va a confirmar por WhatsApp.
+                        Reserva enviada. El equipo de {platformName} te va a confirmar por WhatsApp.
                       </p>
                     ) : (
                       <>

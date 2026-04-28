@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { register as registerUser } from '../../api/auth'
 import { useAuthStore } from '../../store/authStore'
+import { usePlatformStore } from '../../store/platformStore'
 
 const schema = z.object({
   firstName: z.string().min(1, 'Requerido').max(50),
@@ -28,6 +29,7 @@ type FormData = z.infer<typeof schema>
 export function RegisterPage() {
   const navigate = useNavigate()
   const { setAuth } = useAuthStore()
+  const { platformName } = usePlatformStore()
   const [serverError, setServerError] = useState<string | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<string>('EFECTIVO')
   const [bankAlias, setBankAlias] = useState<string>('')
@@ -76,7 +78,7 @@ export function RegisterPage() {
           Crear cuenta
         </h1>
         <p style={{ color: '#6b7280', textAlign: 'center', marginBottom: '2rem' }}>
-          Vendé tus productos en MBDA Market
+          Vendé tus productos en {platformName}
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -182,7 +184,7 @@ export function RegisterPage() {
               <Link to="/terminos-y-condiciones" target="_blank" style={{ color: '#1E1914', fontWeight: 600, textDecoration: 'underline' }}>
                 Términos y Condiciones
               </Link>
-              {' '}de consignación de MBDA Market
+              {' '}de consignación de {platformName}
             </span>
           </label>
 
