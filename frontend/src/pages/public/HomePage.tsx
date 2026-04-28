@@ -119,7 +119,7 @@ export function HomePage() {
       .then(r => { setItems(r.items); setTotal(r.total) })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [search, productTypeId, sizeId, tagId, miniShopSlug, source, sortPrice, page])
+  }, [search, productTypeId, sizeId, tagId, miniShopSlug, source, sortPrice, page, miniShopsEnabled])
 
   function handleProductTypeChange(newId: string) {
     setProductTypeId(newId)
