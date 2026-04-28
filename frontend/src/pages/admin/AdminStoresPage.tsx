@@ -346,7 +346,12 @@ export function AdminStoresPage() {
                 {editing.bannerExtraButtonActive && (
                   <div style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {inp('Texto del botón extra', editing.bannerExtraButtonText ?? '', v => setEditing(e => e && ({ ...e, bannerExtraButtonText: v })))}
-                    {inp('URL del botón extra', editing.bannerExtraButtonUrl ?? '', v => setEditing(e => e && ({ ...e, bannerExtraButtonUrl: v })))}
+                    {inp('URL del botón extra (ej: https://wa.me/...)', editing.bannerExtraButtonUrl ?? '', v => setEditing(e => e && ({ ...e, bannerExtraButtonUrl: v })))}
+                    {!editing.bannerExtraButtonUrl?.trim() && (
+                      <p style={{ margin: 0, fontSize: '0.75rem', color: '#b45309', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '0.375rem', padding: '0.375rem 0.625rem' }}>
+                        ⚠️ El botón <strong>no se verá en la home</strong> hasta que completes la URL de destino.
+                      </p>
+                    )}
                   </div>
                 )}
 
