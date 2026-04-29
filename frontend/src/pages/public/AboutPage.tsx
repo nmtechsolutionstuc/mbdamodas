@@ -20,9 +20,8 @@ interface StoreInfo {
 export function AboutPage() {
   const { isAdmin } = useAuth()
   const { toast } = useToast()
-  const contentReveal = useScrollReveal(0.05)
-  const ctaReveal     = useScrollReveal(0.1)
-  const devReveal     = useScrollReveal(0.1)
+  const ctaReveal = useScrollReveal(0.05)
+  const devReveal = useScrollReveal(0.05)
   const [content, setContent] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null)
@@ -136,12 +135,8 @@ export function AboutPage() {
           </div>
         </div>
 
-        {/* Content */}
-        <div
-          ref={contentReveal.ref}
-          className={`mbda-sr${contentReveal.visible ? ' mbda-sr-in' : ''}`}
-          style={{ maxWidth: '700px', margin: '0 auto', padding: '1.5rem 1.5rem 3rem' }}
-        >
+        {/* Content — sin scroll-reveal (contenido principal, siempre visible) */}
+        <div style={{ maxWidth: '700px', margin: '0 auto', padding: '1.5rem 1.5rem 3rem' }}>
           {editPanel}
 
           {renderContent(removeFirstSection(content))}
