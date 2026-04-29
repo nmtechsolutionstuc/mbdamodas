@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import type { CatalogItem, MbdaCatalogItem } from '../../types'
 import { useAuth } from '../../context/AuthContext'
 import { usePlatformStore } from '../../store/platformStore'
+import { sanitizePhoneForWA } from '../../utils/sanitize'
 
 // ── Share helper ────────────────────────────────────────
 
@@ -45,16 +46,20 @@ async function shareProduct(item: CatalogItem) {
 // ── WhatsApp link helpers ───────────────────────────────
 
 function buildMbdaWaLink(phone: string, item: MbdaCatalogItem): string {
+  const safePhone = sanitizePhoneForWA(phone)
+  if (!safePhone) return ''
   const platformName = usePlatformStore.getState().platformName
   const sizePart = item.size ? ` (Talle ${item.size.name})` : ''
   const msg = `Hola ${platformName}! Me interesa el producto "${item.title}"${sizePart} · $${Number(item.price).toLocaleString('es-AR')}. ¿Está disponible? Lo vi en el catálogo online.`
-  return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+  return `https://wa.me/${safePhone}?text=${encodeURIComponent(msg)}`
 }
 
 function buildMinishopWaLink(whatsapp: string, item: CatalogItem, shopName: string): string {
+  const safePhone = sanitizePhoneForWA(whatsapp)
+  if (!safePhone) return ''
   const sizePart = item.size ? ` (Talle ${item.size.name})` : ''
   const msg = `Hola ${shopName}! Me interesa el producto "${item.title}"${sizePart} · $${Number(item.price).toLocaleString('es-AR')}. ¿Está disponible?`
-  return `https://wa.me/${whatsapp}?text=${encodeURIComponent(msg)}`
+  return `https://wa.me/${safePhone}?text=${encodeURIComponent(msg)}`
 }
 
 // ── CatalogCard ─────────────────────────────────────────
@@ -119,7 +124,7 @@ function MbdaCard({ item, navigate, isAuthenticated, photo }: {
               💰 Reservar y ganar comisión
             </button>
           )}
-          {storePhone && (
+          {storePhone && buildMbdaWaLink(storePhone, item) && (
             <a href={buildMbdaWaLink(storePhone, item)} target="_blank" rel="noopener noreferrer"
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.375rem', fontSize: '0.8rem', color: '#16a34a', textDecoration: 'none', fontWeight: 500 }}>
               <WaIcon /> Quiero este producto
@@ -161,10 +166,12 @@ function MinishopCard({ item, photo }: { item: Extract<CatalogItem, { source: 'm
           ${Number(item.price).toLocaleString('es-AR')}
         </div>
         <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-          <a href={waLink} target="_blank" rel="noopener noreferrer"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.375rem', fontSize: '0.8rem', color: '#fff', background: '#25D366', textDecoration: 'none', fontWeight: 600, borderRadius: '0.5rem', padding: '0.5rem 0.75rem' }}>
-            <WaIcon color="#fff" /> Comprar
-          </a>
+          {waLink && (
+            <a href={waLink} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.375rem', fontSize: '0.8rem', color: '#fff', background: '#25D366', textDecoration: 'none', fontWeight: 600, borderRadius: '0.5rem', padding: '0.5rem 0.75rem' }}>
+              <WaIcon color="#fff" /> Comprar
+            </a>
+          )}
           <ShareButton item={item} />
         </div>
       </div>

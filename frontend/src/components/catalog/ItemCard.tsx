@@ -2,12 +2,15 @@ import { Link, useNavigate } from 'react-router-dom'
 import type { Item } from '../../types'
 import { useAuth } from '../../context/AuthContext'
 import { usePlatformStore } from '../../store/platformStore'
+import { sanitizePhoneForWA } from '../../utils/sanitize'
 
 function buildWhatsAppLink(phone: string, item: Item): string {
+  const safePhone = sanitizePhoneForWA(phone)
+  if (!safePhone) return ''
   const platformName = usePlatformStore.getState().platformName
   const sizePart = item.size ? ` (Talle ${item.size.name})` : ''
   const msg = `Hola ${platformName}! Me interesa el producto "${item.title}"${sizePart} · $${Number(item.price).toLocaleString('es-AR')}. ¿Está disponible? Lo vi en el catálogo online.`
-  return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+  return `https://wa.me/${safePhone}?text=${encodeURIComponent(msg)}`
 }
 
 export function ItemCard({ item }: { item: Item }) {
@@ -110,7 +113,7 @@ export function ItemCard({ item }: { item: Item }) {
           )}
 
           {/* Botón WhatsApp */}
-          {storePhone && (
+          {storePhone && buildWhatsAppLink(storePhone, item) && (
             <a
               href={buildWhatsAppLink(storePhone, item)}
               target="_blank"

@@ -2,18 +2,29 @@ import { Request, Response } from 'express'
 import { z } from 'zod'
 import { prisma } from '../config/prisma'
 import { ok, created, notFound, badRequest } from '../utils/apiResponse'
-import { stripHtml } from '../utils/sanitize'
+import { stripHtml, sanitizeUrl } from '../utils/sanitize'
+
+// Solo dígitos, espacios, +, -, (, ) — bloquea URLs y scripts inyectados
+const phoneRegex = /^[\d\s+\-().]+$/
+
+// Validador de URL segura (reutilizable en el schema)
+const safeUrlField = (maxLen = 500) =>
+  z.string().max(maxLen)
+    .refine(v => !v || !/^(javascript|data|vbscript|file):/i.test(v.trim()), {
+      message: 'Protocolo de URL no permitido',
+    })
+    .optional().nullable()
 
 const storeSchema = z.object({
   name: z.string().min(1).max(200),
   address: z.string().max(300).optional().nullable(),
-  phone: z.string().max(30).optional().nullable(),
+  phone: z.string().max(30).regex(phoneRegex, 'Formato de teléfono inválido').optional().nullable(),
   email: z.union([z.string().email(), z.literal(''), z.null()]).optional().transform(v => v === '' ? null : v),
   description: z.string().max(1000).optional().nullable(),
   logoUrl: z.union([z.string().url(), z.literal(''), z.null()]).optional().transform(v => v === '' ? null : v),
   defaultCommission: z.preprocess(v => { const n = Number(v); return (v === null || v === undefined || isNaN(n)) ? undefined : n }, z.number().min(0).max(100).optional()),
   isActive: z.boolean().nullable().optional().transform(v => v ?? undefined),
-  storeAttendantPhone: z.string().max(30).optional().nullable(),
+  storeAttendantPhone: z.string().max(30).regex(phoneRegex, 'Formato de teléfono inválido').optional().nullable(),
   announcementText: z.string().max(500).optional().nullable(),
   announcementActive: z.boolean().nullable().optional().transform(v => v ?? undefined),
   // Banners editables de la homepage
@@ -35,7 +46,7 @@ const storeSchema = z.object({
   bannerReservarButtonActive: z.boolean().nullable().optional().transform(v => v ?? undefined),
   bannerExtraButtonActive: z.boolean().nullable().optional().transform(v => v ?? undefined),
   bannerExtraButtonText: z.string().max(100).optional().nullable(),
-  bannerExtraButtonUrl: z.string().max(500).optional().nullable(),
+  bannerExtraButtonUrl: safeUrlField(500),
   miniShopsEnabled: z.boolean().nullable().optional().transform(v => v ?? undefined),
   socialLinks: z.record(z.any()).optional().nullable(),
   footerConfig: z.record(z.any()).optional().nullable(),

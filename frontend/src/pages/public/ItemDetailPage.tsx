@@ -6,13 +6,16 @@ import type { Item } from '../../types'
 import { useConditionConfig } from '../../hooks/useConditionConfig'
 import { useAuthStore } from '../../store/authStore'
 import { usePlatformStore } from '../../store/platformStore'
+import { sanitizePhoneForWA } from '../../utils/sanitize'
 
 function buildWhatsAppLink(phone: string, item: Item): string {
+  const safePhone = sanitizePhoneForWA(phone)
+  if (!safePhone) return ''
   const platformName = usePlatformStore.getState().platformName
   const sizePart = item.size ? ` (Talle ${item.size.name})` : ''
   const codePart = item.code ? ` [${item.code}]` : ''
   const msg = `Hola ${platformName}! Me interesa el producto "${item.title}"${codePart}${sizePart} · $${Number(item.price).toLocaleString('es-AR')}. ¿Está disponible? Lo vi en el catálogo online.`
-  return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+  return `https://wa.me/${safePhone}?text=${encodeURIComponent(msg)}`
 }
 
 export function ItemDetailPage() {
@@ -423,7 +426,7 @@ export function ItemDetailPage() {
                   </button>
                 )}
               </>
-            ) : storePhone ? (
+            ) : storePhone && buildWhatsAppLink(storePhone, item) ? (
               <a
                 href={buildWhatsAppLink(storePhone, item)}
                 target="_blank"

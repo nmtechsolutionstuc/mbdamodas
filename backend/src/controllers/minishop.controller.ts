@@ -4,6 +4,9 @@ import { prisma } from '../config/prisma'
 import { ok, created, notFound, badRequest, forbidden, conflict } from '../utils/apiResponse'
 import { getUploadedFileUrl, getPhotoUrls } from '../services/upload.service'
 
+// Solo dígitos, espacios, +, -, (, ) — bloquea URLs y scripts inyectados
+const phoneRegex = /^[\d\s+\-().]+$/
+
 // ── Helpers ────────────────────────────────────────────────────
 
 function slugify(text: string): string {
@@ -45,7 +48,7 @@ async function productSlug(title: string): Promise<string> {
 const createShopSchema = z.object({
   name: z.string().min(2).max(100),
   description: z.string().max(500).optional(),
-  whatsapp: z.string().min(8).max(20),
+  whatsapp: z.string().min(7).max(20).regex(phoneRegex, 'Formato de teléfono inválido'),
   socialLinks: z.object({
     instagram: z.string().max(200).optional(),
     tiktok: z.string().max(200).optional(),
@@ -65,7 +68,7 @@ const createShopSchema = z.object({
 const updateShopSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   description: z.string().max(500).optional().nullable(),
-  whatsapp: z.string().min(8).max(20).optional(),
+  whatsapp: z.string().min(7).max(20).regex(phoneRegex, 'Formato de teléfono inválido').optional(),
   socialLinks: z.object({
     instagram: z.string().max(200).optional(),
     tiktok: z.string().max(200).optional(),

@@ -1,4 +1,5 @@
 import { SubmissionItemStatus } from '@prisma/client'
+import { sanitizePhoneForWA } from '../utils/sanitize'
 
 interface WhatsAppContext {
   sellerPhone: string
@@ -25,7 +26,8 @@ function buildSoldMessage(ctx: WhatsAppContext): string {
 }
 
 export function generateWhatsAppLink(status: SubmissionItemStatus, ctx: WhatsAppContext): string | null {
-  if (!ctx.sellerPhone) return null
+  const safePhone = sanitizePhoneForWA(ctx.sellerPhone)
+  if (!safePhone) return null
 
   const codePart = ctx.itemCode ? ` (${ctx.itemCode})` : ''
 
@@ -40,7 +42,7 @@ export function generateWhatsAppLink(status: SubmissionItemStatus, ctx: WhatsApp
   const message = messages[status]
   if (!message) return null
 
-  return `https://wa.me/${ctx.sellerPhone}?text=${encodeURIComponent(message)}`
+  return `https://wa.me/${safePhone}?text=${encodeURIComponent(message)}`
 }
 
 // ─── Reservation WhatsApp Messages ───────────────────────────────────────────
@@ -91,8 +93,9 @@ export function generateReservationWALink(
 
   switch (type) {
     case 'QUERY_ATTENDANT': {
-      if (!ctx.storeAttendantPhone) return null
-      phone = ctx.storeAttendantPhone
+      const attendantPhone = sanitizePhoneForWA(ctx.storeAttendantPhone)
+      if (!attendantPhone) return null
+      phone = attendantPhone
       const formatPrice = ctx.itemPrice != null ? ctx.itemPrice.toLocaleString('es-AR') : null
       const pricePart = formatPrice != null ? `, precio de venta $${formatPrice}` : ''
       const qtyPart = ctx.quantity && ctx.quantity > 1 ? `, cantidad solicitada: ${ctx.quantity}` : ''
@@ -101,7 +104,7 @@ export function generateReservationWALink(
     }
 
     case 'APPROVED_TO_PROMOTER': {
-      phone = ctx.promoterPhone
+      phone = sanitizePhoneForWA(ctx.promoterPhone) ?? ctx.promoterPhone
       const earningsTotal = ctx.earnings != null ? `$${ctx.earnings.toLocaleString('es-AR')}` : '?'
       const qtyNote = ctx.quantity && ctx.quantity > 1 ? ` (${ctx.quantity} unidades)` : ''
       text = `✅ ¡Tu reserva fue aprobada!\n\nProducto: ${ctx.itemTitle}${codePart}\nCódigo: ${ctx.reservationCode}\nTu ganancia estimada: ${earningsTotal}${qtyNote}\nVálido hasta: ${expiresStr}\n\n---\nEn el sitio se generó un comprobante al que debés sacar captura y enviar a tu comprador para ser presentado en la tienda y se efectúe la venta correctamente.\n${ctx.voucherUrl ?? ''}`
@@ -109,17 +112,17 @@ export function generateReservationWALink(
     }
 
     case 'REJECTED_TO_PROMOTER':
-      phone = ctx.promoterPhone
+      phone = sanitizePhoneForWA(ctx.promoterPhone) ?? ctx.promoterPhone
       text = `Lo sentimos, tu reserva para "${ctx.itemTitle}"${codePart} (${ctx.reservationCode}) no pudo ser aprobada.${ctx.adminNote ? `\nMotivo: ${ctx.adminNote}` : ''}`
       break
 
     case 'EXTENDED_TO_PROMOTER':
-      phone = ctx.promoterPhone
+      phone = sanitizePhoneForWA(ctx.promoterPhone) ?? ctx.promoterPhone
       text = `Tu reserva para "${ctx.itemTitle}"${codePart} (${ctx.reservationCode}) fue extendida.\nNuevo vencimiento: ${expiresStr}. ¡Gracias por tu paciencia!`
       break
 
     case 'COMPLETED_TRANSFER': {
-      phone = ctx.promoterPhone
+      phone = sanitizePhoneForWA(ctx.promoterPhone) ?? ctx.promoterPhone
       const gain1 = ctx.earnings != null ? `$${ctx.earnings.toLocaleString('es-AR')}` : '?'
       const qty1 = ctx.quantity && ctx.quantity > 1 ? ` (${ctx.quantity} unidades)` : ''
       text = `🎉 ¡Venta completada! "${ctx.itemTitle}"${codePart}\nTu ganancia: ${gain1}${qty1}.\nConfirmás este alias/CVU: ${ctx.bankAlias ?? '?'}? Te hacemos la transferencia a la brevedad.`
@@ -127,7 +130,7 @@ export function generateReservationWALink(
     }
 
     case 'COMPLETED_CASH': {
-      phone = ctx.promoterPhone
+      phone = sanitizePhoneForWA(ctx.promoterPhone) ?? ctx.promoterPhone
       const gain2 = ctx.earnings != null ? `$${ctx.earnings.toLocaleString('es-AR')}` : '?'
       const qty2 = ctx.quantity && ctx.quantity > 1 ? ` (${ctx.quantity} unidades)` : ''
       text = `🎉 ¡Venta completada! "${ctx.itemTitle}"${codePart}\nTu ganancia: ${gain2}${qty2}.\nPasá por ${ctx.storeName} a retirar tu efectivo.`
@@ -135,7 +138,7 @@ export function generateReservationWALink(
     }
 
     case 'SEND_VOUCHER':
-      phone = ctx.promoterPhone
+      phone = sanitizePhoneForWA(ctx.promoterPhone) ?? ctx.promoterPhone
       text = `Hola ${ctx.promoterName}! Aquí está tu comprobante de reserva.\nEntrá al link, sacá captura de pantalla y mandásela a tu comprador:\n${ctx.voucherUrl ?? ''}`
       break
 

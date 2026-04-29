@@ -4,10 +4,13 @@ import { prisma } from '../config/prisma'
 import { ok, badRequest } from '../utils/apiResponse'
 import { sanitizeStrings } from '../utils/sanitize'
 
+// Solo dígitos, espacios, +, -, (, ) — bloquea URLs y scripts inyectados
+const phoneRegex = /^[\d\s+\-().]+$/
+
 const updateMeSchema = z.object({
   firstName: z.string().min(1).max(100).optional(),
   lastName: z.string().min(1).max(100).optional(),
-  phone: z.string().max(20).optional().nullable(),
+  phone: z.string().max(20).regex(phoneRegex, 'Formato de teléfono inválido').optional().nullable(),
   paymentMethod: z.enum(['EFECTIVO', 'TRANSFERENCIA']).optional().nullable(),
   bankAlias: z.string().max(100).optional().nullable(),
 })
