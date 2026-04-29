@@ -1,0 +1,106 @@
+/* ─── MBDA Modas — Visual Animations ─────────────────────────────────────────
+   CSS-only animations. No external libraries.
+   Consumed by HomePage.tsx and AboutPage.tsx.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Keyframes ────────────────────────────────────────────────────────────── */
+
+@keyframes mbdaFadeUp {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes mbdaFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes mbdaPulse {
+  0%,  100% { box-shadow: 0 2px 8px  rgba(30,25,20,0.18); }
+  50%        { box-shadow: 0 8px 28px rgba(30,25,20,0.42); }
+}
+
+/* ── Hero panel — fires immediately on mount ──────────────────────────────── */
+
+.mbda-hero-sub   { animation: mbdaFadeUp 0.55s ease both; animation-delay: 0.05s; }
+.mbda-hero-title { animation: mbdaFadeUp 0.65s ease both; animation-delay: 0.20s; }
+.mbda-hero-desc  { animation: mbdaFadeUp 0.65s ease both; animation-delay: 0.38s; }
+.mbda-hero-btns  { animation: mbdaFadeUp 0.65s ease both; animation-delay: 0.54s; }
+
+/* Subtle pulse on the primary CTA to draw attention */
+.mbda-hero-pulse { animation: mbdaPulse 2.8s ease-in-out 1.2s infinite; }
+
+/* ── Diagonal banner divider — desktop only ───────────────────────────────── */
+
+@media (min-width: 641px) {
+  .mbda-buyer-clip {
+    clip-path: polygon(0 0, 100% 0, calc(100% - 38px) 100%, 0 100%);
+  }
+}
+
+/* ── Scroll-reveal wrapper ────────────────────────────────────────────────── */
+
+.mbda-sr {
+  opacity: 0;
+  transform: translateY(22px);
+  /* No transition here — added only when visible so items don't animate on page load */
+}
+.mbda-sr.mbda-sr-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.62s ease, transform 0.62s ease;
+}
+
+/* ── Feature-card hover ───────────────────────────────────────────────────── */
+
+.mbda-feature-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.mbda-feature-card:hover {
+  transform: translateY(-7px) !important;
+  box-shadow: 0 16px 40px rgba(30,25,20,0.10) !important;
+}
+
+/* ── Catalog grid — hover lift on every card ──────────────────────────────── */
+
+.mbda-catalog-grid > * {
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.mbda-catalog-grid > *:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(30,25,20,0.09);
+}
+
+/* ── Generic CTA hover (for About page links) ─────────────────────────────── */
+
+.mbda-cta-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+.mbda-cta-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(30,25,20,0.18);
+  opacity: 0.92;
+}
+
+/* ── Wave divider (used between dark hero and light body in About) ─────────── */
+
+.mbda-wave-wrap {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  line-height: 0;
+  pointer-events: none;
+}
+.mbda-wave-wrap svg {
+  display: block;
+  width: 100%;
+}
+
+/* ── Section title breathing ──────────────────────────────────────────────── */
+
+.mbda-section-heading {
+  letter-spacing: -0.015em;
+  margin-bottom: 2rem !important;
+  line-height: 1.18 !important;
+}

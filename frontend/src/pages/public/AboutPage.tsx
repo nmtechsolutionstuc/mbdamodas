@@ -4,6 +4,8 @@ import axiosClient from '../../api/axiosClient'
 import { renderContent } from '../../utils/renderContent'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
+import { useScrollReveal } from '../../hooks/useScrollReveal'
+import '../../styles/animations.css'
 
 interface SocialLink { active: boolean; url: string }
 interface StoreInfo {
@@ -18,6 +20,9 @@ interface StoreInfo {
 export function AboutPage() {
   const { isAdmin } = useAuth()
   const { toast } = useToast()
+  const contentReveal = useScrollReveal(0.05)
+  const ctaReveal     = useScrollReveal(0.1)
+  const devReveal     = useScrollReveal(0.1)
   const [content, setContent] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null)
@@ -111,32 +116,47 @@ export function AboutPage() {
     return (
       <div style={{ minHeight: '100vh', background: '#FAF8F3' }}>
         {/* Hero */}
-        <div style={{ background: '#1E1914', color: '#E8E3D5', padding: '4rem 1.5rem 3rem' }}>
+        <div style={{ background: '#1E1914', color: '#E8E3D5', padding: '4.5rem 1.5rem 4rem', position: 'relative' }}>
           <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-            <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.6, marginBottom: '1rem' }}>
+            <p className="mbda-hero-sub" style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.6, marginBottom: '1.25rem' }}>
               Sobre nosotros
             </p>
-            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 700, lineHeight: 1.2, marginBottom: '1.5rem' }}>
+            <h1 className="mbda-hero-title mbda-section-heading" style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 700, lineHeight: 1.2, marginBottom: '1.75rem' }}>
               {extractFirstHeading(content)}
             </h1>
-            <p style={{ fontSize: '1.1rem', opacity: 0.8, lineHeight: 1.7 }}>
+            <p className="mbda-hero-desc" style={{ fontSize: '1.1rem', opacity: 0.8, lineHeight: 1.7 }}>
               {extractFirstParagraph(content)}
             </p>
+          </div>
+          {/* Wave divider — smooth transition into the light content below */}
+          <div className="mbda-wave-wrap">
+            <svg viewBox="0 0 1440 64" preserveAspectRatio="none" style={{ height: '64px' }}>
+              <path d="M0,32 C240,64 480,0 720,32 C960,64 1200,0 1440,32 L1440,64 L0,64 Z" fill="#FAF8F3" />
+            </svg>
           </div>
         </div>
 
         {/* Content */}
-        <div style={{ maxWidth: '700px', margin: '0 auto', padding: '3rem 1.5rem' }}>
+        <div
+          ref={contentReveal.ref}
+          className={`mbda-sr${contentReveal.visible ? ' mbda-sr-in' : ''}`}
+          style={{ maxWidth: '700px', margin: '0 auto', padding: '1.5rem 1.5rem 3rem' }}
+        >
           {editPanel}
 
           {renderContent(removeFirstSection(content))}
 
           {/* CTA buttons */}
           {(showCatalogButton || showVenderButton) && (
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '2rem', marginBottom: '2rem' }}>
+            <div
+              ref={ctaReveal.ref}
+              className={`mbda-sr${ctaReveal.visible ? ' mbda-sr-in' : ''}`}
+              style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '2.5rem', marginBottom: '2rem' }}
+            >
               {showCatalogButton && (
                 <Link
                   to="/"
+                  className="mbda-cta-hover"
                   style={{ display: 'inline-block', background: '#1E1914', color: '#E8E3D5', padding: '0.75rem 1.5rem', borderRadius: '0.875rem', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}
                 >
                   Ver catalogo
@@ -145,6 +165,7 @@ export function AboutPage() {
               {showVenderButton && (
                 <Link
                   to="/register"
+                  className="mbda-cta-hover"
                   style={{ display: 'inline-block', background: '#E8E3D5', color: '#1E1914', padding: '0.75rem 1.5rem', borderRadius: '0.875rem', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', border: '1px solid #d1cdc0' }}
                 >
                   Empezar a vender
@@ -166,6 +187,7 @@ export function AboutPage() {
                     href={waLink}
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="mbda-cta-hover"
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#25D366', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', padding: '0.625rem 1.25rem', borderRadius: '0.75rem' }}
                   >
                     WhatsApp
@@ -174,6 +196,7 @@ export function AboutPage() {
                 {showEmailButton && (
                   <a
                     href={`mailto:${emailDisplay}`}
+                    className="mbda-cta-hover"
                     style={{ color: '#1E1914', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', border: '1px solid #E8E3D5', padding: '0.625rem 1.25rem', borderRadius: '0.75rem' }}
                   >
                     {emailDisplay}
@@ -216,7 +239,11 @@ export function AboutPage() {
           )}
 
           {/* Developer section */}
-          <section style={{ marginTop: '3rem', borderTop: '1px solid #E8E3D5', paddingTop: '2rem' }}>
+          <section
+            ref={devReveal.ref}
+            className={`mbda-sr${devReveal.visible ? ' mbda-sr-in' : ''}`}
+            style={{ marginTop: '3rem', borderTop: '1px solid #E8E3D5', paddingTop: '2rem' }}
+          >
             <div style={{
               background: 'linear-gradient(135deg, #1E1914 0%, #2d2520 100%)',
               borderRadius: '1.5rem',

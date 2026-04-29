@@ -8,8 +8,10 @@ import { fetchFeaturedItems } from '../../api/items'
 import { useProductTypes } from '../../hooks/useProductTypes'
 import { useAuthStore } from '../../store/authStore'
 import { usePlatformStore } from '../../store/platformStore'
+import { useScrollReveal } from '../../hooks/useScrollReveal'
 import axiosClient from '../../api/axiosClient'
 import type { CatalogItem, CatalogShop } from '../../types'
+import '../../styles/animations.css'
 
 interface BannerData {
   buyer: { subtitle: string | null; title: string | null; description: string | null; buttonActive: boolean }
@@ -58,6 +60,11 @@ export function HomePage() {
   const [featuredTitle, setFeaturedTitle] = useState('Destacados')
   const [videoSection, setVideoSection] = useState<{ active: boolean; title: string; videoUrl: string; description: string } | null>(null)
   const [shops, setShops] = useState<CatalogShop[]>([])
+
+  // Scroll-reveal hooks
+  const featuresReveal = useScrollReveal(0.1)
+  const videoReveal    = useScrollReveal(0.1)
+  const catalogReveal  = useScrollReveal(0.08)
 
   const selectedProductType = (productTypes ?? []).find(pt => pt.id === productTypeId)
 
@@ -154,9 +161,10 @@ export function HomePage() {
         .mbda-banner { display: grid; grid-template-columns: 1fr 1fr; }
         @media (max-width: 640px) { .mbda-banner { grid-template-columns: 1fr; } }
       `}</style>
-      <section className="mbda-banner" style={{ minHeight: '360px' }}>
+      <section className="mbda-banner" style={{ minHeight: '360px', background: '#1E1914' }}>
         {/* Panel comprador */}
         <div
+          className="mbda-buyer-clip"
           style={{
             background: 'linear-gradient(160deg, #E8E3D5 0%, #d9d2c0 50%, #E8E3D5 100%)',
             display: 'flex',
@@ -188,29 +196,31 @@ export function HomePage() {
             borderRadius: '50%',
             background: 'rgba(30, 25, 20, 0.03)',
           }} />
-          <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#6b7280', marginBottom: '0.75rem', position: 'relative' }}>
+          <p className="mbda-hero-sub" style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#6b7280', marginBottom: '0.75rem', position: 'relative' }}>
             {buyerSubtitle}
           </p>
           <h2
+            className="mbda-hero-title mbda-section-heading"
             style={{
               fontFamily: "'Playfair Display', serif",
               fontSize: '2.25rem',
               fontWeight: 700,
               color: '#1E1914',
               lineHeight: 1.2,
-              marginBottom: '1rem',
+              marginBottom: '1.25rem',
               position: 'relative',
             }}
           >
             {buyerTitle}
           </h2>
-          <p style={{ color: '#4b5563', marginBottom: '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
+          <p className="mbda-hero-desc" style={{ color: '#4b5563', marginBottom: '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
             {buyerDesc}
           </p>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
+          <div className="mbda-hero-btns" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
             {buyerButtonActive && (
               <a
                 href="#catalogo"
+                className="mbda-hero-pulse"
                 onMouseEnter={() => setHoveredCta('catalogo')}
                 onMouseLeave={() => setHoveredCta(null)}
                 style={{
@@ -222,9 +232,8 @@ export function HomePage() {
                   fontWeight: 600,
                   fontSize: '1rem',
                   letterSpacing: '0.02em',
-                  transition: 'background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
+                  transition: 'background 0.2s ease, transform 0.2s ease',
                   transform: hoveredCta === 'catalogo' ? 'translateY(-2px)' : 'translateY(0)',
-                  boxShadow: hoveredCta === 'catalogo' ? '0 6px 20px rgba(30,25,20,0.3)' : '0 2px 8px rgba(30,25,20,0.15)',
                 }}
               >
                 Ver catálogo
@@ -266,26 +275,27 @@ export function HomePage() {
             borderRadius: '50%',
             background: 'rgba(232, 227, 213, 0.04)',
           }} />
-          <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: '0.75rem', position: 'relative' }}>
+          <p className="mbda-hero-sub" style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: '0.75rem', position: 'relative' }}>
             {sellerSubtitle}
           </p>
           <h2
+            className="mbda-hero-title mbda-section-heading"
             style={{
               fontFamily: "'Playfair Display', serif",
               fontSize: '2.25rem',
               fontWeight: 700,
               color: '#E8E3D5',
               lineHeight: 1.2,
-              marginBottom: '1rem',
+              marginBottom: '1.25rem',
               position: 'relative',
             }}
           >
             {sellerTitle}
           </h2>
-          <p style={{ color: '#d1d5db', marginBottom: sellerDesc ? '1.25rem' : '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
+          <p className="mbda-hero-desc" style={{ color: '#d1d5db', marginBottom: sellerDesc ? '1.25rem' : '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
             {sellerDesc}
           </p>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
+          <div className="mbda-hero-btns" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
             {reservarButtonActive && (
               <a
                 href="#catalogo"
@@ -368,9 +378,13 @@ export function HomePage() {
             .mbda-video-section { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: center; }
             @media (max-width: 768px) { .mbda-video-section { grid-template-columns: 1fr; } }
           `}</style>
-          <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '3rem 1.5rem 0' }}>
+          <section
+            ref={videoReveal.ref}
+            className={`mbda-sr${videoReveal.visible ? ' mbda-sr-in' : ''}`}
+            style={{ maxWidth: '1100px', margin: '0 auto', padding: '3rem 1.5rem 0' }}
+          >
             {videoSection.title && (
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(1.25rem, 3vw, 1.6rem)', fontWeight: 700, color: '#1E1914', marginBottom: '1.5rem' }}>
+              <h2 className="mbda-section-heading" style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(1.25rem, 3vw, 1.6rem)', fontWeight: 700, color: '#1E1914', marginBottom: '1.5rem' }}>
                 {videoSection.title}
               </h2>
             )}
@@ -411,20 +425,27 @@ export function HomePage() {
         .mbda-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
         @media (max-width: 768px) { .mbda-features { grid-template-columns: 1fr; } }
       `}</style>
-      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 1.5rem 0' }}>
+      <section
+        ref={featuresReveal.ref}
+        style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 1.5rem 0' }}
+      >
         <div className="mbda-features">
           {(['card1', 'card2', 'card3'] as (keyof FeatureCardsData)[])
             .map(key => ({ ...DEFAULT_FEATURE_CARDS[key], ...featureCardsData[key] }))
             .filter(card => card.active)
-            .map((card) => (
+            .map((card, i) => (
               <div
                 key={card.title}
+                className="mbda-feature-card"
                 style={{
                   background: '#fff',
                   border: '1px solid #E8E3D5',
                   borderRadius: '1rem',
                   padding: '2rem 1.5rem',
                   textAlign: 'center',
+                  opacity: featuresReveal.visible ? 1 : 0,
+                  transform: featuresReveal.visible ? 'translateY(0)' : 'translateY(22px)',
+                  transition: `opacity 0.55s ease ${i * 120}ms, transform 0.55s ease ${i * 120}ms`,
                 }}
               >
                 <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>{card.emoji}</div>
@@ -452,17 +473,23 @@ export function HomePage() {
 
       {/* ── Catálogo ──────────────────────────────────────── */}
       <section id="catalogo" style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 1.5rem' }}>
-        <h2
-          style={{
-            fontFamily: "'Playfair Display', serif",
-            fontSize: '1.75rem',
-            fontWeight: 700,
-            color: '#1E1914',
-            marginBottom: '1.5rem',
-          }}
+        <div
+          ref={catalogReveal.ref}
+          className={`mbda-sr${catalogReveal.visible ? ' mbda-sr-in' : ''}`}
         >
-          Catalogo
-        </h2>
+          <h2
+            className="mbda-section-heading"
+            style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: '1.75rem',
+              fontWeight: 700,
+              color: '#1E1914',
+              marginBottom: '2rem',
+            }}
+          >
+            Catalogo
+          </h2>
+        </div>
 
         {/* Filtros */}
         <div style={{
@@ -679,6 +706,7 @@ export function HomePage() {
           </div>
         ) : (
           <div
+            className="mbda-catalog-grid"
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
