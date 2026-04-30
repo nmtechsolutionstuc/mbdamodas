@@ -9,6 +9,7 @@ import { useProductTypes } from '../../hooks/useProductTypes'
 import { useAuthStore } from '../../store/authStore'
 import { usePlatformStore } from '../../store/platformStore'
 import { useScrollReveal } from '../../hooks/useScrollReveal'
+import { HeroWords } from '../../components/ui/AnimatedText'
 import axiosClient from '../../api/axiosClient'
 import type { CatalogItem, CatalogShop } from '../../types'
 import '../../styles/animations.css'
@@ -62,9 +63,10 @@ export function HomePage() {
   const [shops, setShops] = useState<CatalogShop[]>([])
 
   // Scroll-reveal hooks
-  const featuresReveal = useScrollReveal(0.1)
-  const videoReveal    = useScrollReveal(0.1)
-  const catalogReveal  = useScrollReveal(0.08)
+  const featuresReveal    = useScrollReveal(0.1)
+  const videoReveal       = useScrollReveal(0.1)
+  const catalogReveal     = useScrollReveal(0.08)
+  const catalogGridReveal = useScrollReveal(0.05)
 
   const selectedProductType = (productTypes ?? []).find(pt => pt.id === productTypeId)
 
@@ -200,7 +202,7 @@ export function HomePage() {
             {buyerSubtitle}
           </p>
           <h2
-            className="mbda-hero-title mbda-section-heading"
+            className="mbda-section-heading"
             style={{
               fontFamily: "'Playfair Display', serif",
               fontSize: '2.25rem',
@@ -211,7 +213,7 @@ export function HomePage() {
               position: 'relative',
             }}
           >
-            {buyerTitle}
+            <HeroWords key={buyerTitle} text={buyerTitle} />
           </h2>
           <p className="mbda-hero-desc" style={{ color: '#4b5563', marginBottom: '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
             {buyerDesc}
@@ -279,7 +281,7 @@ export function HomePage() {
             {sellerSubtitle}
           </p>
           <h2
-            className="mbda-hero-title mbda-section-heading"
+            className="mbda-section-heading"
             style={{
               fontFamily: "'Playfair Display', serif",
               fontSize: '2.25rem',
@@ -290,7 +292,7 @@ export function HomePage() {
               position: 'relative',
             }}
           >
-            {sellerTitle}
+            <HeroWords key={sellerTitle} text={sellerTitle} baseDelay={0.3} />
           </h2>
           <p className="mbda-hero-desc" style={{ color: '#d1d5db', marginBottom: sellerDesc ? '1.25rem' : '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
             {sellerDesc}
@@ -427,6 +429,7 @@ export function HomePage() {
       `}</style>
       <section
         ref={featuresReveal.ref}
+        className={`mbda-section-sweep${featuresReveal.visible ? ' mbda-sweep-in' : ''}`}
         style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 1.5rem 0' }}
       >
         <div className="mbda-features">
@@ -444,8 +447,12 @@ export function HomePage() {
                   padding: '2rem 1.5rem',
                   textAlign: 'center',
                   opacity: featuresReveal.visible ? 1 : 0,
-                  transform: featuresReveal.visible ? 'translateY(0)' : 'translateY(22px)',
-                  transition: `opacity 0.55s ease ${i * 120}ms, transform 0.55s ease ${i * 120}ms`,
+                  transform: featuresReveal.visible
+                    ? 'translate(0, 0) scale(1)'
+                    : i === 0 ? 'translateX(-48px)'
+                    : i === 1 ? 'translateY(32px) scale(0.96)'
+                    : 'translateX(48px)',
+                  transition: `opacity 0.6s ease ${i * 130}ms, transform 0.6s ease ${i * 130}ms`,
                 }}
               >
                 <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>{card.emoji}</div>
@@ -472,7 +479,11 @@ export function HomePage() {
       </section>
 
       {/* ── Catálogo ──────────────────────────────────────── */}
-      <section id="catalogo" style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 1.5rem' }}>
+      <section
+        id="catalogo"
+        className={`mbda-section-sweep${catalogReveal.visible ? ' mbda-sweep-in' : ''}`}
+        style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 1.5rem' }}
+      >
         <div
           ref={catalogReveal.ref}
           className={`mbda-sr${catalogReveal.visible ? ' mbda-sr-in' : ''}`}
@@ -706,6 +717,7 @@ export function HomePage() {
           </div>
         ) : (
           <div
+            ref={catalogGridReveal.ref}
             className="mbda-catalog-grid"
             style={{
               display: 'grid',
@@ -713,8 +725,19 @@ export function HomePage() {
               gap: '1.25rem',
             }}
           >
-            {items.map(item => (
-              <CatalogCard key={item.id} item={item} />
+            {items.map((item, i) => (
+              <div
+                key={item.id}
+                style={{
+                  opacity: catalogGridReveal.visible ? 1 : 0,
+                  transform: catalogGridReveal.visible
+                    ? 'translateX(0)'
+                    : i % 2 === 0 ? 'translateX(-28px)' : 'translateX(28px)',
+                  transition: `opacity 0.5s ease ${Math.min(i, 5) * 75}ms, transform 0.5s ease ${Math.min(i, 5) * 75}ms`,
+                }}
+              >
+                <CatalogCard item={item} />
+              </div>
             ))}
           </div>
         )}

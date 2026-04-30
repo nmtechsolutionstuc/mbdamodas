@@ -5,6 +5,7 @@ import { renderContent } from '../../utils/renderContent'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 import { useScrollReveal } from '../../hooks/useScrollReveal'
+import { HeroWords } from '../../components/ui/AnimatedText'
 import '../../styles/animations.css'
 
 interface SocialLink { active: boolean; url: string }
@@ -120,8 +121,8 @@ export function AboutPage() {
             <p className="mbda-hero-sub" style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.6, marginBottom: '1.25rem' }}>
               Sobre nosotros
             </p>
-            <h1 className="mbda-hero-title mbda-section-heading" style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 700, lineHeight: 1.2, marginBottom: '1.75rem' }}>
-              {extractFirstHeading(content)}
+            <h1 className="mbda-section-heading" style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 700, lineHeight: 1.2, marginBottom: '1.75rem' }}>
+              <HeroWords text={extractFirstHeading(content)} baseDelay={0.2} wordStep={0.08} />
             </h1>
             <p className="mbda-hero-desc" style={{ fontSize: '1.1rem', opacity: 0.8, lineHeight: 1.7 }}>
               {extractFirstParagraph(content)}

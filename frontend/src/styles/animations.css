@@ -104,3 +104,26 @@
   margin-bottom: 2rem !important;
   line-height: 1.18 !important;
 }
+
+/* ── Section sweep-line (accent wipe on scroll entry) ────────────────────── */
+/* A thin gradient line that wipes from left to right when the section enters
+   the viewport. Triggered by adding .mbda-sweep-in to the same element.     */
+
+.mbda-section-sweep {
+  position: relative;
+}
+.mbda-section-sweep::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, rgba(30,25,20,0.13) 0%, transparent 100%);
+  transition: width 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  border-radius: 0 1px 1px 0;
+}
+.mbda-section-sweep.mbda-sweep-in::before {
+  width: 58%;
+}
