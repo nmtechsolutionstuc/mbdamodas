@@ -22,7 +22,7 @@ export async function fetchCatalog(filters: CatalogFilters = {}): Promise<{
   const params = Object.fromEntries(Object.entries(filters).filter(([, v]) => v !== undefined && v !== ''))
   const { data } = await axiosClient.get<ApiResponse<CatalogItem[]>>('/catalog', { params })
   return {
-    items: data.data,
+    items: Array.isArray(data.data) ? data.data : [],
     total: data.meta?.total ?? 0,
     page: data.meta?.page ?? 1,
     limit: data.meta?.limit ?? 12,
@@ -31,7 +31,7 @@ export async function fetchCatalog(filters: CatalogFilters = {}): Promise<{
 
 export async function fetchCatalogShops(): Promise<CatalogShop[]> {
   const { data } = await axiosClient.get<ApiResponse<CatalogShop[]>>('/catalog/shops')
-  return data.data
+  return Array.isArray(data.data) ? data.data : []
 }
 
 export async function fetchCatalogProductBySlug(slug: string): Promise<CatalogItem | null> {

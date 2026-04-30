@@ -38,6 +38,8 @@ const DEFAULT_FEATURE_CARDS: Required<FeatureCardsData> = {
   card3: { active: true, emoji: '\uD83D\uDCB0', title: 'Ganá vendiendo', desc: 'Reservá un producto, conseguí un comprador y llevate una comisión. Sin inversión.' },
 }
 
+const DEFAULT_MARQUEE = ['Ropa nueva', 'Consignación', 'Reservas para promotores', 'Precios accesibles', 'Tucumán', 'Calidad garantizada', 'Ropa con historia']
+
 export function HomePage() {
   const { productTypes } = useProductTypes()
   const { user } = useAuthStore()
@@ -57,6 +59,7 @@ export function HomePage() {
   const [hoveredCta, setHoveredCta] = useState<string | null>(null)
   const [banners, setBanners] = useState<BannerData | null>(null)
   const [featureCardsData, setFeatureCardsData] = useState<FeatureCardsData>({})
+  const [marqueeItems, setMarqueeItems] = useState<string[]>(DEFAULT_MARQUEE)
   const [featuredItems, setFeaturedItems] = useState<any[]>([])
   const [featuredTitle, setFeaturedTitle] = useState('Destacados')
   const [videoSection, setVideoSection] = useState<{ active: boolean; title: string; videoUrl: string; description: string } | null>(null)
@@ -74,8 +77,12 @@ export function HomePage() {
     axiosClient.get<{ data: BannerData }>('/home-banners')
       .then(r => setBanners(r.data.data))
       .catch(() => {})
-    axiosClient.get<{ data: { featureCards: FeatureCardsData | null } }>('/feature-cards')
-      .then(r => setFeatureCardsData(r.data.data.featureCards ?? {}))
+    axiosClient.get<{ data: { featureCards: FeatureCardsData | null; marqueeItems: string[] | null } }>('/feature-cards')
+      .then(r => {
+        setFeatureCardsData(r.data.data.featureCards ?? {})
+        const mi = r.data.data.marqueeItems
+        if (Array.isArray(mi) && mi.length > 0) setMarqueeItems(mi)
+      })
       .catch(() => {})
     fetchFeaturedItems()
       .then(items => {
@@ -155,6 +162,7 @@ export function HomePage() {
   }
 
   const totalPages = Math.ceil(total / 12)
+  const activeMarquee = marqueeItems.filter(Boolean)
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8F3' }}>
@@ -330,25 +338,29 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ── Marquee strip ──────────────────────────────────── */}
-      <style>{`
-        @keyframes mbdaMarquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
-        .mbda-marquee-track { display: flex; width: max-content; animation: mbdaMarquee 28s linear infinite; }
-        .mbda-marquee-track:hover { animation-play-state: paused; }
-      `}</style>
-      <div style={{ background: '#1E1914', overflow: 'hidden', padding: '0.9rem 0', borderTop: '1px solid rgba(232,227,213,0.07)' }}>
-        <div className="mbda-marquee-track">
-          {Array.from({ length: 2 }).map((_, rep) => (
-            <span key={rep} style={{ display: 'inline-flex' }}>
-              {['Ropa nueva', 'Consignación', 'Reservas para promotores', 'Precios accesibles', 'Tucumán', 'Calidad garantizada', 'Ropa con historia'].map(item => (
-                <span key={item} style={{ padding: '0 2.5rem', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(232,227,213,0.35)', fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap' }}>
-                  {item}&nbsp;&nbsp;<span style={{ opacity: 0.3 }}>·</span>
+      {/* ── Marquee strip (editable desde admin) ──────────── */}
+      {activeMarquee.length > 0 && (
+        <>
+          <style>{`
+            @keyframes mbdaMarquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+            .mbda-marquee-track { display: flex; width: max-content; animation: mbdaMarquee 28s linear infinite; }
+            .mbda-marquee-track:hover { animation-play-state: paused; }
+          `}</style>
+          <div style={{ background: '#1E1914', overflow: 'hidden', padding: '0.9rem 0', borderTop: '1px solid rgba(232,227,213,0.07)' }}>
+            <div className="mbda-marquee-track">
+              {[0, 1].map(rep => (
+                <span key={rep} style={{ display: 'inline-flex' }}>
+                  {activeMarquee.map((item, i) => (
+                    <span key={`${rep}-${i}`} style={{ padding: '0 2.5rem', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(232,227,213,0.35)', fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap' }}>
+                      {item}&nbsp;&nbsp;<span style={{ opacity: 0.3 }}>·</span>
+                    </span>
+                  ))}
                 </span>
               ))}
-            </span>
-          ))}
-        </div>
-      </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ── Destacados ──────────────────────────────────── */}
       {featuredItems.length > 0 && (
@@ -546,7 +558,7 @@ export function HomePage() {
             }}
           >
             <option value="">Todas las categorias</option>
-            {productTypes.map(pt => (
+            {(productTypes ?? []).map(pt => (
               <option key={pt.id} value={pt.id}>{pt.name}</option>
             ))}
           </select>

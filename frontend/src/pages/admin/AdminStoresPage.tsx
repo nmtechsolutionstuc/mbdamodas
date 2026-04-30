@@ -89,6 +89,7 @@ interface Store {
   aboutConfig: { showCatalogButton?: boolean; showVenderButton?: boolean; showWhatsappButton?: boolean; showEmailButton?: boolean } | null
   conditionConfig: ConditionConfig | null
   videoSection: { active: boolean; title: string; videoUrl: string; description: string } | null
+  marqueeItems: string[] | null
 }
 
 export function AdminStoresPage() {
@@ -127,6 +128,7 @@ export function AdminStoresPage() {
       aboutConfig: store.aboutConfig ?? {},
       conditionConfig: store.conditionConfig ?? {},
       videoSection: store.videoSection ?? { active: false, title: '', videoUrl: '', description: '' },
+      marqueeItems: Array.isArray(store.marqueeItems) ? store.marqueeItems : ['Ropa nueva', 'Consignación', 'Reservas para promotores', 'Precios accesibles', 'Tucumán', 'Calidad garantizada', 'Ropa con historia'],
     })
     setSaved(false)
   }
@@ -202,6 +204,7 @@ export function AdminStoresPage() {
         conditionConfig: editing.conditionConfig ?? {},
         featuredSectionTitle: editing.featuredSectionTitle,
         videoSection: editing.videoSection ?? { active: false, title: '', videoUrl: '', description: '' },
+        marqueeItems: editing.marqueeItems ?? [],
       })
       setStores(prev => prev.map(s => s.id === editing.id ? data.data : s))
       invalidateConditionCache()
@@ -435,6 +438,49 @@ export function AdminStoresPage() {
                     </div>
                   )
                 })}
+
+                {/* ── Barra desplazante (marquee) ── */}
+                {sectionTitle('Barra de textos desplazantes (marquee)')}
+                <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '-0.25rem' }}>
+                  Textos que aparecen en la barra oscura debajo del banner principal. Se desplazan en bucle. Podés agregar, editar y eliminar ítems.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {(editing.marqueeItems ?? []).map((item, idx) => (
+                    <div key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <input
+                        type="text"
+                        value={item}
+                        maxLength={80}
+                        onChange={e => {
+                          const next = [...(editing.marqueeItems ?? [])]
+                          next[idx] = e.target.value
+                          setEditing(prev => prev ? { ...prev, marqueeItems: next } : prev)
+                        }}
+                        style={{ flex: 1, padding: '0.5rem 0.625rem', borderRadius: '0.5rem', border: '1px solid #E8E3D5', fontSize: '0.875rem', color: '#1E1914', boxSizing: 'border-box' as const }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = (editing.marqueeItems ?? []).filter((_, i) => i !== idx)
+                          setEditing(prev => prev ? { ...prev, marqueeItems: next } : prev)
+                        }}
+                        title="Eliminar"
+                        style={{ padding: '0.4rem 0.7rem', borderRadius: '0.5rem', border: '1px solid #fca5a5', background: '#fef2f2', color: '#dc2626', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, flexShrink: 0 }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  {(editing.marqueeItems ?? []).length < 20 && (
+                    <button
+                      type="button"
+                      onClick={() => setEditing(prev => prev ? { ...prev, marqueeItems: [...(prev.marqueeItems ?? []), ''] } : prev)}
+                      style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px dashed #9ca3af', background: 'transparent', color: '#6b7280', cursor: 'pointer', fontSize: '0.8rem', textAlign: 'left' }}
+                    >
+                      + Agregar ítem
+                    </button>
+                  )}
+                </div>
 
                 {/* ── Menu del dashboard de usuarios ── */}
                 {sectionTitle('Menú del panel de usuarios')}

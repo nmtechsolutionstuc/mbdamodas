@@ -194,6 +194,8 @@ model Store {
   featuredSectionTitle       String? @default("Destacados")
   // ── Sección Video (home) ──
   videoSection               Json?   // {active:bool, title:string, videoUrl:string, description:string}
+  // ── Marquee strip (home) ──
+  marqueeItems               Json?   // string[] — textos desplazantes editables en el admin
 
   // ── Contenido editable de páginas ──
   aboutContent      String?  @db.Text // Contenido de la página Nosotros (formato markdown simple)
