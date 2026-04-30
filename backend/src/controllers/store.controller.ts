@@ -54,6 +54,7 @@ const storeSchema = z.object({
   conditionConfig: z.record(z.any()).optional().nullable(),
   featuredSectionTitle: z.string().max(100).optional().nullable(),
   videoSection: z.record(z.any()).optional().nullable(),
+  marqueeItems: z.array(z.string().max(80)).max(20).optional().nullable(),
 })
 
 export async function getAnnouncement(_req: Request, res: Response): Promise<void> {
@@ -113,9 +114,9 @@ export async function getMenuConfig(_req: Request, res: Response): Promise<void>
 export async function getFeatureCards(_req: Request, res: Response): Promise<void> {
   const store = await prisma.store.findFirst({
     where: { isActive: true },
-    select: { featureCards: true },
+    select: { featureCards: true, marqueeItems: true },
   })
-  ok(res, { featureCards: store?.featureCards ?? null })
+  ok(res, { featureCards: store?.featureCards ?? null, marqueeItems: store?.marqueeItems ?? null })
 }
 
 export async function getAboutContent(_req: Request, res: Response): Promise<void> {

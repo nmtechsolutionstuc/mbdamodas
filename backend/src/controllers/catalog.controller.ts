@@ -60,11 +60,11 @@ function enrichMbdaItem(item: any) {
 // ── GET /catalog ────────────────────────────────────────
 
 export async function listCatalog(req: Request, res: Response): Promise<void> {
-  // Lazy-expire reservations
-  await prisma.reservation.updateMany({
+  // Lazy-expire reservations (fire-and-forget — no bloquea la respuesta)
+  prisma.reservation.updateMany({
     where: { status: 'APPROVED', expiresAt: { lt: new Date() } },
     data: { status: 'EXPIRED' },
-  })
+  }).catch(err => console.error('[catalog] lazy-expire error:', err))
 
   const { search, productTypeId, sizeId, tagId, source, miniShopSlug, sortPrice, page, limit } = req.query
 

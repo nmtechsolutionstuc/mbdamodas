@@ -12,8 +12,9 @@ export function useProductTypes() {
     if (cachedProductTypes) return
     fetchPublicProductTypes()
       .then(data => {
-        cachedProductTypes = data
-        setProductTypes(data)
+        const safe = Array.isArray(data) ? data : []
+        cachedProductTypes = safe
+        setProductTypes(safe)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
