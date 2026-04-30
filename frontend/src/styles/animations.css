@@ -54,11 +54,11 @@
 /* ── Feature-card hover ───────────────────────────────────────────────────── */
 
 .mbda-feature-card {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.3s ease, background 0.3s ease;
 }
 .mbda-feature-card:hover {
-  transform: translateY(-7px) !important;
-  box-shadow: 0 16px 40px rgba(30,25,20,0.10) !important;
+  transform: translateY(-4px) !important;
+  background: #fff !important;
 }
 
 /* ── Catalog grid — hover lift on every card ──────────────────────────────── */

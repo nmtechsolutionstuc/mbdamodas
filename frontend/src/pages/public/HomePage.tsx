@@ -163,62 +163,42 @@ export function HomePage() {
         .mbda-banner { display: grid; grid-template-columns: 1fr 1fr; }
         @media (max-width: 640px) { .mbda-banner { grid-template-columns: 1fr; } }
       `}</style>
-      <section className="mbda-banner" style={{ minHeight: '360px', background: '#1E1914' }}>
+      <section className="mbda-banner" style={{ minHeight: '480px', background: '#1E1914' }}>
         {/* Panel comprador */}
         <div
           className="mbda-buyer-clip"
           style={{
-            background: 'linear-gradient(160deg, #E8E3D5 0%, #d9d2c0 50%, #E8E3D5 100%)',
+            background: '#E8E3D5',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '3.5rem 2rem',
-            textAlign: 'center',
+            alignItems: 'flex-start',
+            justifyContent: 'flex-end',
+            padding: '5rem 3rem 4rem',
+            textAlign: 'left',
             position: 'relative',
-            overflow: 'hidden',
           }}
         >
-          {/* Subtle decorative circle */}
-          <div style={{
-            position: 'absolute',
-            top: '-60px',
-            right: '-60px',
-            width: '200px',
-            height: '200px',
-            borderRadius: '50%',
-            background: 'rgba(30, 25, 20, 0.03)',
-          }} />
-          <div style={{
-            position: 'absolute',
-            bottom: '-40px',
-            left: '-40px',
-            width: '150px',
-            height: '150px',
-            borderRadius: '50%',
-            background: 'rgba(30, 25, 20, 0.03)',
-          }} />
-          <p className="mbda-hero-sub" style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#6b7280', marginBottom: '0.75rem', position: 'relative' }}>
+          <p className="mbda-hero-sub" style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#6b7280', marginBottom: '1.25rem' }}>
             {buyerSubtitle}
           </p>
           <h2
-            className="mbda-section-heading"
             style={{
               fontFamily: "'Playfair Display', serif",
-              fontSize: '2.25rem',
+              fontSize: 'clamp(2.4rem, 4.5vw, 3.75rem)',
               fontWeight: 700,
               color: '#1E1914',
-              lineHeight: 1.2,
-              marginBottom: '1.25rem',
-              position: 'relative',
+              lineHeight: 1.08,
+              letterSpacing: '-0.02em',
+              marginBottom: '1.5rem',
+              margin: '0 0 1.5rem 0',
             }}
           >
             <HeroWords key={buyerTitle} text={buyerTitle} />
           </h2>
-          <p className="mbda-hero-desc" style={{ color: '#4b5563', marginBottom: '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
+          <p className="mbda-hero-desc" style={{ color: '#4b5563', marginBottom: '2.25rem', maxWidth: '360px', lineHeight: 1.65, fontSize: '0.95rem' }}>
             {buyerDesc}
           </p>
-          <div className="mbda-hero-btns" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
+          <div className="mbda-hero-btns" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             {buyerButtonActive && (
               <a
                 href="#catalogo"
@@ -229,11 +209,12 @@ export function HomePage() {
                   background: hoveredCta === 'catalogo' ? '#352e28' : '#1E1914',
                   color: '#E8E3D5',
                   padding: '0.875rem 2rem',
-                  borderRadius: '0.75rem',
+                  borderRadius: '0.5rem',
                   textDecoration: 'none',
                   fontWeight: 600,
-                  fontSize: '1rem',
-                  letterSpacing: '0.02em',
+                  fontSize: '0.9rem',
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
                   transition: 'background 0.2s ease, transform 0.2s ease',
                   transform: hoveredCta === 'catalogo' ? 'translateY(-2px)' : 'translateY(0)',
                 }}
@@ -247,57 +228,36 @@ export function HomePage() {
         {/* Panel vendedor / promotor */}
         <div
           style={{
-            background: 'linear-gradient(160deg, #1E1914 0%, #2a2420 50%, #1E1914 100%)',
+            background: '#1E1914',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '3.5rem 2rem',
-            textAlign: 'center',
-            position: 'relative',
-            overflow: 'hidden',
+            alignItems: 'flex-start',
+            justifyContent: 'flex-end',
+            padding: '5rem 3rem 4rem',
+            textAlign: 'left',
+            borderLeft: '1px solid rgba(232,227,213,0.08)',
           }}
         >
-          {/* Subtle decorative circle */}
-          <div style={{
-            position: 'absolute',
-            top: '-50px',
-            left: '-50px',
-            width: '180px',
-            height: '180px',
-            borderRadius: '50%',
-            background: 'rgba(232, 227, 213, 0.04)',
-          }} />
-          <div style={{
-            position: 'absolute',
-            bottom: '-50px',
-            right: '-50px',
-            width: '160px',
-            height: '160px',
-            borderRadius: '50%',
-            background: 'rgba(232, 227, 213, 0.04)',
-          }} />
-          <p className="mbda-hero-sub" style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: '0.75rem', position: 'relative' }}>
+          <p className="mbda-hero-sub" style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(232,227,213,0.45)', marginBottom: '1.25rem' }}>
             {sellerSubtitle}
           </p>
           <h2
-            className="mbda-section-heading"
             style={{
               fontFamily: "'Playfair Display', serif",
-              fontSize: '2.25rem',
+              fontSize: 'clamp(2.4rem, 4.5vw, 3.75rem)',
               fontWeight: 700,
               color: '#E8E3D5',
-              lineHeight: 1.2,
-              marginBottom: '1.25rem',
-              position: 'relative',
+              lineHeight: 1.08,
+              letterSpacing: '-0.02em',
+              margin: '0 0 1.5rem 0',
             }}
           >
             <HeroWords key={sellerTitle} text={sellerTitle} baseDelay={0.3} />
           </h2>
-          <p className="mbda-hero-desc" style={{ color: '#d1d5db', marginBottom: sellerDesc ? '1.25rem' : '2rem', maxWidth: '340px', lineHeight: 1.6, position: 'relative' }}>
+          <p className="mbda-hero-desc" style={{ color: 'rgba(232,227,213,0.65)', marginBottom: sellerDesc ? '2.25rem' : '0', maxWidth: '360px', lineHeight: 1.65, fontSize: '0.95rem' }}>
             {sellerDesc}
           </p>
-          <div className="mbda-hero-btns" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
+          <div className="mbda-hero-btns" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             {reservarButtonActive && (
               <a
                 href="#catalogo"
@@ -307,17 +267,17 @@ export function HomePage() {
                   background: hoveredCta === 'reservar' ? '#f5f0e6' : '#E8E3D5',
                   color: '#1E1914',
                   padding: '0.875rem 1.75rem',
-                  borderRadius: '0.75rem',
+                  borderRadius: '0.5rem',
                   textDecoration: 'none',
                   fontWeight: 600,
-                  fontSize: '0.95rem',
-                  letterSpacing: '0.02em',
-                  transition: 'background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
+                  fontSize: '0.9rem',
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                  transition: 'background 0.2s ease, transform 0.2s ease',
                   transform: hoveredCta === 'reservar' ? 'translateY(-2px)' : 'translateY(0)',
-                  boxShadow: hoveredCta === 'reservar' ? '0 6px 20px rgba(0,0,0,0.4)' : '0 2px 8px rgba(0,0,0,0.2)',
                 }}
               >
-                💰 Reservar y ganar
+                Reservar y ganar
               </a>
             )}
             {sellerButtonActive && (
@@ -329,12 +289,13 @@ export function HomePage() {
                   background: 'transparent',
                   color: '#E8E3D5',
                   padding: '0.875rem 1.75rem',
-                  borderRadius: '0.75rem',
+                  borderRadius: '0.5rem',
                   textDecoration: 'none',
                   fontWeight: 600,
-                  fontSize: '0.95rem',
-                  letterSpacing: '0.02em',
-                  border: '1px solid rgba(232, 227, 213, 0.3)',
+                  fontSize: '0.9rem',
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                  border: '1px solid rgba(232, 227, 213, 0.25)',
                   transition: 'background 0.2s ease, transform 0.2s ease',
                   transform: hoveredCta === 'vender' ? 'translateY(-2px)' : 'translateY(0)',
                 }}
@@ -351,12 +312,13 @@ export function HomePage() {
                   background: 'transparent',
                   color: '#E8E3D5',
                   padding: '0.875rem 1.75rem',
-                  borderRadius: '0.75rem',
+                  borderRadius: '0.5rem',
                   textDecoration: 'none',
                   fontWeight: 600,
-                  fontSize: '0.95rem',
-                  letterSpacing: '0.02em',
-                  border: '1px solid rgba(232, 227, 213, 0.3)',
+                  fontSize: '0.9rem',
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                  border: '1px solid rgba(232, 227, 213, 0.25)',
                   transition: 'background 0.2s ease, transform 0.2s ease',
                   transform: hoveredCta === 'extra' ? 'translateY(-2px)' : 'translateY(0)',
                 }}
@@ -367,6 +329,26 @@ export function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ── Marquee strip ──────────────────────────────────── */}
+      <style>{`
+        @keyframes mbdaMarquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+        .mbda-marquee-track { display: flex; width: max-content; animation: mbdaMarquee 28s linear infinite; }
+        .mbda-marquee-track:hover { animation-play-state: paused; }
+      `}</style>
+      <div style={{ background: '#1E1914', overflow: 'hidden', padding: '0.9rem 0', borderTop: '1px solid rgba(232,227,213,0.07)' }}>
+        <div className="mbda-marquee-track">
+          {Array.from({ length: 2 }).map((_, rep) => (
+            <span key={rep} style={{ display: 'inline-flex' }}>
+              {['Ropa nueva', 'Consignación', 'Reservas para promotores', 'Precios accesibles', 'Tucumán', 'Calidad garantizada', 'Ropa con historia'].map(item => (
+                <span key={item} style={{ padding: '0 2.5rem', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(232,227,213,0.35)', fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap' }}>
+                  {item}&nbsp;&nbsp;<span style={{ opacity: 0.3 }}>·</span>
+                </span>
+              ))}
+            </span>
+          ))}
+        </div>
+      </div>
 
       {/* ── Destacados ──────────────────────────────────── */}
       {featuredItems.length > 0 && (
@@ -424,13 +406,13 @@ export function HomePage() {
 
       {/* ── Propuesta de valor ──────────────────────────── */}
       <style>{`
-        .mbda-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        .mbda-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
         @media (max-width: 768px) { .mbda-features { grid-template-columns: 1fr; } }
       `}</style>
       <section
         ref={featuresReveal.ref}
         className={`mbda-section-sweep${featuresReveal.visible ? ' mbda-sweep-in' : ''}`}
-        style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 1.5rem 0' }}
+        style={{ maxWidth: '1200px', margin: '0 auto', padding: '4rem 1.5rem 0', borderTop: '1px solid #E8E3D5' }}
       >
         <div className="mbda-features">
           {(['card1', 'card2', 'card3'] as (keyof FeatureCardsData)[])
@@ -441,11 +423,8 @@ export function HomePage() {
                 key={card.title}
                 className="mbda-feature-card"
                 style={{
-                  background: '#fff',
-                  border: '1px solid #E8E3D5',
-                  borderRadius: '1rem',
-                  padding: '2rem 1.5rem',
-                  textAlign: 'center',
+                  padding: '2.5rem 2rem',
+                  borderRight: i < 2 ? '1px solid #E8E3D5' : 'none',
                   opacity: featuresReveal.visible ? 1 : 0,
                   transform: featuresReveal.visible
                     ? 'translate(0, 0) scale(1)'
@@ -455,20 +434,21 @@ export function HomePage() {
                   transition: `opacity 0.6s ease ${i * 130}ms, transform 0.6s ease ${i * 130}ms`,
                 }}
               >
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>{card.emoji}</div>
+                <div style={{ fontSize: '2rem', marginBottom: '1.25rem', lineHeight: 1 }}>{card.emoji}</div>
                 <h3 style={{
                   fontFamily: "'Playfair Display', serif",
-                  fontSize: '1.15rem',
+                  fontSize: 'clamp(1.1rem, 2vw, 1.35rem)',
                   fontWeight: 700,
                   color: '#1E1914',
-                  marginBottom: '0.5rem',
+                  marginBottom: '0.625rem',
+                  letterSpacing: '-0.01em',
                 }}>
                   {card.title}
                 </h3>
                 <p style={{
-                  color: '#4b5563',
-                  fontSize: '0.95rem',
-                  lineHeight: 1.6,
+                  color: '#6b7280',
+                  fontSize: '0.9rem',
+                  lineHeight: 1.65,
                   margin: 0,
                 }}>
                   {card.desc}
@@ -482,23 +462,24 @@ export function HomePage() {
       <section
         id="catalogo"
         className={`mbda-section-sweep${catalogReveal.visible ? ' mbda-sweep-in' : ''}`}
-        style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 1.5rem' }}
+        style={{ maxWidth: '1200px', margin: '0 auto', padding: '5rem 1.5rem 3rem' }}
       >
         <div
           ref={catalogReveal.ref}
           className={`mbda-sr${catalogReveal.visible ? ' mbda-sr-in' : ''}`}
         >
           <h2
-            className="mbda-section-heading"
             style={{
               fontFamily: "'Playfair Display', serif",
-              fontSize: '1.75rem',
+              fontSize: 'clamp(2.25rem, 5vw, 3.75rem)',
               fontWeight: 700,
               color: '#1E1914',
-              marginBottom: '2rem',
+              letterSpacing: '-0.025em',
+              lineHeight: 1.05,
+              marginBottom: '2.5rem',
             }}
           >
-            Catalogo
+            Catálogo
           </h2>
         </div>
 
