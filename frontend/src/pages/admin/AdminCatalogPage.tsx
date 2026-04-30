@@ -32,6 +32,8 @@ interface CatalogItem {
     }
   } | null
   featured: boolean
+  isOwnProduct: boolean
+  promoterCommissionPct: number | null
   photos: { id: string; url: string; order: number }[]
 }
 
@@ -45,6 +47,8 @@ interface EditForm {
   condition: ItemCondition
   quantity: string
   isActive: boolean
+  isOwnProduct: boolean
+  promoterCommissionPct: string
 }
 
 const inputStyle = {
@@ -84,7 +88,7 @@ export function AdminCatalogPage() {
   const [items, setItems] = useState<CatalogItem[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState<EditForm>({ title: '', description: '', price: '', commission: '', productTypeId: '', sizeId: '', condition: 'BUEN_ESTADO', quantity: '1', isActive: true })
+  const [editForm, setEditForm] = useState<EditForm>({ title: '', description: '', price: '', commission: '', productTypeId: '', sizeId: '', condition: 'BUEN_ESTADO', quantity: '1', isActive: true, isOwnProduct: false, promoterCommissionPct: '' })
   // Create form photo state
   const [newItemPhotos, setNewItemPhotos] = useState<File[]>([])
   const [newItemPhotoPreviews, setNewItemPhotoPreviews] = useState<string[]>([])
@@ -154,6 +158,8 @@ export function AdminCatalogPage() {
       condition: item.condition,
       quantity: String(item.quantity ?? 1),
       isActive: item.isActive,
+      isOwnProduct: item.isOwnProduct,
+      promoterCommissionPct: item.promoterCommissionPct != null ? String(item.promoterCommissionPct) : '',
     })
     setEditPhotos([])
     setEditPhotoPreviews([])
@@ -167,12 +173,16 @@ export function AdminCatalogPage() {
         title: editForm.title,
         description: editForm.description,
         price: parseFloat(editForm.price),
-        commission: parseFloat(editForm.commission),
+        commission: editForm.isOwnProduct ? 0 : parseFloat(editForm.commission),
         productTypeId: editForm.productTypeId,
         sizeId: editForm.sizeId || null,
         condition: editForm.condition,
         quantity: parseInt(editForm.quantity, 10),
         isActive: editForm.isActive,
+        isOwnProduct: editForm.isOwnProduct,
+        promoterCommissionPct: editForm.isOwnProduct && editForm.promoterCommissionPct
+          ? parseFloat(editForm.promoterCommissionPct)
+          : null,
       })
       // Delete removed photos
       for (const photoId of deletedPhotoIds) {
@@ -455,14 +465,14 @@ export function AdminCatalogPage() {
                 </div>
               )}
               <div>
-                <label style={labelStyle}>Tipo de producto</label>
+                <label style={labelStyle}>¿Reservable para promotores?</label>
                 <select
                   value={newItem.isOwnProduct ? 'own' : 'consignment'}
                   onChange={e => setNewItem(p => ({ ...p, isOwnProduct: e.target.value === 'own', promoterCommissionPct: '' }))}
                   style={{ ...inputStyle, cursor: 'pointer' }}
                 >
-                  <option value="consignment">Consignación</option>
-                  <option value="own">Stock propio - Reservable</option>
+                  <option value="consignment">No — solo consignación</option>
+                  <option value="own">Sí — stock propio reservable</option>
                 </select>
               </div>
               {newItem.isOwnProduct && (
@@ -679,8 +689,8 @@ export function AdminCatalogPage() {
                               </select>
                             </div>
                           </div>
-                          <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            <div style={{ flex: 1, minWidth: '90px' }}>
                               <label style={{ fontSize: '0.75rem', color: '#6b7280' }}>Precio</label>
                               <input
                                 type="number"
@@ -689,16 +699,18 @@ export function AdminCatalogPage() {
                                 style={{ width: '100%', border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.5rem 0.75rem', fontSize: '0.9rem' }}
                               />
                             </div>
-                            <div style={{ flex: 1 }}>
-                              <label style={{ fontSize: '0.75rem', color: '#6b7280' }}>Comisión %</label>
-                              <input
-                                type="number"
-                                value={editForm.commission}
-                                onChange={e => setEditForm(f => ({ ...f, commission: e.target.value }))}
-                                style={{ width: '100%', border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.5rem 0.75rem', fontSize: '0.9rem' }}
-                              />
-                            </div>
-                            <div style={{ flex: 1 }}>
+                            {!editForm.isOwnProduct && (
+                              <div style={{ flex: 1, minWidth: '90px' }}>
+                                <label style={{ fontSize: '0.75rem', color: '#6b7280' }}>Comisión %</label>
+                                <input
+                                  type="number"
+                                  value={editForm.commission}
+                                  onChange={e => setEditForm(f => ({ ...f, commission: e.target.value }))}
+                                  style={{ width: '100%', border: '1px solid #E8E3D5', borderRadius: '0.75rem', padding: '0.5rem 0.75rem', fontSize: '0.9rem' }}
+                                />
+                              </div>
+                            )}
+                            <div style={{ flex: 1, minWidth: '90px' }}>
                               <label style={{ fontSize: '0.75rem', color: '#6b7280' }}>Cantidad</label>
                               <input
                                 type="number"
@@ -720,6 +732,43 @@ export function AdminCatalogPage() {
                             <label htmlFor={`isActive-${item.id}`} style={{ fontSize: '0.8rem', color: '#1E1914', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
                               Activo (visible en catálogo)
                             </label>
+                          </div>
+                          {/* ── Reservable para promotores ─────────────────── */}
+                          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', padding: '0.625rem 0.75rem', background: '#FAF8F3', borderRadius: '0.625rem', border: '1px solid #E8E3D5', marginTop: '0.25rem' }}>
+                            <div style={{ flex: 2, minWidth: '160px' }}>
+                              <label style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 600, display: 'block', marginBottom: '0.3rem' }}>
+                                ¿Reservable para promotores?
+                              </label>
+                              <select
+                                value={editForm.isOwnProduct ? 'own' : 'consignment'}
+                                onChange={e => setEditForm(f => ({
+                                  ...f,
+                                  isOwnProduct: e.target.value === 'own',
+                                  promoterCommissionPct: '',
+                                }))}
+                                style={{ width: '100%', border: '1px solid #E8E3D5', borderRadius: '0.625rem', padding: '0.45rem 0.75rem', fontSize: '0.85rem', cursor: 'pointer', background: '#fff' }}
+                              >
+                                <option value="consignment">No — solo consignación</option>
+                                <option value="own">Sí — stock propio reservable</option>
+                              </select>
+                            </div>
+                            {editForm.isOwnProduct && (
+                              <div style={{ flex: 1, minWidth: '110px' }}>
+                                <label style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 600, display: 'block', marginBottom: '0.3rem' }}>
+                                  Comisión promotor (%)
+                                </label>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={100}
+                                  step="0.01"
+                                  value={editForm.promoterCommissionPct}
+                                  onChange={e => setEditForm(f => ({ ...f, promoterCommissionPct: e.target.value }))}
+                                  placeholder="Ej: 15"
+                                  style={{ width: '100%', border: '1px solid #E8E3D5', borderRadius: '0.625rem', padding: '0.45rem 0.75rem', fontSize: '0.85rem', background: '#fff' }}
+                                />
+                              </div>
+                            )}
                           </div>
 
                           {/* Fotos */}
@@ -825,8 +874,11 @@ export function AdminCatalogPage() {
                             {item.quantity > 1 && (
                               <span style={badgeStyle('#dbeafe', '#1e40af')}>x{item.quantity}</span>
                             )}
-                            <span style={badgeStyle(isFromSubmission ? '#fef3c7' : '#d1fae5', isFromSubmission ? '#92400e' : '#065f46')}>
-                              {isFromSubmission ? 'Consignación' : 'Stock tienda'}
+                            <span style={badgeStyle(
+                              isFromSubmission ? '#fef3c7' : item.isOwnProduct ? '#ede9fe' : '#d1fae5',
+                              isFromSubmission ? '#92400e' : item.isOwnProduct ? '#5b21b6' : '#065f46',
+                            )}>
+                              {isFromSubmission ? 'Consignación' : item.isOwnProduct ? '🔖 Reservable' : 'Stock tienda'}
                             </span>
                             {item.tags && item.tags.map(({ tag }) => (
                               <span key={tag.id} style={badgeStyle('#ede9fe', '#5b21b6')}>{tag.name}</span>
@@ -839,7 +891,12 @@ export function AdminCatalogPage() {
                           )}
                           <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem', flexWrap: 'wrap' }}>
                             <span style={{ fontWeight: 700, color: '#1E1914' }}>${item.price.toLocaleString('es-AR')}</span>
-                            <span style={{ color: '#6b7280' }}>Comisión {item.commission}%</span>
+                            {!item.isOwnProduct && (
+                              <span style={{ color: '#6b7280' }}>Comisión {item.commission}%</span>
+                            )}
+                            {item.isOwnProduct && item.promoterCommissionPct != null && (
+                              <span style={{ color: '#5b21b6' }}>Promotor {item.promoterCommissionPct}%</span>
+                            )}
                             {isFromSubmission && (
                               <>
                                 <span style={{ color: '#166534' }}>→ Vendedor ${sellerAmount.toLocaleString('es-AR')}</span>

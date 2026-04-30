@@ -66,7 +66,7 @@ export async function fetchAdminCatalog(page = 1) {
   return data
 }
 
-export async function updateCatalogItem(id: string, body: { title?: string; description?: string; price?: number; commission?: number; productTypeId?: string; sizeId?: string | null; condition?: string; quantity?: number; isActive?: boolean }) {
+export async function updateCatalogItem(id: string, body: { title?: string; description?: string; price?: number; commission?: number; productTypeId?: string; sizeId?: string | null; condition?: string; quantity?: number; isActive?: boolean; isOwnProduct?: boolean; promoterCommissionPct?: number | null }) {
   const { data } = await axiosClient.patch(`/admin/catalog/${id}`, body)
   return data.data
 }
