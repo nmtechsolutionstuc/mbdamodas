@@ -418,12 +418,51 @@ export function HomePage() {
 
       {/* ── Propuesta de valor ──────────────────────────── */}
       <style>{`
-        .mbda-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
-        @media (max-width: 768px) { .mbda-features { grid-template-columns: 1fr; } }
+        .mbda-features {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1.25rem;
+        }
+        @media (max-width: 768px) {
+          .mbda-features { grid-template-columns: 1fr; gap: 0.875rem; }
+        }
+        .mbda-feat-card {
+          background: #fff;
+          border: 1px solid #E8E3D5;
+          border-radius: 18px;
+          padding: 2rem 1.75rem 2.25rem;
+          display: flex;
+          flex-direction: column;
+          transition: transform 0.3s cubic-bezier(.22,1,.36,1), box-shadow 0.3s ease, border-color 0.3s ease;
+          cursor: default;
+          height: 100%;
+          box-sizing: border-box;
+        }
+        .mbda-feat-card:hover {
+          transform: translateY(-7px);
+          box-shadow: 0 20px 48px rgba(30,25,20,0.09);
+          border-color: #c9b99a;
+        }
+        .mbda-feat-icon {
+          width: 52px;
+          height: 52px;
+          border-radius: 14px;
+          background: #FAF8F3;
+          border: 1px solid #E8E3D5;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.5rem;
+          margin-bottom: 1.25rem;
+          flex-shrink: 0;
+          transition: background 0.3s ease;
+        }
+        .mbda-feat-card:hover .mbda-feat-icon {
+          background: #f0ece2;
+        }
       `}</style>
       <section
         ref={featuresReveal.ref}
-        className={`mbda-section-sweep${featuresReveal.visible ? ' mbda-sweep-in' : ''}`}
         style={{ maxWidth: '1200px', margin: '0 auto', padding: '4rem 1.5rem 0', borderTop: '1px solid #E8E3D5' }}
       >
         <div className="mbda-features">
@@ -431,40 +470,36 @@ export function HomePage() {
             .map(key => ({ ...DEFAULT_FEATURE_CARDS[key], ...featureCardsData[key] }))
             .filter(card => card.active)
             .map((card, i) => (
+              // wrapper: solo maneja la animación de entrada (no interfiere con el hover CSS)
               <div
                 key={card.title}
-                className="mbda-feature-card"
                 style={{
-                  padding: '2.5rem 2rem',
-                  borderRight: i < 2 ? '1px solid #E8E3D5' : 'none',
                   opacity: featuresReveal.visible ? 1 : 0,
-                  transform: featuresReveal.visible
-                    ? 'translate(0, 0) scale(1)'
-                    : i === 0 ? 'translateX(-48px)'
-                    : i === 1 ? 'translateY(32px) scale(0.96)'
-                    : 'translateX(48px)',
-                  transition: `opacity 0.6s ease ${i * 130}ms, transform 0.6s ease ${i * 130}ms`,
+                  transform: featuresReveal.visible ? 'translateY(0)' : 'translateY(28px)',
+                  transition: `opacity 0.55s ease ${i * 110}ms, transform 0.55s ease ${i * 110}ms`,
                 }}
               >
-                <div style={{ fontSize: '2rem', marginBottom: '1.25rem', lineHeight: 1 }}>{card.emoji}</div>
-                <h3 style={{
-                  fontFamily: "'Playfair Display', serif",
-                  fontSize: 'clamp(1.1rem, 2vw, 1.35rem)',
-                  fontWeight: 700,
-                  color: '#1E1914',
-                  marginBottom: '0.625rem',
-                  letterSpacing: '-0.01em',
-                }}>
-                  {card.title}
-                </h3>
-                <p style={{
-                  color: '#6b7280',
-                  fontSize: '0.9rem',
-                  lineHeight: 1.65,
-                  margin: 0,
-                }}>
-                  {card.desc}
-                </p>
+                <div className="mbda-feat-card">
+                  <div className="mbda-feat-icon">{card.emoji}</div>
+                  <h3 style={{
+                    fontFamily: "'Playfair Display', serif",
+                    fontSize: 'clamp(1.05rem, 2vw, 1.25rem)',
+                    fontWeight: 700,
+                    color: '#1E1914',
+                    margin: '0 0 0.625rem',
+                    letterSpacing: '-0.02em',
+                  }}>
+                    {card.title}
+                  </h3>
+                  <p style={{
+                    color: '#6b7280',
+                    fontSize: '0.875rem',
+                    lineHeight: 1.7,
+                    margin: 0,
+                  }}>
+                    {card.desc}
+                  </p>
+                </div>
               </div>
             ))}
         </div>
